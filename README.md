@@ -133,4 +133,4 @@ terraform apply
 
 ## License
 
-Internal use only. Not for production deployment.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
