@@ -62,7 +62,7 @@ frontend/
 │       ├── lib/                # Shared utilities
 │       └── types/              # Shared types
 ├── infrastructure/             # External integrations
-│   ├── api/                    # Axios instance, interceptors
+│   ├── api/                    # openapi-fetch instance, interceptors
 │   ├── auth/                   # JWT storage, token refresh
 │   ├── query/                  # TanStack Query client config
 │   └── config/                 # Environment configuration
@@ -81,7 +81,7 @@ Each feature may contain:
 |-----------|---------|
 | `components/` | Presentation components (receive data via props) |
 | `hooks/` | TanStack Query hooks, local state, UI orchestration |
-| `services/` | Axios-based API calls, endpoint definitions |
+| `services/` | openapi-fetch API calls, endpoint definitions |
 | `schemas/` | Zod schemas for request/response/form validation |
 | `types/` | TypeScript types specific to this feature |
 | `utils/` | Feature-specific utilities (rare) |
@@ -118,7 +118,7 @@ Features should be self-contained. Avoid unnecessary coupling between features. 
 #### Services (`features/*/services/`)
 
 - Encapsulate all HTTP communication
-- Use Axios (configured in `infrastructure/api/`)
+- Use openapi-fetch (configured in `infrastructure/api/`)
 - API requests, request configuration, response mapping
 - Endpoint definitions
 - Do not contain business rules
@@ -133,7 +133,7 @@ Features should be self-contained. Avoid unnecessary coupling between features. 
 
 #### Infrastructure (`infrastructure/`)
 
-- Axios instance with interceptors (auth tokens, error handling)
+- openapi-fetch instance with interceptors (auth tokens, error handling)
 - TanStack Query client configuration
 - JWT storage and token refresh logic
 - Environment configuration
@@ -155,7 +155,7 @@ Feature Hook
     ↓ uses
 TanStack Query
     ↓ calls
-Service (Axios)
+Service (openapi-fetch)
     ↓ HTTP request
 Go REST API
     ↓ response
@@ -205,7 +205,7 @@ Unit tests and integration tests only. No end-to-end tests (see [TESTING_STRATEG
 | Vitest | Test runner (fast, modern, TypeScript-native) |
 | `@testing-library/react` | Component rendering and interaction |
 | `@testing-library/user-event` | Real user actions (type, click, navigate) |
-| MSW (Mock Service Worker) | API mocking without coupling to Axios |
+| MSW (Mock Service Worker) | API mocking without coupling to HTTP client |
 | `@vitest/coverage-v8` | Coverage via V8 engine |
 
 | Layer | Test Type | What to Test |

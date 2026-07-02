@@ -6,6 +6,8 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 **Quality gates:** Pre-commit, pre-push, unified Taskfile. See [QUALITY_GATES.md](docs/QUALITY_GATES.md).
 
+**Acceptance criteria:** Detailed checklist per phase. See [CHECKLIST.md](docs/CHECKLIST.md).
+
 ---
 
 ## Phase 1: Foundation

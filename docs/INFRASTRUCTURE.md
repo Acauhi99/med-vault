@@ -277,42 +277,7 @@ Infrastructure changes replace rather than modify. New deployments create new re
 
 ## AWS Shared Responsibility Model
 
-This project operates under the AWS Shared Responsibility Model.
-
-### AWS Responsibilities
-
-- Physical security of data centers
-- Network infrastructure
-- Hardware lifecycle
-- Compliance certifications (SOC, ISO, HIPAA BAA)
-- Managed service availability
-
-### Infrastructure Responsibilities (Terraform)
-
-- VPC design and network topology
-- Security group rules
-- IAM policies and roles
-- Encryption configuration
-- Secrets management
-- Logging and monitoring setup
-- Backup configuration
-
-### Application Responsibilities (Go/Next.js)
-
-- Application-level encryption (JWT, bcrypt)
-- Tenant isolation in code
-- RBAC enforcement
-- Input validation
-- PHI handling procedures
-- Audit logging for business operations
-
-### Developer Responsibilities
-
-- Code review and testing
-- Secret rotation awareness
-- Incident response
-- Documentation updates
-- Following least privilege in IAM policies
+This project operates under the AWS Shared Responsibility Model. See [SECURITY.md](SECURITY.md#compliance-hipaa-inspired) for the full breakdown of AWS, Infrastructure, Application, and Developer responsibilities.
 
 ---
 

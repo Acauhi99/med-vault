@@ -20,7 +20,7 @@ Use Next.js App Router with static export. Client Components only. No API Routes
 | TypeScript | Type safety | Compile-time error catching; better IDE support |
 | pnpm | Package management | Fast, disk-efficient, deterministic installs |
 | TanStack Query | Server state management | Caching, background refetching, optimistic updates |
-| Axios | HTTP client | Interceptors for auth tokens; request/response transformation |
+| openapi-fetch | Type-safe HTTP client | Generated from OpenAPI; type-safe requests and responses |
 | React Hook Form | Form handling | Performance; minimal re-renders; Zod integration |
 | Zod | Schema validation | Type-safe validation; shared schemas between forms and API |
 | Tailwind CSS | Styling | Utility-first; no custom CSS; consistent design system |
@@ -57,10 +57,10 @@ Use Next.js App Router with static export. Client Components only. No API Routes
 ## Deployment Model
 
 ```
-next build + next export → S3 → CloudFront → Client
+next build → S3 → CloudFront → Client
 ```
 
-- Static HTML/CSS/JS exported at build time
+- Static HTML/CSS/JS exported at build time via `output: 'export'` in `next.config.js`
 - S3 serves static assets
 - CloudFront provides CDN and TLS termination
 - No persistent Node.js server

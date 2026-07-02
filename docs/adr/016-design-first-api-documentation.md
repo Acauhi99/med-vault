@@ -38,7 +38,7 @@ med-vault/
 │       ├── server.go
 │       └── types.go
 └── frontend/
-    └── src/generated/            # Generated from OpenAPI (openapi-typescript)
+    └── generated/            # Generated from OpenAPI (openapi-typescript)
         └── api.d.ts
 ```
 

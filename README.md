@@ -82,8 +82,8 @@ med-vault/
 │   └── terraform/
 │       ├── modules/       # Reusable platform capabilities
 │       └── environments/  # Environment-specific configs
-├── spec/              # OpenAPI contract (single source of truth)
-│   └── openapi.yaml   # API contract
+├── spec/              # OpenAPI contract (single source of truth) [Phase 1]
+│   └── openapi.yaml   # API contract (to be created in Phase 1)
 └── docs/              # Project documentation
     ├── adr/           # Architecture Decision Records
     └── diagrams/      # Architecture diagrams

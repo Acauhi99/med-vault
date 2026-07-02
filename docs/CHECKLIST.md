@@ -6,6 +6,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 **Quality gates:** Pre-commit, pre-push, unified Taskfile. See [QUALITY_GATES.md](QUALITY_GATES.md).
 
+**Phased delivery plan:** See [ROADMAP.md](../ROADMAP.md) for the overall implementation timeline.
+
 ---
 
 ## Phase 1: Foundation

@@ -64,7 +64,7 @@ The frontend does NOT follow MVC, MVP, or MVVM. Every business capability is imp
 | TypeScript | Type safety |
 | pnpm | Package management |
 | TanStack Query | Server state management, caching |
-| Axios | HTTP client for REST API |
+| openapi-fetch | Type-safe HTTP client (generated from OpenAPI) |
 | React Hook Form | Form handling |
 | Zod | Schema validation |
 | Tailwind CSS | Utility-first styling |
@@ -91,7 +91,7 @@ frontend/
 │   ├── authentication/         # Example feature
 │   │   ├── components/         # Presentation components
 │   │   ├── hooks/              # TanStack Query hooks, UI orchestration
-│   │   ├── services/           # Axios API calls
+│   │   ├── services/           # openapi-fetch API calls
 │   │   ├── schemas/            # Zod validation schemas
 │   │   ├── types/              # TypeScript types
 │   │   └── index.ts            # Public exports
@@ -100,7 +100,7 @@ frontend/
 │   ├── admin/
 │   └── shared/                 # Cross-feature reusable elements
 ├── infrastructure/             # External integrations
-│   ├── api/                    # Axios instance, interceptors
+│   ├── api/                    # openapi-fetch instance, interceptors
 │   ├── auth/                   # JWT storage, token refresh
 │   ├── query/                  # TanStack Query client config
 │   └── config/                 # Environment configuration
@@ -118,15 +118,15 @@ frontend/
 | Pages | Route composition, feature wiring | No business logic |
 | Components | Presentation only | Props-only data flow, no HTTP calls |
 | Hooks | UI orchestration, TanStack Query | No raw HTTP requests |
-| Services | API communication (Axios) | No business rules |
+| Services | API communication (openapi-fetch) | No business rules |
 | Schemas | Validation (Zod) | One schema per feature |
-| Infrastructure | Axios, auth, query client | External integrations only |
+| Infrastructure | openapi-fetch, auth, query client | External integrations only |
 | Shared | Reusable UI, layouts, utilities | Never a dumping ground |
 
 **Request Flow:**
 
 ```
-Component → Hook → TanStack Query → Service → Axios → Go REST API
+Component → Hook → TanStack Query → Service → openapi-fetch → Go REST API
                                                           ↓
 Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 ```
@@ -142,7 +142,7 @@ Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 | Vitest | Test runner (fast, modern, TypeScript-native) |
 | `@testing-library/react` | Component rendering and interaction |
 | `@testing-library/user-event` | Real user actions (type, click, navigate) |
-| MSW (Mock Service Worker) | API mocking without coupling to Axios |
+| MSW (Mock Service Worker) | API mocking without coupling to HTTP client |
 | `@vitest/coverage-v8` | Coverage via V8 engine |
 
 - **Unit tests:** Components, hooks, services — isolated, fast, mocked APIs via MSW
@@ -152,10 +152,10 @@ Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 **Deployment:**
 
 ```
-next build + next export → S3 → CloudFront → Client
+next build → S3 → CloudFront → Client
 ```
 
-- Static HTML/CSS/JS exported at build time
+- Static HTML/CSS/JS exported at build time via `output: 'export'` in `next.config.js`
 - S3 serves static assets
 - CloudFront provides CDN and TLS termination
 - No Node.js runtime in production
@@ -416,7 +416,7 @@ med-vault/
 ├── backend/
 │   └── internal/generated/       # Generated Go interfaces (oapi-codegen)
 └── frontend/
-    └── src/generated/            # Generated TypeScript types (openapi-typescript)
+    └── generated/            # Generated TypeScript types (openapi-typescript)
 ```
 
 ### Code Generation
