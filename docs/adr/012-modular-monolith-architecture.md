@@ -14,6 +14,16 @@ Use a modular monolith architecture. Each bounded context is a self-contained mo
 
 ## Module Structure
 
+Module names align with the DDD Bounded Context names defined in [DOMAIN.md](../DOMAIN.md):
+
+| Module | Bounded Context |
+|--------|----------------|
+| `auth` | Identity & Access |
+| `clinical` | Clinical |
+| `imaging` | Imaging |
+| `audit` | Audit |
+| `shared` | Shared Kernel (cross-cutting) |
+
 ```
 backend/
 ├── cmd/server/           # Entry point

@@ -35,6 +35,7 @@ The business domain is intentionally simple. The complexity is in infrastructure
 - Audit logging for all state-changing operations
 - AWS infrastructure via Terraform (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
 - DDD with CQRS backend architecture
+- Transactional Outbox for domain event delivery (see [ADR-017](adr/017-transactional-outbox.md))
 - Feature-Based frontend architecture (see [ADR-015](adr/015-frontend-feature-based-architecture.md))
 - Design-First API with OpenAPI (see [ADR-016](adr/016-design-first-api-documentation.md))
 - Pragmatic testing strategy (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md))

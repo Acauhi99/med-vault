@@ -135,19 +135,7 @@ Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 
 **Multi-Tenant:** The frontend propagates tenant context from JWT. Tenant isolation is enforced by the backend. The frontend never enforces tenant security.
 
-**Testing:** Unit tests and integration tests only (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy, [ADR-015](adr/015-frontend-feature-based-architecture.md#testing-strategy) for frontend stack)
-
-| Tool | Purpose |
-|------|---------|
-| Vitest | Test runner (fast, modern, TypeScript-native) |
-| `@testing-library/react` | Component rendering and interaction |
-| `@testing-library/user-event` | Real user actions (type, click, navigate) |
-| MSW (Mock Service Worker) | API mocking without coupling to HTTP client |
-| `@vitest/coverage-v8` | Coverage via V8 engine |
-
-- **Unit tests:** Components, hooks, services — isolated, fast, mocked APIs via MSW
-- **Integration tests:** Pages, feature workflows — route composition, feature wiring
-- No end-to-end tests
+**Testing:** Unit tests and integration tests only. See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy and stack details. Frontend-specific patterns in [ADR-015](adr/015-frontend-feature-based-architecture.md#testing-strategy).
 
 **Deployment:**
 
@@ -243,34 +231,21 @@ module/
 **CQRS principles (per module):**
 - Commands mutate state through aggregates
 - Queries read from optimized read models
-- Domain events bridge command and query sides
+- Domain events bridge command and query sides via Transactional Outbox (see [ADR-017](adr/017-transactional-outbox.md))
 - No direct reads from write-optimized aggregates
+- Read models are eventually consistent (~1s latency from outbox polling)
 
 **Key invariants:**
 - Every query includes `tenant_id` filter
 - No business logic leaks into infrastructure
 - External dependencies injected via interfaces
 - Aggregates enforce consistency boundaries
-- Read models are eventually consistent with write models
+- Events persisted in same transaction as aggregate (outbox pattern)
+- Projection handlers are idempotent (at-least-once delivery)
 
 **Database access:** pgx + sqlc for type-safe SQL (see [ADR-013](adr/013-pgx-sqlc-for-database-access.md))
 
-**Testing:** Unit tests and integration tests only (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy, [ADR-001](adr/001-go-as-backend-language.md#testing-strategy) for backend stack)
-
-| Tool | Purpose |
-|------|---------|
-| `testing` | Test runner (stdlib) |
-| `testify/assert` | Assertions |
-| `net/http/httptest` | HTTP handler testing |
-| `go-cmp` | Struct comparison |
-| `testcontainers-go` | Real PostgreSQL in integration tests |
-| `go test -cover` | Coverage reporting |
-| `testing.B` | Benchmarks |
-| `testing.F` | Fuzz testing |
-
-- **Unit tests:** Domain logic, value objects, aggregates — isolated, fast, no I/O
-- **Integration tests:** Repositories, HTTP handlers — real PostgreSQL via testcontainers, real HTTP via httptest
-- No end-to-end tests
+**Testing:** Unit tests and integration tests only. See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy and stack details. Backend-specific patterns in [ADR-001](adr/001-go-as-backend-language.md#testing-strategy).
 
 ---
 
@@ -312,11 +287,17 @@ module/
 
 ```
 Client → ALB → Backend
+  Step 1 — Authenticate:
   1. Client sends credentials (email + password)
   2. Backend validates against database (bcrypt)
-  3. Backend returns JWT (access token + refresh token)
-  4. Client stores token in httpOnly cookie
-  5. Subsequent requests include JWT in Authorization header
+  3. Backend returns temporary JWT + list of available tenants with roles
+
+  Step 2 — Select Tenant:
+  4. Client sends tenant_id (with temporary JWT)
+  5. Backend validates user belongs to tenant
+  6. Backend returns final JWT (access token + refresh token) with tenant_id + role
+  7. Client stores token in httpOnly cookie
+  8. Subsequent requests include JWT in Authorization header
 ```
 
 ### Request Lifecycle (Authenticated)
@@ -463,6 +444,38 @@ See [ADR-016](adr/016-design-first-api-documentation.md) for full rationale.
 - ECS Fargate (serverless containers)
 - Auto-scaling based on CPU/memory
 - Health checks via ALB target groups
+
+### Database Migrations
+
+Migrations run as a **separate step before application deployment**, not at application startup.
+
+**Why separate:**
+- Avoids race conditions (multiple containers running the same migration)
+- Application startup stays clean (no schema changes during boot)
+- Rollback is explicit (migrate down, then rollback app)
+- CI/CD controls the migration lifecycle
+
+**Tool:** `golang-migrate/migrate` CLI (see [ADR-014](adr/014-golang-migrate-for-migrations.md))
+
+**Deployment sequence:**
+
+```
+1. Build & push container image (ECR)
+2. Run migrations (ECS Run Task or dedicated job)
+   → migrate -path migrations -database "$DATABASE_URL" up
+3. Deploy new application version (ECS Service Update)
+4. Health check passes → traffic shifted
+```
+
+**Rollback sequence:**
+
+```
+1. Rollback application (ECS rollback to previous task definition)
+2. Rollback migrations if needed
+   → migrate -path migrations -database "$DATABASE_URL" down N
+```
+
+**Migration files:** `backend/migrations/` (`.up.sql` and `.down.sql` for each)
 
 ### CI/CD (Future)
 

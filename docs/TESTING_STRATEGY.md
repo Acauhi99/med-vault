@@ -1,5 +1,7 @@
 # Testing Strategy
 
+> **This is the source of truth for testing philosophy, stack, and patterns.** Other documents (ARCHITECTURE.md, ADRs, AGENTS.md) reference this document rather than duplicating its content.
+
 ## Objective
 
 This project adopts a pragmatic testing strategy focused on delivering confidence with the lowest possible maintenance cost.
@@ -184,6 +186,24 @@ Developers are responsible for reviewing the generated tests to ensure they vali
 **Unit tests:** Domain logic, value objects, aggregates — isolated, fast, no I/O.
 
 **Integration tests:** Repositories, HTTP handlers — real PostgreSQL via testcontainers, real HTTP via httptest.
+
+### Testing Domain Events and Outbox
+
+Domain events are delivered via the Transactional Outbox pattern (see [ADR-017](adr/017-transactional-outbox.md)). Testing should cover:
+
+| What to Test | How |
+|-------------|-----|
+| Aggregate emits correct events | Unit test: call command, inspect events on aggregate |
+| Event persisted in outbox | Integration test: call command, query `domain_outbox` table |
+| Projection handler processes event | Unit test: call handler with event, assert read model updated |
+| Projection handler is idempotent | Unit test: call handler twice with same event, assert no duplicate |
+| Outbox poller dispatches events | Integration test: insert outbox row, run poller, assert handler called |
+| Failed event marked correctly | Integration test: handler returns error, assert `attempts` incremented |
+
+**Key rules:**
+- Projection handlers must be tested for idempotency (same event twice = same result)
+- Outbox integration tests use real PostgreSQL via testcontainers
+- Event payload serialization/deserialization tested round-trip
 
 ---
 

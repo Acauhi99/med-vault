@@ -219,6 +219,46 @@ Unit tests and integration tests only. No end-to-end tests (see [TESTING_STRATEG
 
 Business rules should never require frontend unit tests because they belong to the backend.
 
+### Error Handling Pattern
+
+All HTTP error handling is centralized in the infrastructure layer. Features never handle raw HTTP errors.
+
+**Interceptor behavior (configured in `infrastructure/api/`):**
+
+| Status | Behavior |
+|--------|----------|
+| 401 | Clear stored tokens, redirect to `/login` |
+| 403 | Show toast "You are not authorized to perform this action" |
+| 404 | Let the calling hook/component handle (no global action) |
+| 500 | Show toast "Something went wrong. Please try again." |
+| Network error | Show toast "Connection failed. Check your network." |
+
+**Rules:**
+- Services throw typed errors, never raw Axios/fetch errors
+- Hooks catch service errors and map them to UI state (error message, retry affordance)
+- Components display error state from hooks, never parse HTTP responses directly
+- PHI must never appear in error messages
+
+### Loading State Pattern
+
+Every async operation communicates its state to the UI via TanStack Query's built-in states.
+
+**Standard states per query/mutation:**
+
+| State | UI Treatment |
+|-------|-------------|
+| `isLoading` (initial load) | Skeleton placeholder matching the expected layout |
+| `isFetching` (background refetch) | Subtle indicator (e.g., progress bar), existing data stays visible |
+| `isError` | Error message + retry button |
+| `isSuccess` | Render data |
+
+**Rules:**
+- Skeleton loaders over spinners for initial page load (better perceived performance)
+- Spinners acceptable for inline actions (button submit, modal content)
+- Never show blank screen during loading
+- Mutations use `isPending` to disable submit buttons and show inline feedback
+- Optimistic updates only when the UX benefit is clear (e.g., toggling a status)
+
 ### AI Development Guidelines
 
 This repository is designed for AI-assisted development. The frontend architecture is intentionally repetitive and predictable:

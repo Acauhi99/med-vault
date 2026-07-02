@@ -1,0 +1,224 @@
+version: '3'
+
+vars:
+  BACKEND_DIR: backend
+  FRONTEND_DIR: frontend
+  INFRA_DIR: infrastructure/terraform
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # ── Formatting ──────────────────────────────────────────────
+
+  format:
+    desc: Format all code
+    cmds:
+      - task: format:backend
+      - task: format:frontend
+      - task: format:infrastructure
+
+  format:backend:
+    desc: Format Go code with gofumpt
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - gofumpt -w .
+
+  format:frontend:
+    desc: Format frontend code with Biome
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm biome format --write .
+
+  format:infrastructure:
+    desc: Format Terraform files
+    dir: '{{.INFRA_DIR}}'
+    cmds:
+      - terraform fmt -recursive
+
+  # ── Linting ─────────────────────────────────────────────────
+
+  lint:
+    desc: Lint all code
+    cmds:
+      - task: lint:backend
+      - task: lint:frontend
+      - task: lint:infrastructure
+
+  lint:backend:
+    desc: Lint Go code with golangci-lint
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - golangci-lint run
+
+  lint:frontend:
+    desc: Lint frontend code with Biome
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm biome lint .
+
+  lint:infrastructure:
+    desc: Lint Terraform with tflint
+    dir: '{{.INFRA_DIR}}'
+    cmds:
+      - tflint --recursive
+
+  # ── Validation ──────────────────────────────────────────────
+
+  validate:
+    desc: Validate all configurations
+    cmds:
+      - task: validate:backend
+      - task: validate:frontend
+      - task: validate:infrastructure
+
+  validate:backend:
+    desc: Validate Go code compiles
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - go vet ./...
+
+  validate:frontend:
+    desc: TypeScript type check
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm tsc --noEmit
+
+  validate:infrastructure:
+    desc: Validate Terraform configuration
+    dir: '{{.INFRA_DIR}}'
+    cmds:
+      - terraform validate
+
+  # ── Testing ─────────────────────────────────────────────────
+
+  test:
+    desc: Run all tests
+    cmds:
+      - task: test:backend
+      - task: test:frontend
+
+  test:backend:
+    desc: Run Go tests
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - go test ./... -v -cover
+
+  test:frontend:
+    desc: Run frontend tests with Vitest
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm vitest run
+
+  test:coverage:
+    desc: Run all tests with coverage reporting
+    cmds:
+      - task: test:backend:coverage
+      - task: test:frontend:coverage
+
+  test:backend:coverage:
+    desc: Run Go tests with coverage
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - go test ./... -coverprofile=coverage.out
+      - go tool cover -func=coverage.out
+
+  test:frontend:coverage:
+    desc: Run frontend tests with coverage
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm vitest run --coverage
+
+  # ── Pre-Commit ──────────────────────────────────────────────
+
+  pre-commit:
+    desc: "Run all pre-commit checks (fast: format + lint)"
+    cmds:
+      - task: format
+      - task: lint
+
+  # ── Pre-Push ────────────────────────────────────────────────
+
+  pre-push:
+    desc: Run all pre-push checks (format + lint + validate + test)
+    cmds:
+      - task: format
+      - task: lint
+      - task: validate
+      - task: test
+
+  # ── Security ────────────────────────────────────────────────
+
+  security:infrastructure:
+    desc: Run Checkov security scan on Terraform
+    dir: '{{.INFRA_DIR}}'
+    cmds:
+      - checkov -d .
+
+  # ── Code Generation ─────────────────────────────────────────
+
+  generate:
+    desc: Generate all code from OpenAPI spec
+    cmds:
+      - task: generate:backend
+      - task: generate:frontend
+
+  generate:backend:
+    desc: Generate Go server interfaces from OpenAPI
+    dir: '{{.ROOT_DIR}}'
+    cmds:
+      - oapi-codegen -generate types,server -package generated -o backend/internal/generated/api.go spec/openapi.yaml
+
+  generate:frontend:
+    desc: Generate TypeScript types from OpenAPI
+    dir: '{{.ROOT_DIR}}'
+    cmds:
+      - pnpm openapi-typescript spec/openapi.yaml -o frontend/generated/api.d.ts
+
+  # ── Migrations ──────────────────────────────────────────────
+
+  migrate:up:
+    desc: Apply all pending migrations
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - migrate -path migrations -database "${DATABASE_URL}" up
+
+  migrate:down:
+    desc: Rollback last migration
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - migrate -path migrations -database "${DATABASE_URL}" down 1
+
+  migrate:status:
+    desc: Show current migration version
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - migrate -path migrations -database "${DATABASE_URL}" version
+
+  migrate:create:
+    desc: "Create a new migration file (usage: task migrate:create NAME=create_table_name)"
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - migrate create -ext sql -dir migrations -seq {{.NAME}}
+
+  # ── Build ───────────────────────────────────────────────────
+
+  build:
+    desc: Build all artifacts
+    cmds:
+      - task: build:backend
+      - task: build:frontend
+
+  build:backend:
+    desc: Build Go binary
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - go build -o ../bin/server ./cmd/server
+
+  build:frontend:
+    desc: Build Next.js static export
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - pnpm build

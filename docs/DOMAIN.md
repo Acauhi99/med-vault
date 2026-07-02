@@ -9,10 +9,10 @@ This document defines the domain model for MedVault using Domain-Driven Design (
 | Term | Definition |
 |------|------------|
 | **Tenant** | A healthcare organization. Top-level boundary for all data isolation. |
-| **User** | An authenticated person within a tenant. Has exactly one role. |
-| **Patient** | A user who submits symptoms and medical images. |
-| **Doctor** | A user who reviews cases and writes diagnoses. |
-| **Administrator** | A user who manages tenant resources and inspects audit information. |
+| **User** | An authenticated person. Exists independently of tenants. Has roles per tenant via `UserTenant`. |
+| **Patient** | A user with role `patient` in a specific tenant. |
+| **Doctor** | A user with role `doctor` in a specific tenant. |
+| **Administrator** | A user with role `administrator` in a specific tenant. |
 | **Case** | A medical consultation request initiated by a patient. Contains symptoms and images. |
 | **Symptom** | A patient-reported health concern attached to a case. |
 | **Image** | A medical image (X-ray, scan, etc.) uploaded by a patient for a case. |
@@ -77,38 +77,57 @@ Tenant
 ```
 User
 ├── UserID (Value Object)
-├── TenantID (Value Object)
 ├── Email (Value Object)
 ├── PasswordHash (Value Object)
-├── Role (Value Object: Patient | Doctor | Administrator)
 ├── Status (Value Object: Active | Inactive)
 ├── CreatedAt (Value Object)
 └── UpdatedAt (Value Object)
 ```
 
 **Invariants:**
-- Email must be unique within a tenant
+- Email must be unique (system-wide, not per tenant)
 - Password must meet minimum complexity requirements
-- Role cannot be changed after creation
 - Status transitions: Active ↔ Inactive
+- A user has no inherent tenant — tenant membership is defined by `UserTenant`
+
+#### UserTenant (Entity)
+
+```
+UserTenant
+├── UserTenantID (Value Object)
+├── UserID (Value Object) → references User
+├── TenantID (Value Object) → references Tenant
+├── Role (Value Object: Patient | Doctor | Administrator)
+└── CreatedAt (Value Object)
+```
+
+**Invariants:**
+- A user can belong to multiple tenants
+- A user has exactly one role per tenant
+- The same (user_id, tenant_id) pair cannot be duplicated
+- Role cannot be changed after creation (delete + re-create to change)
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
 | `CreateTenant` | Register a new healthcare organization |
-| `SuspendTenant` | Disable a tenant (all users lose access) |
-| `RegisterUser` | Create a new user within a tenant |
-| `AuthenticateUser` | Validate credentials, issue JWT |
-| `DeactivateUser` | Disable a user account |
+| `SuspendTenant` | Disable a tenant (all users lose access to that tenant) |
+| `RegisterUser` | Create a new user (no tenant assignment) |
+| `AuthenticateUser` | Validate email + password, return available tenants |
+| `SelectTenant` | User selects a tenant, receives JWT with tenant_id + role |
+| `AddUserToTenant` | Associate an existing user with a tenant and assign a role |
+| `RemoveUserFromTenant` | Remove a user's access to a tenant |
+| `DeactivateUser` | Disable a user account (across all tenants) |
 
 ### Queries
 
 | Query | Description |
 |-------|-------------|
-| `GetUserByID` | Retrieve user by ID (tenant-scoped) |
-| `GetUserByEmail` | Retrieve user by email (tenant-scoped) |
-| `ListUsersByTenant` | List all users for a tenant |
+| `GetUserByID` | Retrieve user by ID (tenant-independent) |
+| `GetUserByEmail` | Retrieve user by email (tenant-independent) |
+| `ListTenantsByUser` | List all tenants a user belongs to (with roles) |
+| `ListUsersByTenant` | List all users for a tenant (with roles) |
 
 ### Domain Events
 
@@ -116,7 +135,9 @@ User
 |-------|---------|
 | `TenantCreated` | New tenant registered |
 | `TenantSuspended` | Tenant status changed to Suspended |
-| `UserRegistered` | New user created |
+| `UserRegistered` | New user created (no tenant) |
+| `UserAddedToTenant` | User associated with a tenant |
+| `UserRemovedFromTenant` | User's access to a tenant revoked |
 | `UserDeactivated` | User status changed to Inactive |
 
 ---
@@ -327,13 +348,15 @@ All value objects are immutable and implement equality based on their attributes
 ## Aggregate Relationships
 
 ```
-Tenant (1) ──── (N) User
+Tenant (1) ──── (N) UserTenant
+User   (1) ──── (N) UserTenant
+
 Tenant (1) ──── (N) Case
 Tenant (1) ──── (N) Image
 Tenant (1) ──── (N) AuditLog
 
-User (Patient) (1) ──── (N) Case
-User (Doctor) (1) ──── (N) Case
+User (via UserTenant, role=Patient) (1) ──── (N) Case
+User (via UserTenant, role=Doctor)  (1) ──── (N) Case
 
 Case (1) ──── (N) Symptom
 Case (1) ──── (0..1) Diagnosis
@@ -341,6 +364,8 @@ Case (1) ──── (N) Image
 ```
 
 **Aggregate boundaries:**
+- `User` aggregate is independent — no `TenantID` attribute
+- `UserTenant` is a separate entity linking User to Tenant with a role
 - `Case` aggregate contains `Symptom` entities and `Diagnosis` value object
 - `Image` is a separate aggregate (references `Case` by ID, does not contain it)
 - `Tenant` and `User` are separate aggregates
@@ -356,6 +381,8 @@ Case (1) ──── (N) Image
 |---------|-----------|---------|
 | `CreateTenant` | Tenant | TenantCommandHandler |
 | `RegisterUser` | User | UserCommandHandler |
+| `SelectTenant` | UserTenant | UserCommandHandler |
+| `AddUserToTenant` | UserTenant | UserCommandHandler |
 | `CreateCase` | Case | CaseCommandHandler |
 | `AddSymptom` | Case | CaseCommandHandler |
 | `AssignDoctor` | Case | CaseCommandHandler |
@@ -368,6 +395,8 @@ Case (1) ──── (N) Image
 | Query | Read Model | Handler |
 |-------|------------|---------|
 | `GetUserByID` | UserReadModel | UserQueryHandler |
+| `ListTenantsByUser` | UserTenantReadModel | UserQueryHandler |
+| `ListUsersByTenant` | UserTenantReadModel | UserQueryHandler |
 | `ListCasesByPatient` | CaseReadModel | CaseQueryHandler |
 | `ListCasesByDoctor` | CaseReadModel | CaseQueryHandler |
 | `ListImagesByCase` | ImageReadModel | ImageQueryHandler |
@@ -375,9 +404,13 @@ Case (1) ──── (N) Image
 
 ### Event Handlers (Projections)
 
+Events are delivered via the **Transactional Outbox** pattern (see [ADR-017](adr/017-transactional-outbox.md)). Events are persisted in the same transaction as the aggregate. A poller reads unpublished events and dispatches to projection handlers. Delivery guarantee: at-least-once (handlers must be idempotent).
+
 | Event | Projection |
 |-------|------------|
 | `UserRegistered` | Update UserReadModel |
+| `UserAddedToTenant` | Update UserTenantReadModel |
+| `UserRemovedFromTenant` | Update UserTenantReadModel |
 | `CaseCreated` | Update CaseReadModel |
 | `SymptomAdded` | Update CaseReadModel |
 | `DoctorAssigned` | Update CaseReadModel |
@@ -386,11 +419,27 @@ Case (1) ──── (N) Image
 | `ImageUploaded` | Update ImageReadModel |
 | `AuditLogRecorded` | Update AuditLogReadModel |
 
+**Event delivery flow:**
+
+```
+Command Handler
+  → Aggregate.Mutate()
+  → BEGIN TRANSACTION
+      → Repo.Save(aggregate)
+      → Outbox.Save(event)        ← same transaction
+  → COMMIT
+
+Outbox Poller (goroutine, every ~1s)
+  → SELECT FROM domain_outbox WHERE published = false
+  → ProjectionHandler.Handle(event)
+  → Mark as published
+```
+
 ---
 
 ## Multi-Tenancy in the Domain
 
-Every aggregate root includes `TenantID` as a first-class attribute.
+Users exist independently of tenants. A user belongs to one or more tenants via the `UserTenant` entity, with a role per tenant. The `tenant_id` for a request comes from the JWT (selected during the `SelectTenant` command), not from the user record.
 
 **Enforcement points:**
 1. **Command handlers** validate `TenantID` from JWT context
@@ -398,4 +447,4 @@ Every aggregate root includes `TenantID` as a first-class attribute.
 3. **Database queries** include `WHERE tenant_id = $1`
 4. **Read models** are partitioned by `TenantID`
 
-**No cross-tenant access** is permitted at the domain level.
+**No cross-tenant access** is permitted at the domain level. A doctor who belongs to Tenant A and Tenant B can only access the tenant they selected at login.

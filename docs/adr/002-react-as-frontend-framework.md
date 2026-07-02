@@ -43,7 +43,7 @@ Use Next.js App Router with static export. Client Components only. No API Routes
 ### Positive
 - Aligns with company's frontend stack
 - Modern routing and layout capabilities (nested layouts, route segments)
-- Excellent developer experience (file-based routing, TypeScript, ESLint)
+- Excellent developer experience (file-based routing, TypeScript, Biome)
 - Simplified AWS deployment (static export → S3 → CloudFront)
 - Complete separation between presentation and business logic
 - No Node.js runtime required in production

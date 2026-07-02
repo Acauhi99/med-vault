@@ -42,6 +42,7 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [ADR-014](docs/adr/014-golang-migrate-for-migrations.md) | golang-migrate for migrations |
 | [ADR-015](docs/adr/015-frontend-feature-based-architecture.md) | Frontend feature-based architecture |
 | [ADR-016](docs/adr/016-design-first-api-documentation.md) | Design-First API documentation |
+| [ADR-017](docs/adr/017-transactional-outbox.md) | Transactional Outbox for domain events |
 
 ---
 
@@ -72,6 +73,9 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 ```
 med-vault/
 ├── backend/           # Go backend (DDD layers)
+│   ├── cmd/server/    # Entry point
+│   ├── internal/      # Modules (auth, clinical, imaging, audit, shared)
+│   └── migrations/    # SQL schema migrations (golang-migrate)
 ├── frontend/          # Next.js App Router (feature-based architecture)
 │   ├── app/           # Pages (routing and composition only)
 │   ├── features/      # Business capabilities (authentication, patients, doctors, admin)
@@ -82,8 +86,9 @@ med-vault/
 │   └── terraform/
 │       ├── modules/       # Reusable platform capabilities
 │       └── environments/  # Environment-specific configs
-├── spec/              # OpenAPI contract (single source of truth) [Phase 1]
-│   └── openapi.yaml   # API contract (to be created in Phase 1)
+├── spec/              # OpenAPI contract (single source of truth)
+│   └── openapi.yaml   # API contract
+├── Taskfile.yml       # Unified task runner (format, lint, validate, test)
 └── docs/              # Project documentation
     ├── adr/           # Architecture Decision Records
     └── diagrams/      # Architecture diagrams
@@ -103,7 +108,7 @@ go run ./cmd/server
 
 # Frontend
 cd frontend
-pnpm create next-app@latest . --typescript --tailwind --eslint --app --import-alias "@/*"
+pnpm create next-app@latest . --typescript --tailwind --app --import-alias "@/*"
 pnpm build    # exports static files to out/
 pnpm dev
 

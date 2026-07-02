@@ -1,5 +1,7 @@
 # Security
 
+> **This is the source of truth for security controls, encryption, and compliance.** Other documents (INFRASTRUCTURE.md, ARCHITECTURE.md) reference this document rather than duplicating its content.
+
 This document defines the security architecture, controls, and threat model for MedVault.
 
 > **Disclaimer:** MedVault is a Proof of Concept. It demonstrates HIPAA-inspired architectural decisions but is not HIPAA certified or production-ready.
@@ -33,7 +35,7 @@ This document defines the security architecture, controls, and threat model for 
 
 | Vector | Risk | Mitigation |
 |--------|------|------------|
-| SQL injection | High | Parameterized queries, ORM |
+| SQL injection | High | Parameterized queries via pgx + sqlc code generation |
 | Cross-site scripting (XSS) | Medium | Input validation, output encoding |
 | Cross-site request forgery (CSRF) | Medium | SameSite cookies, CSRF tokens |
 | Brute force | Medium | Rate limiting, account lockout |
@@ -54,18 +56,35 @@ This document defines the security architecture, controls, and threat model for 
 - **Refresh token lifetime:** 7 days
 - **Token storage:** httpOnly, Secure, SameSite=Strict cookies
 - **Token transmission:** Authorization header for API calls
+- **Login flow:** Two-step (authenticate → select tenant)
 
 ### JWT Claims
 
 ```json
 {
   "sub": "user_id",
-  "tenant_id": "tenant_id",
+  "tenant_id": "selected_tenant_id",
   "role": "patient | doctor | administrator",
   "iat": 1704067200,
   "exp": 1704068100
 }
 ```
+
+The `role` is per-tenant, from the `user_tenants` table. A user may have different roles in different tenants.
+
+### Login Flow
+
+```
+Step 1 — Authenticate:
+POST /auth/login { email, password }
+→ Temporary JWT (no tenant) + list of available tenants with roles
+
+Step 2 — Select tenant:
+POST /auth/select-tenant { tenant_id }  (with temporary JWT)
+→ Final JWT { user_id, tenant_id, role }
+```
+
+To switch tenants, the user calls select-tenant again without re-authenticating.
 
 ### Password Policy
 
@@ -81,8 +100,19 @@ Client → Backend
   1. Access token expires (401 response)
   2. Client sends refresh token
   3. Backend validates refresh token
-  4. Backend issues new access token
+  4. Backend issues new access token (same tenant_id + role)
   5. Client retries original request
+```
+
+### Tenant Switch Flow
+
+```
+Client → Backend
+  1. User selects a different tenant from the UI
+  2. Client calls POST /auth/select-tenant { tenant_id }
+  3. Backend validates user belongs to that tenant
+  4. Backend issues new JWT with new tenant_id + role
+  5. Client replaces stored token
 ```
 
 ---

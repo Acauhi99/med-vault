@@ -12,12 +12,15 @@ MedVault needs an architecture that demonstrates clean separation of concerns, t
 
 Use Domain-Driven Design (DDD) with CQRS (Command Query Responsibility Segregation).
 
+**Event delivery:** Domain events are delivered via the Transactional Outbox pattern (see [ADR-017](017-transactional-outbox.md)). Events are persisted in the same transaction as the aggregate. A poller dispatches events to projection handlers with at-least-once guarantee.
+
 ## Consequences
 
 ### Positive
 - Explicit domain model (Aggregates, Entities, Value Objects)
 - Clear separation of reads (queries) and writes (commands)
-- Domain Events for decoupling
+- Domain Events bridge write and read sides via Transactional Outbox
+- Eventual consistency between write and read models
 - Testable at every layer
 - Easy to navigate (bounded contexts map to business capabilities)
 - Ubiquitous Language aligns code with domain
@@ -25,6 +28,8 @@ Use Domain-Driven Design (DDD) with CQRS (Command Query Responsibility Segregati
 ### Negative
 - More concepts to learn (but well-documented in DOMAIN.md)
 - Requires discipline to maintain boundaries
+- Eventual consistency requires idempotent projection handlers
+- Outbox polling adds ~1s latency to read model updates
 
 ## Alternatives Considered
 
@@ -38,3 +43,4 @@ Use Domain-Driven Design (DDD) with CQRS (Command Query Responsibility Segregati
 
 - [Domain-Driven Design](https://www.domainlanguage.com/ddd/)
 - [CQRS Pattern](https://martinfowler.com/bliki/CQRS.html)
+- [ADR-017: Transactional Outbox](017-transactional-outbox.md)

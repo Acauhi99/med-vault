@@ -57,8 +57,9 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 ## Architecture
 
 - **Pattern:** DDD with CQRS (see [ADR-010](docs/adr/010-ddd-with-cqrs-architecture.md))
+- **Event delivery:** Transactional Outbox with polling on PostgreSQL (see [ADR-017](docs/adr/017-transactional-outbox.md))
 - **Bounded Contexts:** Identity & Access, Clinical, Imaging, Audit
-- **Multi-tenancy:** Shared DB with `tenant_id` column (see [ADR-006](docs/adr/006-multi-tenancy-strategy.md))
+- **Multi-tenancy:** Shared DB with `tenant_id` column; users can belong to multiple tenants with role per tenant (see [ADR-006](docs/adr/006-multi-tenancy-strategy.md))
 - **Backend:** Go, Clean Architecture layers (domain → application → infrastructure)
 - **Frontend:** Next.js App Router (static export, Client Components only), Feature-Based Architecture (see [ADR-015](docs/adr/015-frontend-feature-based-architecture.md)), no API Routes, no Server Actions, no SSR
 - **Infrastructure:** Terraform, ECS Fargate, RDS PostgreSQL, S3
@@ -77,6 +78,7 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 - Repositories: interfaces in domain, implementations in infrastructure
 - Database access: pgx + sqlc (see [ADR-013](docs/adr/013-pgx-sqlc-for-database-access.md))
 - Migrations: golang-migrate (see [ADR-014](docs/adr/014-golang-migrate-for-migrations.md))
+- Migrations run as CI/CD step before deployment, never at application startup
 - HTTP: `net/http` stdlib, router: `http.ServeMux`
 - Config: `envconfig` (12-factor, env vars)
 - Logging: `log/slog` (stdlib structured JSON, no PHI in logs)

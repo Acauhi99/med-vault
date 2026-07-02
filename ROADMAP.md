@@ -18,13 +18,13 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 |------|--------|
 | Complete documentation (ARCHITECTURE, DOMAIN, REQUIREMENTS, SECURITY) | ✅ |
 | Create ADRs for key technology decisions | ✅ |
-| Define OpenAPI 3.1.3 contract (`spec/openapi.yaml`) | ⬜ |
+| Define OpenAPI 3.1.3 contract (`spec/openapi.yaml`) | ✅ |
 | Setup `oapi-codegen` for Go backend code generation | ⬜ |
 | Setup `openapi-typescript` + `openapi-fetch` for frontend | ⬜ |
 | Initialize Go module | ⬜ |
 | Initialize Next.js project (App Router) | ⬜ |
 | Initialize Terraform project | ⬜ |
-| Setup Taskfile with `format`, `lint`, `validate`, `test` tasks | ⬜ |
+| Setup Taskfile with `format`, `lint`, `validate`, `test` tasks | ✅ |
 | Configure `gofumpt` + `golangci-lint` (backend) | ⬜ |
 | Configure Biome (frontend) | ⬜ |
 | Configure `tflint` + Checkov (infrastructure) | ⬜ |

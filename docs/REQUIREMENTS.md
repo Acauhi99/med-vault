@@ -111,12 +111,15 @@ This document defines the functional and non-functional requirements for MedVaul
 
 ## API Requirements
 
+> **Source of truth:** The full API contract (schemas, examples, validation rules) is defined in [`spec/openapi.yaml`](../spec/openapi.yaml). The endpoints below are a summary for quick reference.
+
 ### Endpoints
 
 | Method | Endpoint | Auth | Role | Description |
 |--------|----------|------|------|-------------|
-| POST | /api/v1/auth/register | No | — | Register new user |
-| POST | /api/v1/auth/login | No | — | Authenticate user |
+| POST | /api/v1/auth/register | No | — | Register new user (no tenant) |
+| POST | /api/v1/auth/login | No | — | Authenticate user, return available tenants |
+| POST | /api/v1/auth/select-tenant | Yes | — | Select tenant, receive JWT with tenant + role |
 | POST | /api/v1/auth/refresh | Yes | — | Refresh access token |
 | GET | /api/v1/users/me | Yes | Any | Get current user profile |
 | GET | /api/v1/cases | Yes | Patient, Doctor, Admin | List cases (filtered by role) |
@@ -177,3 +180,4 @@ The following are explicitly out of scope for the initial PoC:
 - Production deployment
 - Load testing
 - Penetration testing
+- API versioning strategy (all endpoints use `/api/v1/` prefix; versioning policy deferred to post-PoC)

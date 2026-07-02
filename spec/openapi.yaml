@@ -1,0 +1,860 @@
+openapi: 3.1.3
+info:
+  title: MedVault API
+  description: >
+    REST API for MedVault — a multi-tenant healthcare platform.
+    This contract is the single source of truth for all API endpoints.
+  version: 0.1.0
+  contact:
+    name: MedVault Team
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication and registration
+  - name: Users
+    description: User profile management
+  - name: Cases
+    description: Medical case lifecycle
+  - name: Symptoms
+    description: Symptom management
+  - name: Images
+    description: Medical image upload and retrieval
+  - name: Audit
+    description: Audit log inspection
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: registerUser
+      summary: Register a new user (no tenant assignment)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already exists
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: authenticateUser
+      summary: Authenticate user and return available tenants
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/select-tenant:
+    post:
+      tags: [Auth]
+      operationId: selectTenant
+      summary: Select tenant and receive JWT with tenant + role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectTenantRequest'
+      responses:
+        '200':
+          description: Tenant selected, JWT issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not belong to this tenant
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshToken
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid or expired refresh token
+
+  /users/me:
+    get:
+      tags: [Users]
+      operationId: getCurrentUser
+      summary: Get current user profile
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /cases:
+    get:
+      tags: [Cases]
+      operationId: listCases
+      summary: List cases (filtered by role)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CaseSummary'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Cases]
+      operationId: createCase
+      summary: Create a new medical case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaseRequest'
+      responses:
+        '201':
+          description: Case created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /cases/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    get:
+      tags: [Cases]
+      operationId: getCase
+      summary: Get case details
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not authorized to view this case
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/symptoms:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Symptoms]
+      operationId: addSymptom
+      summary: Add symptom to case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSymptomRequest'
+      responses:
+        '201':
+          description: Symptom added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SymptomResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Not authorized to add symptoms to this case
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/assign:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Cases]
+      operationId: assignDoctor
+      summary: Assign doctor to case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignDoctorRequest'
+      responses:
+        '200':
+          description: Doctor assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Only administrators can assign doctors
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/diagnosis:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Cases]
+      operationId: writeDiagnosis
+      summary: Write diagnosis for case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WriteDiagnosisRequest'
+      responses:
+        '201':
+          description: Diagnosis written
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosisResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Only the assigned doctor can write a diagnosis
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/close:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Cases]
+      operationId: closeCase
+      summary: Close a diagnosed case
+      responses:
+        '200':
+          description: Case closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseResponse'
+        '400':
+          description: Case must be diagnosed before closing
+        '403':
+          description: Only administrators can close cases
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/images/upload-url:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Images]
+      operationId: requestUploadURL
+      summary: Request pre-signed upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadURLRequest'
+      responses:
+        '200':
+          description: Pre-signed URL generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadURLResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          description: Not authorized to upload to this case
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{id}/images:
+    parameters:
+      - $ref: '#/components/parameters/CaseIdParam'
+
+    post:
+      tags: [Images]
+      operationId: confirmUpload
+      summary: Confirm image upload and record metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmUploadRequest'
+      responses:
+        '201':
+          description: Image recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags: [Images]
+      operationId: listImages
+      summary: List images for case
+      responses:
+        '200':
+          description: List of images
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ImageResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /images/{id}/download-url:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      tags: [Images]
+      operationId: getDownloadURL
+      summary: Get pre-signed download URL
+      responses:
+        '200':
+          description: Pre-signed download URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadURLResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /audit-logs:
+    get:
+      tags: [Audit]
+      operationId: listAuditLogs
+      summary: List audit logs (admin only)
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: resource_type
+          in: query
+          schema:
+            type: string
+        - name: resource_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLogResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only administrators can view audit logs
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CaseIdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 12
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Temporary JWT (no tenant context)
+            tenants:
+              type: array
+              items:
+                type: object
+                properties:
+                  tenant_id:
+                    type: string
+                    format: uuid
+                  tenant_name:
+                    type: string
+                  role:
+                    type: string
+                    enum: [patient, doctor, administrator]
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    SelectTenantRequest:
+      type: object
+      required: [tenant_id]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+            expires_in:
+              type: integer
+              description: Access token lifetime in seconds
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    UserResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenant_id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            role:
+              type: string
+              enum: [patient, doctor, administrator]
+            status:
+              type: string
+              enum: [active, inactive]
+            created_at:
+              type: string
+              format: date-time
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    CreateCaseRequest:
+      type: object
+      required: [symptoms]
+      properties:
+        symptoms:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddSymptomRequest'
+          minItems: 1
+
+    CaseSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        patient_id:
+          type: string
+          format: uuid
+        doctor_id:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          type: string
+          enum: [open, assigned, diagnosed, closed]
+        created_at:
+          type: string
+          format: date-time
+
+    CaseResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenant_id:
+              type: string
+              format: uuid
+            patient_id:
+              type: string
+              format: uuid
+            doctor_id:
+              type: string
+              format: uuid
+              nullable: true
+            status:
+              type: string
+              enum: [open, assigned, diagnosed, closed]
+            symptoms:
+              type: array
+              items:
+                $ref: '#/components/schemas/SymptomResponse'
+            diagnosis:
+              $ref: '#/components/schemas/DiagnosisResponse'
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+            closed_at:
+              type: string
+              format: date-time
+              nullable: true
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    AddSymptomRequest:
+      type: object
+      required: [description, severity]
+      properties:
+        description:
+          type: string
+          minLength: 1
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+
+    SymptomResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        reported_at:
+          type: string
+          format: date-time
+
+    AssignDoctorRequest:
+      type: object
+      required: [doctor_id]
+      properties:
+        doctor_id:
+          type: string
+          format: uuid
+
+    WriteDiagnosisRequest:
+      type: object
+      required: [notes]
+      properties:
+        notes:
+          type: string
+          minLength: 1
+
+    DiagnosisResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        doctor_id:
+          type: string
+          format: uuid
+        notes:
+          type: string
+        written_at:
+          type: string
+          format: date-time
+
+    UploadURLRequest:
+      type: object
+      required: [file_name, content_type]
+      properties:
+        file_name:
+          type: string
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/dicom]
+
+    UploadURLResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            upload_url:
+              type: string
+              format: uri
+            s3_key:
+              type: string
+            expires_in:
+              type: integer
+              description: URL lifetime in seconds
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ConfirmUploadRequest:
+      type: object
+      required: [s3_key, file_name, content_type]
+      properties:
+        s3_key:
+          type: string
+        file_name:
+          type: string
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/dicom]
+
+    ImageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        file_name:
+          type: string
+        content_type:
+          type: string
+        uploaded_at:
+          type: string
+          format: date-time
+
+    DownloadURLResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            download_url:
+              type: string
+              format: uri
+            expires_in:
+              type: integer
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    AuditLogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        resource_type:
+          type: string
+        resource_id:
+          type: string
+          format: uuid
+        ip_address:
+          type: string
+        metadata:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        data:
+          nullable: true
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+
+    ResponseMeta:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
