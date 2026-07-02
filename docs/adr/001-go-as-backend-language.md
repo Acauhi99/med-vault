@@ -23,7 +23,7 @@ Use Go (Golang) as the backend programming language with a stdlib-first philosop
 | Queries | `sqlc` | Type-safe SQL code generation, no ORM overhead |
 | Migrations | `golang-migrate` | SQL-file based, versioned, works with pgx |
 | Logging | `log/slog` | Stdlib structured logging (Go 1.21+), leveled, JSON output |
-| Tests | `testing` + `httptest` | Stdlib, sufficient for HTTP handler and integration tests |
+| Tests | `testing` + `httptest` + `testify/assert` + `go-cmp` + `testcontainers-go` | Stdlib runner + focused assertion/comparison libs + real DB in tests |
 | Container | Docker | Minimal images, stdlib compiles to static binary |
 | Deploy | ECS Fargate | Serverless containers, no node management |
 
@@ -39,12 +39,34 @@ Use Go (Golang) as the backend programming language with a stdlib-first philosop
 - Minimal third-party dependencies = smaller attack surface
 - `log/slog` provides structured logging without external packages
 - `net/http` + `http.ServeMux` sufficient for modular monolith routing
+- Testing stack follows stdlib-first philosophy: `testing` + `httptest` for runner/HTTP, focused libs for assertions and DB
 
 ### Negative
 - More verbose than some alternatives
 - Requires manual error handling
 - No built-in ORM (but this aligns with Clean Architecture and sqlc approach)
 - `http.ServeMux` lacks middleware chaining (solved with wrapper pattern)
+
+## Testing Strategy
+
+Unit tests and integration tests only. No end-to-end tests (see [TESTING_STRATEGY.md](../TESTING_STRATEGY.md) for full philosophy).
+
+| Tool | Purpose |
+|------|---------|
+| `testing` | Test runner (stdlib) |
+| `testify/assert` | Assertions |
+| `net/http/httptest` | HTTP handler testing |
+| `go-cmp` | Struct comparison |
+| `testcontainers-go` | Real PostgreSQL in integration tests |
+| `go test -cover` | Coverage reporting |
+| `testing.B` | Benchmarks |
+| `testing.F` | Fuzz testing |
+
+**Why this stack:** Explicit, idiomatic, widely adopted, excellent AI support, no unnecessary dependencies. Ages well. Combines perfectly with a Go API on AWS with pgx and sqlc.
+
+**Test types:**
+- **Unit tests:** Domain logic, value objects, aggregates, services — isolated, fast, no I/O
+- **Integration tests:** Repository implementations, HTTP handlers — real PostgreSQL via testcontainers, real HTTP via httptest
 
 ## Alternatives Considered
 

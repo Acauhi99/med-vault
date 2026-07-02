@@ -198,12 +198,24 @@ Every frontend request operates within a tenant context. The frontend is respons
 
 ### Testing Strategy
 
+Unit tests and integration tests only. No end-to-end tests (see [TESTING_STRATEGY.md](../TESTING_STRATEGY.md) for full philosophy).
+
+| Tool | Purpose |
+|------|---------|
+| Vitest | Test runner (fast, modern, TypeScript-native) |
+| `@testing-library/react` | Component rendering and interaction |
+| `@testing-library/user-event` | Real user actions (type, click, navigate) |
+| MSW (Mock Service Worker) | API mocking without coupling to Axios |
+| `@vitest/coverage-v8` | Coverage via V8 engine |
+
 | Layer | Test Type | What to Test |
 |-------|-----------|-------------|
-| Components | Presentation tests | Renders correctly, responds to props |
+| Components | Presentation tests | Renders correctly, responds to props, user interactions |
 | Hooks | Behavior tests | State transitions, query integration |
-| Services | API communication tests | Correct endpoints, request shapes |
+| Services | API communication tests | Correct endpoints, request shapes (via MSW) |
 | Pages | Integration tests | Route composition, feature wiring |
+
+**Why this stack:** Behavior-oriented tests (testing-library), decoupled from implementation (MSW), fast execution (Vitest + V8), predictable for AI agents.
 
 Business rules should never require frontend unit tests because they belong to the backend.
 

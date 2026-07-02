@@ -14,6 +14,9 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [Domain Model](docs/DOMAIN.md) | DDD bounded contexts, aggregates, CQRS mapping |
 | [Requirements](docs/REQUIREMENTS.md) | Functional and non-functional requirements, API spec |
 | [Security](docs/SECURITY.md) | Threat model, encryption, auth, audit, compliance |
+| [Infrastructure](docs/INFRASTRUCTURE.md) | Terraform philosophy, modules, security, state, evolution |
+| [Testing Strategy](docs/TESTING_STRATEGY.md) | Testing philosophy, principles, pyramid, coverage approach |
+| [Quality Gates](docs/QUALITY_GATES.md) | Validation layers, tooling, pre-commit/pre-push, task runner |
 | [Principles](docs/PROJECT_PRINCIPLES.md) | Engineering principles and decision criteria |
 | [Context](docs/CONTEXT.md) | Project background, scope, and goals |
 | [Roadmap](ROADMAP.md) | Phased delivery plan with status tracking |
@@ -38,6 +41,7 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [ADR-013](docs/adr/013-pgx-sqlc-for-database-access.md) | pgx + sqlc for database access |
 | [ADR-014](docs/adr/014-golang-migrate-for-migrations.md) | golang-migrate for migrations |
 | [ADR-015](docs/adr/015-frontend-feature-based-architecture.md) | Frontend feature-based architecture |
+| [ADR-016](docs/adr/016-design-first-api-documentation.md) | Design-First API documentation |
 
 ---
 
@@ -45,16 +49,21 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js App Router, TypeScript, pnpm, TanStack Query, Axios, React Hook Form, Zod, Tailwind CSS, shadcn/ui |
+| Frontend | Next.js App Router, TypeScript, pnpm, TanStack Query, openapi-fetch, React Hook Form, Zod, Tailwind CSS, shadcn/ui |
+| Frontend Types | openapi-typescript (generated from OpenAPI) |
+| Frontend Testing | Vitest, `@testing-library/react`, `@testing-library/user-event`, MSW, `@vitest/coverage-v8` |
 | Backend | Go, `net/http`, `http.ServeMux`, `envconfig` |
+| Backend API | oapi-codegen (generated from OpenAPI) |
 | Database | PostgreSQL (Amazon RDS) |
 | DB Access | pgx + sqlc (type-safe SQL) |
 | Migrations | golang-migrate |
 | Logging | `log/slog` (stdlib) |
+| Backend Testing | `testing`, `testify/assert`, `httptest`, `go-cmp`, `testcontainers-go` |
 | Storage | Amazon S3 |
 | Compute | Amazon ECS Fargate |
 | Infrastructure | Terraform |
 | Auth | JWT (HMAC-SHA256) |
+| API Contract | OpenAPI 3.1.3 (`spec/openapi.yaml`) |
 
 ---
 
@@ -66,9 +75,15 @@ med-vault/
 ├── frontend/          # Next.js App Router (feature-based architecture)
 │   ├── app/           # Pages (routing and composition only)
 │   ├── features/      # Business capabilities (authentication, patients, doctors, admin)
-│   ├── infrastructure/# Axios, auth, query client, config
+│   ├── infrastructure:# openapi-fetch, auth, query client, config
+│   ├── generated/     # Generated TypeScript types from OpenAPI
 │   └── shared/        # Layouts, base UI, utilities, global types
-├── infrastructure/    # Terraform modules
+├── infrastructure/    # Terraform (modules + environments)
+│   └── terraform/
+│       ├── modules/       # Reusable platform capabilities
+│       └── environments/  # Environment-specific configs
+├── spec/              # OpenAPI contract (single source of truth)
+│   └── openapi.yaml   # API contract
 └── docs/              # Project documentation
     ├── adr/           # Architecture Decision Records
     └── diagrams/      # Architecture diagrams

@@ -265,15 +265,49 @@ Client → Backend
 
 ## Compliance (HIPAA-Inspired)
 
-### Shared Responsibility Model
+### AWS Shared Responsibility Model
 
-| AWS Responsibility | Application Responsibility |
-|-------------------|---------------------------|
-| Physical security | Application-level encryption |
-| Network infrastructure | Access controls |
-| Database encryption | Tenant isolation |
-| Secrets management | Audit logging |
-| Compliance certifications | PHI handling procedures |
+This project operates under the AWS Shared Responsibility Model.
+
+#### AWS Responsibilities
+
+| Area | AWS Manages |
+|------|-------------|
+| Physical security | Data center access, hardware lifecycle |
+| Network infrastructure | VPC backbone, availability zones |
+| Managed services | RDS, S3, ECS, CloudWatch availability |
+| Compliance certifications | SOC, ISO, HIPAA BAA |
+
+#### Infrastructure Responsibilities (Terraform)
+
+| Area | We Manage |
+|------|-----------|
+| Network design | VPC, subnets, route tables, security groups |
+| Encryption | RDS encryption, S3 encryption, KMS keys |
+| IAM | Roles, policies, least privilege |
+| Secrets | Secrets Manager configuration, rotation |
+| Logging | CloudTrail, VPC Flow Logs, CloudWatch |
+| Backup | RDS backups, S3 versioning |
+
+#### Application Responsibilities (Go/Next.js)
+
+| Area | We Manage |
+|------|-----------|
+| Tenant isolation | `WHERE tenant_id = $1` in every query |
+| RBAC | Role checks on every endpoint |
+| PHI handling | Never in logs, never in errors |
+| Audit logging | Business operation audit trail |
+| Input validation | Zod schemas, request validation |
+| Authentication | JWT, bcrypt, token lifecycle |
+
+#### Developer Responsibilities
+
+| Area | We Manage |
+|------|-----------|
+| Code quality | Reviews, testing, documentation |
+| Secret rotation | Awareness, manual trigger |
+| Incident response | Detection, mitigation, reporting |
+| Least privilege | IAM policy review, no wildcards |
 
 ### Key Controls
 

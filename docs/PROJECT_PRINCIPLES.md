@@ -30,7 +30,7 @@ Every request belongs to exactly one tenant. No query, no API call, no storage o
 
 ## Infrastructure as Code
 
-Every cloud resource is reproducible via Terraform. No manual console configuration. No snowflake servers. See [ADR-003](adr/003-terraform-for-infrastructure.md).
+Every cloud resource is reproducible via Terraform. No manual console configuration. No snowflake servers. Infrastructure models platform capabilities, not individual AWS resources. Readability preferred over reducing duplication. See [INFRASTRUCTURE.md](INFRASTRUCTURE.md) and [ADR-003](adr/003-terraform-for-infrastructure.md).
 
 ---
 
@@ -67,3 +67,21 @@ Every significant technology choice is documented as an ADR in [docs/adr/](adr/)
 ## Feature Isolation
 
 Frontend features are self-contained business capabilities. Each feature owns its components, hooks, services, schemas, and types. Avoid unnecessary coupling between features. Shared code exists only when there is a clear cross-feature need. See [ADR-015](adr/015-frontend-feature-based-architecture.md).
+
+---
+
+## Design-First API
+
+Define API contracts before writing code. OpenAPI is the single source of truth. Both backend (Go) and frontend (TypeScript) generate types from the same spec. Never manually write HTTP contracts. See [ADR-016](adr/016-design-first-api-documentation.md).
+
+---
+
+## Pragmatic Testing
+
+Tests validate behavior, not implementation. Confidence over coverage. Fewer high-quality tests over many low-value tests. No E2E tests — unit + integration only. See [TESTING_STRATEGY.md](TESTING_STRATEGY.md).
+
+---
+
+## Quality Gates
+
+Quality is enforced as early as possible. Every code change passes local validation before reaching CI. Pre-commit for formatting, pre-push for functional validation. Use Taskfile commands (`task lint`, `task test`, `task validate`) instead of technology-specific commands. See [QUALITY_GATES.md](QUALITY_GATES.md).

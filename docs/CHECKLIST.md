@@ -2,6 +2,10 @@
 
 Acceptance criteria for each phase of MedVault. Mark each item as complete when verified.
 
+**Testing philosophy:** Unit tests and integration tests only. See [TESTING_STRATEGY.md](TESTING_STRATEGY.md).
+
+**Quality gates:** Pre-commit, pre-push, unified Taskfile. See [QUALITY_GATES.md](QUALITY_GATES.md).
+
 ---
 
 ## Phase 1: Foundation
@@ -9,11 +13,17 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Go module initialized (`go.mod` exists)
 - [ ] Next.js App Router project initialized (static export)
 - [ ] Terraform project initialized (`main.tf` exists)
-- [ ] Makefile or justfile with common commands
-- [ ] golangci-lint configured
-- [ ] ESLint configured
-- [ ] goimports configured
-- [ ] Prettier configured
+- [ ] OpenAPI 3.1.3 contract defined (`spec/openapi.yaml`)
+- [ ] `oapi-codegen` configured for backend generation
+- [ ] `openapi-typescript` configured for frontend generation
+- [ ] Taskfile created with `format`, `lint`, `validate`, `test`, `pre-commit`, `pre-push` tasks
+- [ ] `gofumpt` configured (backend formatting)
+- [ ] `golangci-lint` configured (backend linting)
+- [ ] Biome configured (frontend formatting + linting)
+- [ ] `tflint` configured (infrastructure linting)
+- [ ] Checkov configured (infrastructure security)
+- [ ] Git pre-commit hook configured
+- [ ] Git pre-push hook configured
 - [ ] All documentation files present and non-empty
 - [ ] All ADRs present and non-empty
 
@@ -21,20 +31,17 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ## Phase 2: Infrastructure
 
-- [ ] VPC created with public and private subnets
-- [ ] NAT Gateway configured for private subnet internet access
-- [ ] RDS PostgreSQL in private subnet
-- [ ] RDS encryption enabled
-- [ ] S3 bucket for medical images created
-- [ ] S3 bucket encryption enabled
-- [ ] S3 bucket public access blocked
-- [ ] ECS Fargate cluster created
-- [ ] ALB created in public subnet
-- [ ] ALB TLS certificate configured
+- [ ] Module structure follows capability-based design (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
+- [ ] `network` module: VPC, public/private subnets, NAT, route tables, internet gateway
+- [ ] `database` module: RDS PostgreSQL in private subnet, encryption enabled
+- [ ] `storage` module: S3 buckets with encryption, versioning, lifecycle rules
+- [ ] `application` module: ECS Fargate cluster, ALB, task definition, security groups
+- [ ] `security` module: IAM roles, policies, KMS, Secrets Manager
+- [ ] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs
+- [ ] Production environment composes modules correctly
+- [ ] Remote state in S3 with versioning and encryption
 - [ ] Security groups configured (ALB → ECS → RDS)
-- [ ] IAM roles created (ECS task role, execution role)
-- [ ] Secrets Manager secret created for DB credentials
-- [ ] CloudWatch log group created
+- [ ] S3 bucket public access blocked
 - [ ] WAF associated with ALB
 
 ---
@@ -49,6 +56,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] `pgx` connection pool configured and tested
 - [ ] `golang-migrate` migrations run successfully
 - [ ] `sqlc` generates type-safe query code
+- [ ] `oapi-codegen` generates Go server interfaces from OpenAPI
 - [ ] `net/http` server starts with `http.ServeMux` routing
 - [ ] JWT middleware validates tokens
 - [ ] Tenant context middleware extracts tenant_id
@@ -58,7 +66,11 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Error responses follow standard format
 - [ ] `log/slog` structured JSON logging works
 - [ ] Health check endpoint returns 200
-- [ ] Unit tests pass with `testing` + `httptest`
+- [ ] Unit tests pass with `testing` + `testify/assert`
+- [ ] HTTP handler tests pass with `httptest`
+- [ ] Struct comparison tests pass with `go-cmp`
+- [ ] Integration tests pass with `testcontainers-go`
+- [ ] Coverage reporting works with `go test -cover`
 
 ---
 
@@ -120,11 +132,12 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] pnpm configured as package manager
 - [ ] Static export configured (`output: 'export'` in next.config.js)
 - [ ] TypeScript strict mode enabled
-- [ ] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`)
-- [ ] Infrastructure layer configured (Axios instance, TanStack Query client, auth helpers)
+- [ ] `openapi-typescript` generates types from `spec/openapi.yaml`
+- [ ] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`, `generated/`)
+- [ ] Infrastructure layer configured (openapi-fetch instance, TanStack Query client, auth helpers)
 - [ ] Shared components created (layouts, navigation, base UI)
 - [ ] TanStack Query installed and configured
-- [ ] Axios installed with typed API client
+- [ ] `openapi-fetch` installed and configured
 - [ ] React Hook Form + Zod installed and configured
 - [ ] Tailwind CSS installed and configured
 - [ ] shadcn/ui installed with base components
@@ -146,6 +159,10 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] No business logic in frontend components
 - [ ] Each feature is self-contained (components, hooks, services, schemas, types)
 - [ ] No unnecessary coupling between features
+- [ ] Vitest configured with `@testing-library/react` and MSW
+- [ ] Component tests pass with `@testing-library/react` + `@testing-library/user-event`
+- [ ] API mocking works with MSW
+- [ ] Coverage reporting works with `@vitest/coverage-v8`
 
 ---
 

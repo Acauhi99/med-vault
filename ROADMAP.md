@@ -2,22 +2,31 @@
 
 This document outlines the phased delivery plan for MedVault. Each phase builds on the previous one, following the project's documentation-first principle.
 
+**Testing philosophy:** Unit tests and integration tests only. See [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md).
+
+**Quality gates:** Pre-commit, pre-push, unified Taskfile. See [QUALITY_GATES.md](docs/QUALITY_GATES.md).
+
 ---
 
 ## Phase 1: Foundation
 
-**Goal:** Project structure, documentation, and tooling setup.
+**Goal:** Project structure, documentation, tooling setup, and API contract.
 
 | Task | Status |
 |------|--------|
 | Complete documentation (ARCHITECTURE, DOMAIN, REQUIREMENTS, SECURITY) | ✅ |
 | Create ADRs for key technology decisions | ✅ |
+| Define OpenAPI 3.1.3 contract (`spec/openapi.yaml`) | ⬜ |
+| Setup `oapi-codegen` for Go backend code generation | ⬜ |
+| Setup `openapi-typescript` + `openapi-fetch` for frontend | ⬜ |
 | Initialize Go module | ⬜ |
 | Initialize Next.js project (App Router) | ⬜ |
 | Initialize Terraform project | ⬜ |
-| Setup Makefile / justfile for common commands | ⬜ |
-| Configure linter (golangci-lint, ESLint) | ⬜ |
-| Configure formatter (goimports, Prettier) | ⬜ |
+| Setup Taskfile with `format`, `lint`, `validate`, `test` tasks | ⬜ |
+| Configure `gofumpt` + `golangci-lint` (backend) | ⬜ |
+| Configure Biome (frontend) | ⬜ |
+| Configure `tflint` + Checkov (infrastructure) | ⬜ |
+| Configure Git pre-commit and pre-push hooks | ⬜ |
 
 ---
 
@@ -25,17 +34,19 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 **Goal:** Deploy core AWS infrastructure via Terraform.
 
+**Stack:** Terraform, modules: `network`, `application`, `database`, `storage`, `security`, `observability` (see [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) for philosophy and module design)
+
 | Task | Status |
 |------|--------|
-| VPC module (public/private subnets, NAT, routes) | ⬜ |
-| RDS PostgreSQL module (private subnet, encryption) | ⬜ |
-| S3 module (medical images, audit logs) | ⬜ |
-| ECS Fargate module (cluster, service, task definition) | ⬜ |
-| ALB module (public subnet, TLS termination) | ⬜ |
-| IAM module (roles, policies) | ⬜ |
-| Secrets Manager module | ⬜ |
-| CloudWatch Logs module | ⬜ |
-| WAF module | ⬜ |
+| `network` module (VPC, public/private subnets, NAT, routes) | ⬜ |
+| `database` module (RDS PostgreSQL, private subnet, encryption) | ⬜ |
+| `storage` module (S3 buckets, lifecycle rules, encryption) | ⬜ |
+| `application` module (ECS Fargate, ALB, task definition) | ⬜ |
+| `security` module (IAM roles, policies, KMS, Secrets Manager) | ⬜ |
+| `observability` module (CloudWatch, CloudTrail, VPC Flow Logs) | ⬜ |
+| Production environment composition | ⬜ |
+| Remote state in S3 with versioning and encryption | ⬜ |
+| WAF associated with ALB | ⬜ |
 | Route 53 + CloudFront (optional for PoC) | ⬜ |
 
 ---
@@ -44,7 +55,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 **Goal:** Go backend with DDD structure, authentication, and tenant isolation.
 
-**Stack:** `net/http`, `http.ServeMux`, `envconfig`, `pgx`, `sqlc`, `golang-migrate`, `log/slog`, `testing` + `httptest`
+**Stack:** `net/http`, `http.ServeMux`, `envconfig`, `pgx`, `sqlc`, `golang-migrate`, `log/slog`, `testing` + `httptest` + `testify/assert` + `go-cmp` + `testcontainers-go`
 
 | Task | Status |
 |------|--------|
@@ -54,6 +65,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | `pgx` connection pool setup | ⬜ |
 | `golang-migrate` schema migrations | ⬜ |
 | `sqlc` query code generation | ⬜ |
+| `oapi-codegen` server interface generation | ⬜ |
 | `net/http` server with `http.ServeMux` routing | ⬜ |
 | JWT authentication middleware | ⬜ |
 | Tenant context middleware | ⬜ |
@@ -62,7 +74,10 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Error handling and response format | ⬜ |
 | `log/slog` structured logging | ⬜ |
 | Health check endpoint | ⬜ |
-| Unit tests with `testing` + `httptest` | ⬜ |
+| Unit tests with `testing` + `testify/assert` | ⬜ |
+| HTTP handler tests with `httptest` | ⬜ |
+| Struct comparison tests with `go-cmp` | ⬜ |
+| Integration tests with `testcontainers-go` | ⬜ |
 
 ---
 
@@ -123,13 +138,14 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 **Goal:** Next.js App Router SPA with feature-based architecture, authentication, and core workflows.
 
-**Stack:** Next.js App Router, TypeScript, pnpm, TanStack Query, Axios, React Hook Form, Zod, Tailwind CSS, shadcn/ui
+**Stack:** Next.js App Router, TypeScript, pnpm, TanStack Query, openapi-fetch, openapi-typescript, React Hook Form, Zod, Tailwind CSS, shadcn/ui, Vitest, `@testing-library/react`, `@testing-library/user-event`, MSW, `@vitest/coverage-v8`
 
 | Task | Status |
 |------|--------|
 | Project setup (Next.js App Router, TypeScript, pnpm, static export) | ⬜ |
+| `openapi-typescript` generation from `spec/openapi.yaml` | ⬜ |
 | Feature-based directory structure (features/, infrastructure/, shared/) | ⬜ |
-| Infrastructure layer (Axios instance, TanStack Query client, auth helpers) | ⬜ |
+| Infrastructure layer (openapi-fetch instance, TanStack Query client, auth helpers) | ⬜ |
 | Shared components (layouts, navigation, base UI) | ⬜ |
 | Authentication feature (login, register — components, hooks, services, schemas) | ⬜ |
 | Patients feature (dashboard, case list — components, hooks, services) | ⬜ |
@@ -140,6 +156,10 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Image upload component | ⬜ |
 | Diagnosis view | ⬜ |
 | Audit log viewer | ⬜ |
+| Vitest configured with `@testing-library/react` and MSW | ⬜ |
+| Component tests with `@testing-library/react` + `@testing-library/user-event` | ⬜ |
+| API mocking with MSW | ⬜ |
+| Coverage reporting with `@vitest/coverage-v8` | ⬜ |
 
 ---
 

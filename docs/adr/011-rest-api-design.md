@@ -10,7 +10,7 @@ MedVault needs an API design for the frontend-backend communication. The API sho
 
 ## Decision
 
-Use REST API design with JSON payloads.
+Use REST API design with JSON payloads. API contracts are defined with OpenAPI 3.1.3 and generated to both sides (Design-First approach, see [ADR-016](016-design-first-api-documentation.md)).
 
 ## Consequences
 
@@ -21,10 +21,13 @@ Use REST API design with JSON payloads.
 - Cacheable
 - Easy to document (OpenAPI/Swagger)
 - Works well with SPA architecture
+- **Type-safe on both sides** (Go + TypeScript via code generation)
+- **Contract drift impossible** (single source of truth)
 
 ### Negative
 - Multiple round-trips for complex operations (acceptable for PoC)
 - Over-fetching/under-fetching (but acceptable)
+- Requires code generation step
 
 ## Alternatives Considered
 
@@ -37,4 +40,5 @@ Use REST API design with JSON payloads.
 ## References
 
 - [REST API Design](https://restfulapi.net/)
+- [OpenAPI Design-First](016-design-first-api-documentation.md)
 - [AWS API Gateway Best Practices](https://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started.html)

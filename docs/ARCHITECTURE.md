@@ -135,6 +135,20 @@ Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 
 **Multi-Tenant:** The frontend propagates tenant context from JWT. Tenant isolation is enforced by the backend. The frontend never enforces tenant security.
 
+**Testing:** Unit tests and integration tests only (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy, [ADR-015](adr/015-frontend-feature-based-architecture.md#testing-strategy) for frontend stack)
+
+| Tool | Purpose |
+|------|---------|
+| Vitest | Test runner (fast, modern, TypeScript-native) |
+| `@testing-library/react` | Component rendering and interaction |
+| `@testing-library/user-event` | Real user actions (type, click, navigate) |
+| MSW (Mock Service Worker) | API mocking without coupling to Axios |
+| `@vitest/coverage-v8` | Coverage via V8 engine |
+
+- **Unit tests:** Components, hooks, services — isolated, fast, mocked APIs via MSW
+- **Integration tests:** Pages, feature workflows — route composition, feature wiring
+- No end-to-end tests
+
 **Deployment:**
 
 ```
@@ -189,7 +203,7 @@ next build + next export → S3 → CloudFront → Client
 | Queries | `sqlc` |
 | Migrations | `golang-migrate` |
 | Logging | `log/slog` (stdlib) |
-| Tests | `testing` + `httptest` |
+| Tests | `testing` + `httptest` + `testify/assert` + `go-cmp` + `testcontainers-go` |
 | Container | Docker |
 | Deploy | ECS Fargate |
 
@@ -240,6 +254,23 @@ module/
 - Read models are eventually consistent with write models
 
 **Database access:** pgx + sqlc for type-safe SQL (see [ADR-013](adr/013-pgx-sqlc-for-database-access.md))
+
+**Testing:** Unit tests and integration tests only (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy, [ADR-001](adr/001-go-as-backend-language.md#testing-strategy) for backend stack)
+
+| Tool | Purpose |
+|------|---------|
+| `testing` | Test runner (stdlib) |
+| `testify/assert` | Assertions |
+| `net/http/httptest` | HTTP handler testing |
+| `go-cmp` | Struct comparison |
+| `testcontainers-go` | Real PostgreSQL in integration tests |
+| `go test -cover` | Coverage reporting |
+| `testing.B` | Benchmarks |
+| `testing.F` | Fuzz testing |
+
+- **Unit tests:** Domain logic, value objects, aggregates — isolated, fast, no I/O
+- **Integration tests:** Repositories, HTTP handlers — real PostgreSQL via testcontainers, real HTTP via httptest
+- No end-to-end tests
 
 ---
 
@@ -364,13 +395,68 @@ Client → Backend → S3
 
 ---
 
+## API Documentation Strategy (Design-First)
+
+**Approach:** OpenAPI 3.1.3 as single source of truth for all API contracts.
+
+### Contract Flow
+
+```
+spec/openapi.yaml (single source of truth)
+    ├── oapi-codegen → Go server interfaces + types
+    └── openapi-typescript + openapi-fetch → Type-safe TypeScript client
+```
+
+### Directory Structure
+
+```
+med-vault/
+├── spec/
+│   └── openapi.yaml              # API contract
+├── backend/
+│   └── internal/generated/       # Generated Go interfaces (oapi-codegen)
+└── frontend/
+    └── src/generated/            # Generated TypeScript types (openapi-typescript)
+```
+
+### Code Generation
+
+| Tool | Purpose | Output |
+|------|---------|--------|
+| `oapi-codegen` | Generate Go server stubs from OpenAPI | `server.go`, `types.go` |
+| `openapi-typescript` | Generate TypeScript types from OpenAPI | `api.d.ts` |
+| `openapi-fetch` | Type-safe HTTP client | Runtime dependency |
+
+### Rules
+
+- **Never** manually write HTTP contracts in Go or TypeScript
+- **Never** generate OpenAPI from Go code
+- **Always** define endpoints in `spec/openapi.yaml` first
+- **Always** run code generation after spec changes
+- Frontend consumes generated types — no manual `fetch` with `any` payloads
+- Backend implements generated interfaces — no ad-hoc handler signatures
+
+### API Evolution
+
+1. Define or update `spec/openapi.yaml`
+2. Run generation scripts
+3. Backend implements generated interfaces
+4. Frontend consumes generated types
+5. Contract drift is impossible
+
+See [ADR-016](adr/016-design-first-api-documentation.md) for full rationale.
+
+---
+
 ## Deployment Model
 
 ### Infrastructure
 
 - All resources managed via Terraform
-- Modular structure: networking, compute, database, security, monitoring
+- Modular structure representing platform capabilities (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
+- Modules: `network`, `application`, `database`, `storage`, `security`, `observability`
 - Single environment (PoC) with production-like configuration
+- Remote state in S3 with versioning and encryption
 
 ### Compute
 

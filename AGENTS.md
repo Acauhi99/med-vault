@@ -31,6 +31,8 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 - Log state-changing operations (audit trail)
 - Update documentation when changing architecture
 - Prefer explicit code over clever abstractions
+- Write tests as part of implementation (see [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md))
+- Run quality gates before pushing (see [QUALITY_GATES.md](docs/QUALITY_GATES.md))
 
 ---
 
@@ -42,6 +44,9 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 | Domain model | [DOMAIN.md](docs/DOMAIN.md) |
 | Requirements | [REQUIREMENTS.md](docs/REQUIREMENTS.md) |
 | Security controls | [SECURITY.md](docs/SECURITY.md) |
+| Infrastructure | [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) |
+| Testing philosophy | [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) |
+| Quality gates | [QUALITY_GATES.md](docs/QUALITY_GATES.md) |
 | Engineering principles | [PROJECT_PRINCIPLES.md](docs/PROJECT_PRINCIPLES.md) |
 | Implementation progress | [ROADMAP.md](ROADMAP.md) |
 | Acceptance criteria | [CHECKLIST.md](docs/CHECKLIST.md) |
@@ -75,9 +80,10 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 - HTTP: `net/http` stdlib, router: `http.ServeMux`
 - Config: `envconfig` (12-factor, env vars)
 - Logging: `log/slog` (stdlib structured JSON, no PHI in logs)
-- Tests: `testing` + `httptest` (stdlib)
+- Tests: `testing` (runner), `testify/assert` (assertions), `httptest` (HTTP), `go-cmp` (struct comparison), `testcontainers-go` (integration DB)
 - Inter-module communication: via ports.go interfaces (no direct DB access across modules)
 - Errors: return domain errors, wrap infrastructure errors
+- **API:** Design-First with OpenAPI, generate interfaces via `oapi-codegen` (see [ADR-016](docs/adr/016-design-first-api-documentation.md))
 
 ### Frontend (Next.js)
 
@@ -88,9 +94,11 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 - TypeScript strict mode
 - Package manager: pnpm
 - Server state: TanStack Query
-- HTTP client: Axios
+- HTTP client: `openapi-fetch` (type-safe, generated from OpenAPI)
+- Types: `openapi-typescript` (generated from `spec/openapi.yaml`)
 - Forms: React Hook Form + Zod validation
 - Styling: Tailwind CSS + shadcn/ui
+- Testing: Vitest, `@testing-library/react`, `@testing-library/user-event`, MSW, `@vitest/coverage-v8`
 - No PHI stored in browser
 - No business logic in frontend — rules belong in Go backend
 
@@ -105,7 +113,8 @@ frontend/
 │   ├── doctors/
 │   ├── admin/
 │   └── shared/          # Cross-feature reusable elements
-├── infrastructure/      # Axios, auth, query client, config
+├── infrastructure/      # openapi-fetch, auth, query client, config
+├── generated/           # Generated TypeScript types from OpenAPI
 └── shared/              # Layouts, base UI, utilities, global types
 ```
 
@@ -116,9 +125,9 @@ frontend/
 | Pages | Route composition, feature wiring | Business logic, direct HTTP |
 | Components | Presentation, props-only data flow | HTTP calls, business rules |
 | Hooks | TanStack Query, UI orchestration | Raw HTTP requests |
-| Services | Axios API calls, endpoint definitions | Business rules |
+| Services | openapi-fetch calls, endpoint definitions | Business rules |
 | Schemas | Zod validation (request, response, form) | Business logic |
-| Infrastructure | Axios instance, auth, query client | Business logic |
+| Infrastructure | openapi-fetch instance, auth, query client | Business logic |
 | Shared | Reusable UI, layouts, utilities | Dumping ground |
 
 **Feature rules:**
@@ -131,10 +140,14 @@ frontend/
 
 ### Terraform
 
-- Modular structure (networking, compute, database, security, monitoring)
-- No hardcoded values
-- Variables for all configurable parameters
-- State in S3 (remote backend)
+- Modular structure representing platform capabilities (see [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md))
+- Modules: `network`, `application`, `database`, `storage`, `security`, `observability`
+- No hardcoded values — variables for all configurable parameters
+- State in S3 (remote backend) with versioning and encryption
+- Security by default: private subnets, encryption at rest/in transit, least privilege IAM
+- Readability preferred over reducing duplicated code
+- Never duplicate infrastructure code between environments
+- Major infrastructure decisions recorded as ADRs
 
 ---
 

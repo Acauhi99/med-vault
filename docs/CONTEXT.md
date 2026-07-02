@@ -33,9 +33,13 @@ The business domain is intentionally simple. The complexity is in infrastructure
 - Medical case lifecycle (create → assign → diagnose → close)
 - Medical image upload via S3 pre-signed URLs
 - Audit logging for all state-changing operations
-- AWS infrastructure via Terraform
+- AWS infrastructure via Terraform (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
 - DDD with CQRS backend architecture
 - Feature-Based frontend architecture (see [ADR-015](adr/015-frontend-feature-based-architecture.md))
+- Design-First API with OpenAPI (see [ADR-016](adr/016-design-first-api-documentation.md))
+- Pragmatic testing strategy (see [TESTING_STRATEGY.md](TESTING_STRATEGY.md))
+- Local quality gates: pre-commit, pre-push, unified task runner (see [QUALITY_GATES.md](QUALITY_GATES.md))
+- Security by default: encryption, private networking, least privilege (see [SECURITY.md](SECURITY.md))
 
 ### Out of Scope
 
@@ -67,4 +71,7 @@ The audience assesses architectural thinking more than implementation details.
 - [DOMAIN.md](DOMAIN.md) — domain model and business rules
 - [REQUIREMENTS.md](REQUIREMENTS.md) — functional and non-functional requirements
 - [SECURITY.md](SECURITY.md) — security controls and threat model
+- [INFRASTRUCTURE.md](INFRASTRUCTURE.md) — Terraform philosophy, modules, state, security
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — testing philosophy and approach
+- [QUALITY_GATES.md](QUALITY_GATES.md) — validation layers, tooling, execution strategy
 - [PROJECT_PRINCIPLES.md](PROJECT_PRINCIPLES.md) — engineering principles

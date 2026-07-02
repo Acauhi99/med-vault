@@ -89,6 +89,16 @@ This document defines the functional and non-functional requirements for MedVaul
 | NF-SC01 | Horizontal scaling via ECS Fargate | Must |
 | NF-SC02 | Database connection pooling | Should |
 
+### Infrastructure
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| NF-I01 | All resources managed via Terraform | Must |
+| NF-I02 | Modular structure representing platform capabilities | Must |
+| NF-I03 | Remote state in S3 with versioning and encryption | Must |
+| NF-I04 | Security by default: private subnets, encryption, least privilege | Must |
+| NF-I05 | No hardcoded values — variables for all configurable parameters | Must |
+
 ### Observability
 
 | ID | Requirement | Priority |
