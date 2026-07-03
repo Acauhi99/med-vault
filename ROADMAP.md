@@ -10,6 +10,27 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 ---
 
+## Phase 0: AWS Account Setup
+
+**Goal:** Prepare AWS account with security best practices before any infrastructure or application code.
+
+| Task | Status |
+|------|--------|
+| Install AWS CLI v2 | ✅ |
+| Root account MFA enabled | ✅ |
+| Admin IAM user created (`medvault-admin`) with MFA | ✅ |
+| IAM groups created (`medvault-admins`, `medvault-devs`, `medvault-terraform`) | ✅ |
+| Terraform state backend (S3 bucket + versioning + encryption + public access blocked) | ✅ |
+| DynamoDB table for state locking | ✅ |
+| GitHub OIDC identity provider created | ✅ |
+| GitHub Actions IAM role (`medvault-github-actions`) with scoped policy | ✅ |
+| CloudTrail enabled (multi-region, management events) | ✅ |
+| AWS Config enabled (all resources, continuous recording) | ✅ |
+| ECR repository created (`medvault/backend`, scan on push, AES256) | ✅ |
+| Billing budget alerts configured ($50/mês) | ✅ |
+
+---
+
 ## Phase 1: Foundation
 
 **Goal:** Project structure, documentation, tooling setup, and API contract.
@@ -19,16 +40,16 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Complete documentation (ARCHITECTURE, DOMAIN, REQUIREMENTS, SECURITY) | ✅ |
 | Create ADRs for key technology decisions | ✅ |
 | Define OpenAPI 3.1.3 contract (`spec/openapi.yaml`) | ✅ |
-| Setup `oapi-codegen` for Go backend code generation | ⬜ |
-| Setup `openapi-typescript` + `openapi-fetch` for frontend | ⬜ |
-| Initialize Go module | ⬜ |
-| Initialize Next.js project (App Router) | ⬜ |
-| Initialize Terraform project | ⬜ |
+| Setup `oapi-codegen` for Go backend code generation | ✅ |
+| Setup `openapi-typescript` + `openapi-fetch` for frontend | ✅ |
+| Initialize Go module | ✅ |
+| Initialize Next.js project (App Router) | ✅ |
+| Initialize Terraform project | ✅ |
 | Setup Taskfile with `format`, `lint`, `validate`, `test` tasks | ✅ |
-| Configure `gofumpt` + `golangci-lint` (backend) | ⬜ |
-| Configure Biome (frontend) | ⬜ |
-| Configure `tflint` + Checkov (infrastructure) | ⬜ |
-| Configure Git pre-commit and pre-push hooks | ⬜ |
+| Configure `gofumpt` + `golangci-lint` (backend) | ✅ |
+| Configure Biome (frontend) | ✅ |
+| Configure `tflint` + Checkov (infrastructure) | ✅ |
+| Configure Git pre-commit and pre-push hooks | ✅ |
 
 ---
 
@@ -46,8 +67,8 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | `application` module (ECS Fargate, ALB, task definition) | ⬜ |
 | `security` module (IAM roles, policies, KMS, Secrets Manager) | ⬜ |
 | `observability` module (CloudWatch, CloudTrail, VPC Flow Logs) | ⬜ |
-| Production environment composition | ⬜ |
-| Remote state in S3 with versioning and encryption | ⬜ |
+| Production environment composition | ✅ |
+| Remote state in S3 with versioning and encryption | ✅ |
 | WAF associated with ALB | ⬜ |
 | Route 53 + CloudFront (optional for PoC) | ⬜ |
 
@@ -195,7 +216,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Infrastructure pipeline (Terraform init/validate/plan/apply) | ⬜ |
 | Backend pipeline (lint, test, build, migrate, deploy, health check) | ⬜ |
 | Frontend pipeline (lint, typecheck, test, build, export, S3 upload, CF invalidation) | ⬜ |
-| GitHub OIDC for AWS authentication | ⬜ |
+| GitHub OIDC for AWS authentication | ✅ |
 | Path-based triggers (infrastructure/, backend/, frontend/) | ⬜ |
 | Concurrency groups per pipeline | ⬜ |
 | Deployment validation (health checks, smoke tests) | ⬜ |

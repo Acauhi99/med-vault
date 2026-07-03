@@ -10,24 +10,41 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ---
 
+## Phase 0: AWS Account Setup
+
+- [x] AWS CLI v2 installed
+- [x] Root account MFA enabled
+- [x] Admin IAM user created (`medvault-admin`) with MFA
+- [x] IAM groups created (`medvault-admins`, `medvault-devs`, `medvault-terraform`)
+- [x] Terraform state backend (S3 bucket + versioning + encryption + public access blocked)
+- [x] DynamoDB table for state locking
+- [x] GitHub OIDC identity provider created
+- [x] GitHub Actions IAM role (`medvault-github-actions`) with scoped policy
+- [x] CloudTrail enabled (multi-region, management events)
+- [x] AWS Config enabled (all resources, continuous recording)
+- [x] ECR repository created (`medvault/backend`, scan on push, AES256)
+- [x] Billing budget alerts configured
+
+---
+
 ## Phase 1: Foundation
 
-- [ ] Go module initialized (`go.mod` exists)
-- [ ] Next.js App Router project initialized (static export)
-- [ ] Terraform project initialized (`main.tf` exists)
-- [ ] OpenAPI 3.1.3 contract defined (`spec/openapi.yaml`)
-- [ ] `oapi-codegen` configured for backend generation
-- [ ] `openapi-typescript` configured for frontend generation
-- [ ] Taskfile created with `format`, `lint`, `validate`, `test`, `pre-commit`, `pre-push` tasks
-- [ ] `gofumpt` configured (backend formatting)
-- [ ] `golangci-lint` configured (backend linting)
-- [ ] Biome configured (frontend formatting + linting)
-- [ ] `tflint` configured (infrastructure linting)
-- [ ] Checkov configured (infrastructure security)
-- [ ] Git pre-commit hook configured
-- [ ] Git pre-push hook configured
-- [ ] All documentation files present and non-empty
-- [ ] All ADRs present and non-empty
+- [x] Go module initialized (`go.mod` exists)
+- [x] Next.js App Router project initialized (static export)
+- [x] Terraform project initialized (`main.tf` exists)
+- [x] OpenAPI 3.1.3 contract defined (`spec/openapi.yaml`)
+- [x] `oapi-codegen` configured for backend generation
+- [x] `openapi-typescript` configured for frontend generation
+- [x] Taskfile created with `format`, `lint`, `validate`, `test`, `pre-commit`, `pre-push` tasks
+- [x] `gofumpt` configured (backend formatting)
+- [x] `golangci-lint` configured (backend linting)
+- [x] Biome configured (frontend formatting + linting)
+- [x] `tflint` configured (infrastructure linting)
+- [x] Checkov configured (infrastructure security)
+- [x] Git pre-commit hook configured
+- [x] Git pre-push hook configured
+- [x] All documentation files present and non-empty
+- [x] All ADRs present and non-empty
 
 ---
 
@@ -40,8 +57,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] `application` module: ECS Fargate cluster, ALB, task definition, security groups
 - [ ] `security` module: IAM roles, policies, KMS, Secrets Manager
 - [ ] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs
-- [ ] Production environment composes modules correctly
-- [ ] Remote state in S3 with versioning and encryption
+- [x] Production environment composes modules correctly
+- [x] Remote state in S3 with versioning and encryption
 - [ ] Security groups configured (ALB → ECS → RDS)
 - [ ] S3 bucket public access blocked
 - [ ] WAF associated with ALB
@@ -148,18 +165,18 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ## Phase 7: Frontend
 
-- [ ] Next.js App Router project initialized
-- [ ] pnpm configured as package manager
-- [ ] Static export configured (`output: 'export'` in next.config.js)
-- [ ] TypeScript strict mode enabled
-- [ ] `openapi-typescript` generates types from `spec/openapi.yaml`
-- [ ] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`, `generated/`)
+- [x] Next.js App Router project initialized
+- [x] pnpm configured as package manager
+- [x] Static export configured (`output: 'export'` in next.config.js)
+- [x] TypeScript strict mode enabled
+- [x] `openapi-typescript` generates types from `spec/openapi.yaml`
+- [x] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`, `generated/`)
 - [ ] Infrastructure layer configured (openapi-fetch instance, TanStack Query client, auth helpers)
 - [ ] Shared components created (layouts, navigation, base UI)
-- [ ] TanStack Query installed and configured
-- [ ] `openapi-fetch` installed and configured
-- [ ] React Hook Form + Zod installed and configured
-- [ ] Tailwind CSS installed and configured
+- [x] TanStack Query installed and configured
+- [x] `openapi-fetch` installed and configured
+- [x] React Hook Form + Zod installed and configured
+- [x] Tailwind CSS installed and configured
 - [ ] shadcn/ui installed with base components
 - [ ] All components use `'use client'` directive
 - [ ] No API Routes present
@@ -213,7 +230,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Frontend pipeline runs format, typecheck, unit tests, integration tests
 - [ ] Frontend pipeline builds and exports static assets
 - [ ] Frontend pipeline uploads to S3 and invalidates CloudFront
-- [ ] GitHub OIDC configured for AWS authentication (no long-lived credentials)
+- [x] GitHub OIDC configured for AWS authentication (no long-lived credentials)
 - [ ] Path-based triggers configured (infrastructure/, backend/, frontend/)
 - [ ] Concurrency groups prevent parallel deployments of same component
 - [ ] Each pipeline supports independent rollback

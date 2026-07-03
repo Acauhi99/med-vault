@@ -215,11 +215,60 @@ Never duplicate infrastructure code between environments.
 | Concern | Decision |
 |---------|----------|
 | Backend | Amazon S3 |
+| Bucket | `medvault-terraform-state-836734448013` |
 | Versioning | Enabled |
-| Encryption | Server-side encryption (SSE-S3 or SSE-KMS) |
-| Locking | DynamoDB table (for real production) |
+| Encryption | Server-side encryption (SSE-S3) |
+| Locking | S3 native locking (`use_lockfile = true`) |
 
 **Why not local state:** Local Terraform state is not production-ready. It has no concurrency protection, no backup, no encryption, and no versioning. Always use remote state for any environment that matters.
+
+---
+
+## AWS Account Prerequisites
+
+Before running Terraform, the AWS account must be configured with security best practices. These are manual steps (chicken-and-egg) completed in Phase 0.
+
+### Root Account
+
+- MFA enabled on root account
+- Root credentials secured (not used for daily work)
+
+### IAM Structure
+
+| User/Group | Purpose |
+|------------|---------|
+| `medvault-admin` | Daily admin work (IAM user with MFA) |
+| `medvault-admins` group | AdministratorAccess |
+| `medvault-devs` group | Read-only for debugging, no destructive actions |
+| `medvault-terraform` group | Scoped policy for CI/CD |
+
+### CI/CD Authentication
+
+GitHub Actions authenticates via **GitHub OIDC** (no long-lived credentials).
+
+| Resource | Value |
+|----------|-------|
+| OIDC Provider | `arn:aws:iam::836734448013:oidc-provider/token.actions.githubusercontent.com` |
+| IAM Role | `medvault-github-actions` |
+| Trust Policy | Scoped to `repo:Acauhi99/med-vault:*` |
+
+### Security Services
+
+| Service | Status | Purpose |
+|---------|--------|---------|
+| CloudTrail | Enabled (multi-region) | API audit trail |
+| AWS Config | Enabled (continuous) | Compliance tracking |
+| GuardDuty | Pending (requires paid subscription) | Threat detection |
+| Security Hub | Pending (requires paid subscription) | Security findings |
+
+### ECR Repository
+
+| Repository | URI |
+|------------|-----|
+| `medvault/backend` | `836734448013.dkr.ecr.us-east-1.amazonaws.com/medvault/backend` |
+
+- Image scanning on push enabled
+- AES256 encryption
 
 ---
 

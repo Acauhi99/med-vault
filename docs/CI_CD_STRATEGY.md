@@ -269,8 +269,11 @@ GitHub Actions authenticates using **GitHub OIDC** (OpenID Connect).
 |----------|--------|
 | Long-lived AWS credentials | Avoided |
 | Static IAM users | Avoided |
-| Temporary credentials (OIDC) | Preferred |
+| Temporary credentials (OIDC) | ✅ Configured |
 | Secret values in logs | Never |
+
+**OIDC Provider:** `arn:aws:iam::836734448013:oidc-provider/token.actions.githubusercontent.com`
+**IAM Role:** `medvault-github-actions` (scoped to `repo:Acauhi99/med-vault:*`)
 
 ---
 
