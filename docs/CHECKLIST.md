@@ -209,3 +209,73 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Concurrency groups prevent parallel deployments of same component
 - [ ] Each pipeline supports independent rollback
 - [ ] CI/CD strategy documented in CI_CD_STRATEGY.md
+
+---
+
+## Phase 10: HIPAA Compliance
+
+### Privacy Rule (45 CFR §164.500–534)
+- [ ] Notice of Privacy Practices (NPP) defined and available to patients
+- [ ] Patient right to access PHI implemented (view own data via API)
+- [ ] Patient right to amend PHI implemented (request amendment workflow)
+- [ ] Patient right to accounting of disclosures implemented (audit log report)
+- [ ] Patient right to request restrictions implemented
+- [ ] Patient right to confidential communications implemented
+- [ ] Minimum Necessary Standard enforced per role (Patient, Doctor, Admin)
+- [ ] Business Associate Agreement (BAA) signed with AWS
+- [ ] Uses and Disclosures policy documented (TPO, required by law, authorization)
+- [ ] De-identification methods documented (Safe Harbor, Expert Determination)
+
+### Breach Notification Rule (45 CFR §164.400–414)
+- [ ] Breach definition documented
+- [ ] Breach assessment process defined (contain, assess, document, notify)
+- [ ] Risk assessment factors documented
+- [ ] Individual notification process defined (within 60 days)
+- [ ] HHS notification process defined (≥500 individuals: 60 days; <500: annual)
+- [ ] Media notification process defined (≥500 in a state: 60 days)
+- [ ] Breach response team identified (Security Officer, Privacy Officer, Legal, IT, Communications)
+- [ ] Breach documentation template defined
+- [ ] Breach records retained for 6 years
+
+### Administrative Safeguards (45 CFR §164.308)
+- [ ] Security Officer designated and documented
+- [ ] Privacy Officer designated and documented
+- [ ] Risk analysis methodology documented
+- [ ] Risk management process defined
+- [ ] Sanction policy documented (disciplinary actions for violations)
+- [ ] Information system activity review process defined (weekly audit log review)
+- [ ] Workforce security procedures documented (background checks, termination)
+- [ ] Access authorization process defined (RBAC, minimum necessary)
+- [ ] Security awareness training program documented
+- [ ] Security incident response procedures documented
+- [ ] Contingency plan documented:
+  - [ ] Data backup plan (RDS daily, S3 versioning)
+  - [ ] Disaster recovery plan (RTO: 4 hours, RPO: 1 hour)
+  - [ ] Emergency mode operation plan
+  - [ ] Testing and revision procedures (annual)
+  - [ ] Applications and data criticality analysis
+- [ ] Annual security evaluation scheduled
+
+### Physical Safeguards (45 CFR §164.310)
+- [ ] Facility access controls documented (AWS managed)
+- [ ] Workstation security policy documented (endpoint protection, encryption)
+- [ ] Workstation use policy documented (screen lock, secure areas)
+- [ ] Device and media controls documented (disposal, re-use, accountability)
+- [ ] Automatic logoff configured (15 minutes inactivity)
+
+### Technical Safeguards (45 CFR §164.312)
+- [x] Unique user identification (JWT user_id claim)
+- [x] Emergency access procedure documented
+- [x] Automatic logoff implemented (15 minutes)
+- [x] Audit controls implemented (structured logging)
+- [x] Integrity controls implemented (referential integrity, validation)
+- [x] Person/entity authentication implemented (JWT)
+- [x] Transmission security implemented (TLS 1.2+)
+- [x] Encryption at rest implemented (AES-256)
+
+### Documentation Retention (45 CFR §164.530(j))
+- [ ] Audit logs retained for 6 years
+- [ ] Breach documentation retained for 6 years
+- [ ] Security incident records retained for 6 years
+- [ ] Policy documentation retained for 6 years
+- [ ] Retention policy documented and enforced via S3 lifecycle

@@ -83,9 +83,23 @@ This document defines the functional and non-functional requirements for MedVaul
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| NF-C01 | HIPAA-inspired architectural controls | Must |
-| NF-C02 | No real patient data (PoC only) | Must |
-| NF-C03 | Audit trail retention: 90 days minimum | Must |
+| NF-C01 | HIPAA Privacy Rule (45 CFR §164.500–534) controls implemented | Must |
+| NF-C02 | HIPAA Security Rule (45 CFR §164.302–318) technical safeguards | Must |
+| NF-C03 | HIPAA Security Rule administrative safeguards | Must |
+| NF-C04 | HIPAA Security Rule physical safeguards | Must |
+| NF-C05 | HIPAA Breach Notification Rule (45 CFR §164.400–414) | Must |
+| NF-C06 | No real patient data (PoC only) | Must |
+| NF-C07 | Audit trail retention: 6 years minimum (45 CFR §164.530(j)) | Must |
+| NF-C08 | Business Associate Agreement with AWS | Must |
+| NF-C09 | Notice of Privacy Practices defined | Must |
+| NF-C10 | Patient rights implemented (access, amendment, accounting) | Must |
+| NF-C11 | Minimum Necessary Standard enforced per role | Must |
+| NF-C12 | PHI definition and handling documented | Must |
+| NF-C13 | Breach response procedures documented | Must |
+| NF-C14 | Contingency plan (backup, disaster recovery) documented | Must |
+| NF-C15 | Security Officer and Privacy Officer designated | Must |
+| NF-C16 | Workforce security procedures (background checks, termination) | Must |
+| NF-C17 | Sanction policy for HIPAA violations documented | Must |
 
 ### Scalability
 
