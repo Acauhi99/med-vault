@@ -1,0 +1,12 @@
+aws_region        = "us-east-1"
+project_name      = "medvault"
+environment       = "production"
+vpc_cidr          = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+db_instance_class = "db.t4g.micro"
+db_name           = "medvault"
+db_username       = "medvault"
+ecs_task_cpu      = 256
+ecs_task_memory   = 512
+ecs_desired_count = 1
+container_port    = 8080
