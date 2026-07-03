@@ -286,6 +286,8 @@ module/
 
 ### Authentication Flow
 
+> **Detailed sequence diagram:** See [authentication-flow.md](diagrams/authentication-flow.md)
+
 ```
 Client → ALB → Backend
   Step 1 — Authenticate:
@@ -316,6 +318,8 @@ Client → WAF → ALB → ECS → Backend
 ```
 
 ### File Upload Flow
+
+> **Detailed sequence diagram:** See [image-upload-flow.md](diagrams/image-upload-flow.md)
 
 ```
 Client → Backend → S3

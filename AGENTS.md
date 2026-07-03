@@ -179,3 +179,49 @@ frontend/
 3. Update documentation if architecture changes
 4. Follow existing patterns in the codebase
 5. Verify tenant isolation is maintained
+
+## Documentation-First Rule
+
+Documentation is the heartbeat of this project. It must stay alive.
+
+### Before writing code
+
+1. Read the relevant doc(s) listed in the table above
+2. Read the related flow diagram(s) in `docs/diagrams/`
+3. Understand the documented contract before changing it
+4. If the doc is missing or wrong, fix the doc first — then implement
+
+### After structural changes
+
+Any change that alters any of the following **must** update the corresponding doc(s):
+
+| What changed | Update |
+|--------------|--------|
+| API endpoint added/removed/changed | `spec/openapi.yaml` + `docs/REQUIREMENTS.md` |
+| New aggregate, entity, or value object | `docs/DOMAIN.md` |
+| New bounded context or module | `docs/DOMAIN.md` + `docs/ARCHITECTURE.md` |
+| New domain event | `docs/DOMAIN.md` + `docs/diagrams/domain-events-flow.md` |
+| New or changed status transition | `docs/diagrams/case-lifecycle.md` |
+| New infrastructure resource | `docs/INFRASTRUCTURE.md` |
+| New security control | `docs/SECURITY.md` |
+| New or changed user flow | Related diagram in `docs/diagrams/` |
+| New CI/CD pipeline change | `docs/CI_CD_STRATEGY.md` |
+| New ADR decision | New file in `docs/adr/` |
+| HIPAA-relevant control change | `docs/SECURITY.md` (HIPAA sections) |
+
+### Documentation ownership
+
+- `spec/openapi.yaml` — source of truth for API. Never manually write HTTP contracts.
+- `docs/SECURITY.md` — source of truth for security and compliance.
+- `docs/DOMAIN.md` — source of truth for domain model.
+- `docs/ARCHITECTURE.md` — source of truth for system architecture.
+- `docs/diagrams/` — source of truth for flows. Mermaid format. Must match the prose docs.
+
+### Anti-patterns
+
+- ❌ Code changes without reading the relevant doc
+- ❌ Structural changes without updating the doc
+- ❌ Doc describes behavior that doesn't match the code
+- ❌ Diagram shows a flow that the code doesn't implement
+- ❌ New API endpoint not in `spec/openapi.yaml`
+- ❌ New domain event not in `docs/DOMAIN.md`

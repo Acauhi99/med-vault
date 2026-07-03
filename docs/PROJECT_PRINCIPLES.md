@@ -22,6 +22,12 @@ Understand the problem before writing code. Read the relevant docs. If docs are 
 
 ---
 
+## Living Documentation
+
+Documentation is not a byproduct — it is a deliverable. Every structural change (new endpoint, new aggregate, new event, new flow, new infrastructure resource) must update the corresponding doc(s) in the same change set. Docs and code are never out of sync. If a diagram contradicts the code, the diagram is wrong. If a doc describes behavior the code doesn't implement, the doc is wrong. Fix the truth, then implement. See [AGENTS.md](../AGENTS.md) for the full documentation-first rule.
+
+---
+
 ## Multi-Tenant by Default
 
 Every request belongs to exactly one tenant. No query, no API call, no storage operation ignores tenant isolation. See [DOMAIN.md](DOMAIN.md) for enforcement points.

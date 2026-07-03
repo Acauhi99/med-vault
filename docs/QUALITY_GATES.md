@@ -180,6 +180,60 @@ Infrastructure should never be pushed before passing all validation gates.
 
 ---
 
+## Documentation Quality Gates
+
+### Philosophy
+
+Documentation is not a byproduct — it is a first-class deliverable. Every structural change must update the corresponding doc(s) in the same change set. Docs and code are never out of sync.
+
+### What Triggers a Documentation Update
+
+| Change Type | Documentation to Update |
+|-------------|------------------------|
+| API endpoint added/removed/changed | `spec/openapi.yaml` + `docs/REQUIREMENTS.md` |
+| New aggregate, entity, or value object | `docs/DOMAIN.md` |
+| New bounded context or module | `docs/DOMAIN.md` + `docs/ARCHITECTURE.md` |
+| New domain event | `docs/DOMAIN.md` + `docs/diagrams/domain-events-flow.md` |
+| New or changed status transition | `docs/diagrams/case-lifecycle.md` |
+| New infrastructure resource | `docs/INFRASTRUCTURE.md` |
+| New security control | `docs/SECURITY.md` |
+| New or changed user flow | Related diagram in `docs/diagrams/` |
+| New CI/CD pipeline change | `docs/CI_CD_STRATEGY.md` |
+| New ADR decision | New file in `docs/adr/` |
+| HIPAA-relevant control change | `docs/SECURITY.md` (HIPAA sections) |
+
+### Pre-Push Documentation Check
+
+Before pushing code that changes architecture or flows:
+
+1. **Read the relevant doc(s)** — understand the current documented contract
+2. **Update docs in the same commit** — docs and code are never separate commits
+3. **Verify diagrams match code** — Mermaid diagrams must reflect actual behavior
+4. **Verify cross-references** — links between docs must not be broken
+
+### Documentation Anti-Patterns
+
+- ❌ Code changes without reading the relevant doc
+- ❌ Structural changes without updating the doc
+- ❌ Doc describes behavior that doesn't match the code
+- ❌ Diagram shows a flow that the code doesn't implement
+- ❌ New API endpoint not in `spec/openapi.yaml`
+- ❌ New domain event not in `docs/DOMAIN.md`
+- ❌ Broken internal links between docs
+
+### Source of Truth Hierarchy
+
+When docs conflict:
+
+1. `spec/openapi.yaml` — API contract (highest authority)
+2. `docs/SECURITY.md` — security and compliance
+3. `docs/DOMAIN.md` — domain model
+4. `docs/ARCHITECTURE.md` — system architecture
+5. `docs/diagrams/` — flow diagrams
+6. Other docs — supporting documentation
+
+---
+
 ## Unified Task Runner
 
 Every validation is executed through a single **Taskfile**. The Taskfile becomes the project's official developer interface.

@@ -408,6 +408,8 @@ Case (1) ──── (N) Image
 
 ### Event Handlers (Projections)
 
+> **Detailed event flow diagram:** See [diagrams/domain-events-flow.md](diagrams/domain-events-flow.md)
+
 Events are delivered via the **Transactional Outbox** pattern (see [ADR-017](adr/017-transactional-outbox.md)). Events are persisted in the same transaction as the aggregate. A poller reads unpublished events and dispatches to projection handlers. Delivery guarantee: at-least-once (handlers must be idempotent).
 
 | Event | Projection |

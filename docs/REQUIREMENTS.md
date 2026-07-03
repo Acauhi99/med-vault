@@ -132,6 +132,15 @@ This document defines the functional and non-functional requirements for MedVaul
 
 > **Source of truth:** The full API contract (schemas, examples, validation rules) is defined in [`spec/openapi.yaml`](../spec/openapi.yaml). The endpoints below are a summary for quick reference.
 
+> **Flow diagrams:**
+> - Authentication: [diagrams/authentication-flow.md](diagrams/authentication-flow.md)
+> - Patient workflow: [diagrams/patient-workflow.md](diagrams/patient-workflow.md)
+> - Doctor workflow: [diagrams/doctor-workflow.md](diagrams/doctor-workflow.md)
+> - Admin workflow: [diagrams/admin-workflow.md](diagrams/admin-workflow.md)
+> - Case lifecycle: [diagrams/case-lifecycle.md](diagrams/case-lifecycle.md)
+> - Image upload: [diagrams/image-upload-flow.md](diagrams/image-upload-flow.md)
+> - Domain events: [diagrams/domain-events-flow.md](diagrams/domain-events-flow.md)
+
 ### Endpoints
 
 | Method | Endpoint | Auth | Role | Description |

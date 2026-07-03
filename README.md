@@ -13,7 +13,7 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [Architecture](docs/ARCHITECTURE.md) | System design, components, data flow, deployment |
 | [Domain Model](docs/DOMAIN.md) | DDD bounded contexts, aggregates, CQRS mapping |
 | [Requirements](docs/REQUIREMENTS.md) | Functional and non-functional requirements, API spec |
-| [Security](docs/SECURITY.md) | Threat model, encryption, auth, audit, compliance |
+| [Security](docs/SECURITY.md) | Threat model, encryption, auth, audit, HIPAA compliance |
 | [Infrastructure](docs/INFRASTRUCTURE.md) | Terraform philosophy, modules, security, state, evolution |
 | [Testing Strategy](docs/TESTING_STRATEGY.md) | Testing philosophy, principles, pyramid, coverage approach |
 | [Quality Gates](docs/QUALITY_GATES.md) | Validation layers, tooling, pre-commit/pre-push, task runner |
@@ -21,6 +21,7 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [Context](CONTEXT.md) | Project background, scope, and goals |
 | [Roadmap](ROADMAP.md) | Phased delivery plan with status tracking |
 | [Checklist](docs/CHECKLIST.md) | Acceptance criteria per phase |
+| [Diagrams](docs/diagrams/) | Flow diagrams: auth, patient, doctor, admin, case lifecycle, images, events |
 
 ### Architecture Decision Records
 

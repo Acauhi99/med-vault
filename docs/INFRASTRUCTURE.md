@@ -277,7 +277,7 @@ Infrastructure changes replace rather than modify. New deployments create new re
 
 ## AWS Shared Responsibility Model
 
-This project operates under the AWS Shared Responsibility Model. See [SECURITY.md](SECURITY.md#compliance-hipaa-inspired) for the full breakdown of AWS, Infrastructure, Application, and Developer responsibilities.
+This project operates under the AWS Shared Responsibility Model. See [SECURITY.md](SECURITY.md#aws-shared-responsibility-model) for the full breakdown of AWS, Infrastructure, Application, and Developer responsibilities.
 
 ---
 
