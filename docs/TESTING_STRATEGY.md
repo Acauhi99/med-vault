@@ -170,6 +170,93 @@ Developers are responsible for reviewing the generated tests to ensure they vali
 
 ---
 
+## Execution
+
+### Backend
+
+```bash
+# Run all tests
+go test ./...
+
+# Run with coverage
+go test -cover ./...
+
+# Run specific test
+go test -run TestCreateCase ./internal/clinical/
+
+# Run integration tests (requires Docker)
+go test -tags integration ./...
+```
+
+### Frontend
+
+```bash
+# Run all tests
+pnpm vitest run
+
+# Run with coverage
+pnpm vitest run --coverage
+
+# Run specific test file
+pnpm vitest run features/authentication/hooks/useAuth.test.ts
+
+# Watch mode (development)
+pnpm vitest
+```
+
+### Via Taskfile
+
+```bash
+# Run all tests (backend + frontend)
+task test
+```
+
+See [QUALITY_GATES.md](QUALITY_GATES.md) for the full validation pipeline (pre-commit, pre-push).
+
+---
+
+## Conventions
+
+### File Naming
+
+| Layer | Pattern | Example |
+|-------|---------|---------|
+| Backend unit | `*_test.go` next to source | `case_test.go` next to `case.go` |
+| Frontend unit | `*.test.ts` / `*.test.tsx` next to source | `useAuth.test.ts` next to `useAuth.ts` |
+
+### Test Naming
+
+- Describe behavior, not implementation: `"creates case when patient submits"` not `"test create case"`
+- Use table-driven tests for multiple input variations (Go)
+- Use `describe` / `it` blocks for grouping related assertions (Frontend)
+
+### Structure
+
+Follow Arrange → Act → Assert:
+
+```go
+func TestCreateCase(t *testing.T) {
+    // Arrange
+    patient := NewPatientID("...")
+    cmd := CreateCaseCommand{PatientID: patient}
+
+    // Act
+    result, err := handler.Handle(ctx, cmd)
+
+    // Assert
+    assert.NoError(t, err)
+    assert.Equal(t, StatusOpen, result.Status)
+}
+```
+
+### Test Data
+
+- Use builder functions or factories for complex aggregates
+- Avoid shared mutable state between tests
+- Each test creates its own data — no dependency on other tests
+
+---
+
 ## Backend Testing Stack
 
 | Tool | Purpose |

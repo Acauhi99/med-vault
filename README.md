@@ -18,7 +18,7 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [Testing Strategy](docs/TESTING_STRATEGY.md) | Testing philosophy, principles, pyramid, coverage approach |
 | [Quality Gates](docs/QUALITY_GATES.md) | Validation layers, tooling, pre-commit/pre-push, task runner |
 | [Principles](docs/PROJECT_PRINCIPLES.md) | Engineering principles and decision criteria |
-| [Context](docs/CONTEXT.md) | Project background, scope, and goals |
+| [Context](CONTEXT.md) | Project background, scope, and goals |
 | [Roadmap](ROADMAP.md) | Phased delivery plan with status tracking |
 | [Checklist](docs/CHECKLIST.md) | Acceptance criteria per phase |
 
@@ -90,8 +90,7 @@ med-vault/
 │   └── openapi.yaml   # API contract
 ├── Taskfile.yml       # Unified task runner (format, lint, validate, test)
 └── docs/              # Project documentation
-    ├── adr/           # Architecture Decision Records
-    └── diagrams/      # Architecture diagrams
+    └── adr/           # Architecture Decision Records
 ```
 
 ---

@@ -97,7 +97,7 @@ backend/
 | database/sql + pgx driver | No code generation, manual scanning |
 | GORM | Too much magic, hard to optimize |
 | sqlx | Less type safety than sqlc |
-| sqlx + sqlx | More manual work than sqlc |
+| database/sql + manual scanning | More manual work than sqlc |
 
 ## References
 
