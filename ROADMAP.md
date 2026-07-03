@@ -200,3 +200,33 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Concurrency groups per pipeline | ⬜ |
 | Deployment validation (health checks, smoke tests) | ⬜ |
 | Notifications (email/SMS) | ⬜ |
+
+---
+
+## Phase 10: HIPAA Compliance
+
+**Goal:** Document and implement HIPAA Privacy Rule, Security Rule, and Breach Notification Rule controls. See [SECURITY.md](docs/SECURITY.md) for the full security architecture.
+
+| Task | Status |
+|------|--------|
+| Notice of Privacy Practices (NPP) defined | ⬜ |
+| Patient rights implemented (access, amendment, accounting, restrictions, confidential communications) | ⬜ |
+| Minimum Necessary Standard enforced per role | ⬜ |
+| Business Associate Agreement (BAA) with AWS | ⬜ |
+| Uses and Disclosures policy documented | ⬜ |
+| De-identification methods documented | ⬜ |
+| Breach assessment process defined | ⬜ |
+| Notification requirements documented (individual, HHS, media) | ⬜ |
+| Breach response team identified | ⬜ |
+| Breach documentation template defined | ⬜ |
+| Security Officer and Privacy Officer designated | ⬜ |
+| Risk analysis and management documented | ⬜ |
+| Sanction policy documented | ⬜ |
+| Workforce security procedures documented | ⬜ |
+| Security awareness training program | ⬜ |
+| Incident response procedures documented | ⬜ |
+| Contingency plan documented (backup, DR, emergency mode) | ⬜ |
+| Annual security evaluation scheduled | ⬜ |
+| Physical safeguards documented (facility, workstation, device controls) | ⬜ |
+| Automatic logoff configured (15 min inactivity) | ⬜ |
+| Documentation retention enforced (6 years via S3 lifecycle) | ⬜ |
