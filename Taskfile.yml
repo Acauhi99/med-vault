@@ -1,6 +1,7 @@
 version: '3'
 
 vars:
+  ROOT_DIR: .
   BACKEND_DIR: backend
   FRONTEND_DIR: frontend
   INFRA_DIR: infrastructure/terraform
