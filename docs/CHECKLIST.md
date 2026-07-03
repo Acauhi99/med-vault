@@ -74,6 +74,15 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Struct comparison tests pass with `go-cmp`
 - [ ] Integration tests pass with `testcontainers-go`
 - [ ] Coverage reporting works with `go test -cover`
+- [ ] Dockerfile created with multi-stage build (see [ADR-019](adr/019-docker-image-strategy.md))
+- [ ] Build stage: Go toolchain, module download, compilation, validation
+- [ ] Runtime stage: distroless, binary + CA certs only
+- [ ] CGO disabled, static binary
+- [ ] Non-root user, read-only binary
+- [ ] `.dockerignore` excludes git, IDE, caches, docs, test artifacts
+- [ ] BuildKit cache mounts for Go modules and compiler
+- [ ] No Go compiler, source code, or build tools in production image
+- [ ] Image builds successfully with `docker build`
 
 ---
 

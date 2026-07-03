@@ -121,6 +121,7 @@ Modules should represent complete capabilities with cohesive resources:
 - Security Groups
 - IAM Roles
 - CloudWatch Log Groups
+- ECR Repository (Docker images)
 
 **database**
 - PostgreSQL (Amazon RDS)

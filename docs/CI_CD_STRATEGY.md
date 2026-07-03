@@ -115,6 +115,8 @@ The Backend pipeline produces a Docker image stored in Amazon ECR.
 
 The image is the sole artifact. It is immutable, versioned, and independently deployable.
 
+> **Docker image strategy:** See [ADR-019: Docker Image Strategy](adr/019-docker-image-strategy.md) for multi-stage build, distroless runtime, security constraints, and layering strategy.
+
 ### Boundaries
 
 The Backend pipeline must NOT:

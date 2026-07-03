@@ -44,6 +44,8 @@ Cloud-native healthcare platform reference implementation. Demonstrates secure, 
 | [ADR-015](docs/adr/015-frontend-feature-based-architecture.md) | Frontend feature-based architecture |
 | [ADR-016](docs/adr/016-design-first-api-documentation.md) | Design-First API documentation |
 | [ADR-017](docs/adr/017-transactional-outbox.md) | Transactional Outbox for domain events |
+| [ADR-018](docs/adr/018-ecr-for-container-registry.md) | ECR for container registry |
+| [ADR-019](docs/adr/019-docker-image-strategy.md) | Docker image strategy |
 
 ---
 

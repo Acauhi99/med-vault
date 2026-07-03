@@ -427,6 +427,30 @@ See [ADR-016](adr/016-design-first-api-documentation.md) for full rationale.
 - Auto-scaling based on CPU/memory
 - Health checks via ALB target groups
 
+### Container Strategy
+
+> **Full decision record:** See [ADR-019: Docker Image Strategy](adr/019-docker-image-strategy.md)
+
+The backend is packaged as a Docker image using multi-stage builds:
+
+```
+Build Stage (Go toolchain)
+    → Compile static binary (CGO disabled)
+    → Run validation (tests, static analysis)
+    ↓
+Runtime Stage (Distroless)
+    → Binary + CA certificates + runtime assets
+    → Non-root user, read-only, minimal attack surface
+```
+
+**Key constraints:**
+
+- No Go compiler, source code, or build tools in production image
+- No environment-specific configuration embedded
+- Configuration injected via environment variables, Secrets Manager, or ECS Task Definition
+- Same image deploys to all environments
+- Immutable after publication
+
 ### Database Migrations
 
 Migrations run as a **separate step before application deployment**, not at application startup.
