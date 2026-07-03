@@ -174,6 +174,7 @@ next build → S3 → CloudFront → Client
 - Tenant context extraction and propagation
 - REST API endpoints
 - Request validation
+- Rate limiting on authentication endpoints
 - Audit logging
 - File upload handling (delegates to S3)
 - Database access with tenant isolation
@@ -347,32 +348,9 @@ Client → Backend → S3
 
 ## Security Architecture
 
-### Encryption
+MedVault enforces security at every layer: encryption at rest and in transit, JWT-based authentication, RBAC, tenant isolation, and comprehensive audit logging.
 
-- **At rest:** RDS encryption (AWS KMS), S3 encryption (SSE-S3 or SSE-KMS)
-- **In transit:** TLS 1.2+ everywhere (CloudFront, ALB, RDS SSL)
-- **Application:** JWT signing (HMAC-SHA256 or RSA)
-
-### Secrets Management
-
-- Database credentials: AWS Secrets Manager
-- JWT signing key: AWS Secrets Manager
-- No hardcoded secrets in code or environment variables
-
-### Audit Logging
-
-- Every state-changing operation logged
-- Audit log includes: user_id, tenant_id, action, resource, timestamp, IP
-- Logs stored in CloudWatch Logs
-- CloudTrail for AWS API audit trail
-
-### Network Security
-
-- Backend runs in private subnets (no public IP)
-- RDS in private subnets
-- ALB in public subnets only
-- Security groups restrict inter-service communication
-- VPC flow logs enabled
+> **Source of truth:** See [SECURITY.md](SECURITY.md) for the full threat model, encryption details, secrets management, network security, and compliance controls.
 
 ---
 
@@ -477,11 +455,11 @@ Migrations run as a **separate step before application deployment**, not at appl
 
 **Migration files:** `backend/migrations/` (`.up.sql` and `.down.sql` for each)
 
-### CI/CD (Future)
+### CI/CD
 
-- GitHub Actions for build/test/deploy
-- ECR for container images
-- Blue/green or rolling deployments
+Three independent deployment pipelines: Infrastructure, Backend, Frontend. Each owns its own lifecycle. Pipelines communicate only through deployed infrastructure and published artifacts.
+
+See [CI_CD_STRATEGY.md](CI_CD_STRATEGY.md) for full pipeline architecture, deployment boundaries, and rollback strategy.
 
 ---
 

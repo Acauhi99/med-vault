@@ -45,6 +45,7 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 | Requirements | [REQUIREMENTS.md](docs/REQUIREMENTS.md) |
 | Security controls | [SECURITY.md](docs/SECURITY.md) |
 | Infrastructure | [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) |
+| CI/CD strategy | [CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md) |
 | Testing philosophy | [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) |
 | Quality gates | [QUALITY_GATES.md](docs/QUALITY_GATES.md) |
 | Engineering principles | [PROJECT_PRINCIPLES.md](docs/PROJECT_PRINCIPLES.md) |
@@ -59,10 +60,28 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 - **Pattern:** DDD with CQRS (see [ADR-010](docs/adr/010-ddd-with-cqrs-architecture.md))
 - **Event delivery:** Transactional Outbox with polling on PostgreSQL (see [ADR-017](docs/adr/017-transactional-outbox.md))
 - **Bounded Contexts:** Identity & Access, Clinical, Imaging, Audit
+- **Module mapping:** `auth` → Identity & Access, `clinical` → Clinical, `imaging` → Imaging, `audit` → Audit, `shared` → Shared Kernel (see [ADR-012](docs/adr/012-modular-monolith-architecture.md))
 - **Multi-tenancy:** Shared DB with `tenant_id` column; users can belong to multiple tenants with role per tenant (see [ADR-006](docs/adr/006-multi-tenancy-strategy.md))
 - **Backend:** Go, Clean Architecture layers (domain → application → infrastructure)
 - **Frontend:** Next.js App Router (static export, Client Components only), Feature-Based Architecture (see [ADR-015](docs/adr/015-frontend-feature-based-architecture.md)), no API Routes, no Server Actions, no SSR
 - **Infrastructure:** Terraform, ECS Fargate, RDS PostgreSQL, S3
+- **CI/CD:** Three independent pipelines — Infrastructure, Backend, Frontend (see [CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md))
+
+---
+
+## CI/CD Pipeline Ownership
+
+When working with deployment-related code, respect pipeline boundaries:
+
+| Pipeline | Owns | Must NOT touch |
+|----------|------|----------------|
+| Infrastructure | Terraform modules, AWS resources | Application code, Docker images, migrations |
+| Backend | Go app, Docker image, ECS deploy, migrations | Terraform, frontend assets, CloudFront |
+| Frontend | Next.js build, S3 upload, CF invalidation | Backend, Terraform, database |
+
+- Database migrations belong to the Backend pipeline, never Terraform
+- Secrets are referenced via AWS Secrets Manager / Parameter Store, never exposed
+- GitHub OIDC for AWS authentication (no long-lived credentials)
 
 ---
 

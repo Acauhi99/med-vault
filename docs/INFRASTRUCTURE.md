@@ -304,9 +304,7 @@ The following are documented as future improvements, not current implementation 
 
 ### CI/CD
 
-- GitHub Actions for build/test/deploy
-- ECR for container images
-- Blue/green or rolling deployments
+See [CI_CD_STRATEGY.md](CI_CD_STRATEGY.md) for the full pipeline architecture. The Infrastructure pipeline owns Terraform only — it provisions the platform but never deploys application code.
 
 ### Multi-Account Strategy
 

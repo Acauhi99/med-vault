@@ -68,6 +68,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Error responses follow standard format
 - [ ] `log/slog` structured JSON logging works
 - [ ] Health check endpoint returns 200
+- [ ] Rate limiting middleware on auth endpoints (login, register, refresh)
 - [ ] Unit tests pass with `testing` + `testify/assert`
 - [ ] HTTP handler tests pass with `httptest`
 - [ ] Struct comparison tests pass with `go-cmp`
@@ -79,17 +80,23 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 ## Phase 4: Identity & Access
 
 - [ ] Tenant can be created
+- [ ] Suspended tenant can be reactivated
 - [ ] User can be registered with valid email
-- [ ] Duplicate email within tenant is rejected
+- [ ] Email is unique system-wide (duplicate registration rejected)
 - [ ] Password is hashed with bcrypt
 - [ ] Authentication returns JWT with correct claims
 - [ ] Invalid credentials are rejected
 - [ ] Refresh token issues new access token
 - [ ] Invalid/expired refresh token is rejected
 - [ ] Current user endpoint returns correct profile
+- [ ] Admin can add user to tenant with role
+- [ ] Admin can remove user from tenant
+- [ ] Admin can list tenant members
+- [ ] Non-admin cannot manage tenant members
 - [ ] Audit log created for registration
 - [ ] Audit log created for login success
 - [ ] Audit log created for login failure
+- [ ] Audit log created for member added/removed
 
 ---
 
@@ -108,6 +115,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Patient can list own cases
 - [ ] Doctor can list assigned cases
 - [ ] Admin can list all cases for tenant
+- [ ] Cases can be filtered by status
+- [ ] List endpoints return paginated results with pagination metadata
 - [ ] Cross-tenant access is blocked
 - [ ] Domain events are published for each mutation
 - [ ] Audit logs created for all clinical events
@@ -156,6 +165,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Image upload works with pre-signed URL
 - [ ] Diagnosis is viewable by authorized roles
 - [ ] Audit log viewer is accessible to admins
+- [ ] Tenant switcher component allows switching between tenants
+- [ ] Tenant switcher calls select-tenant API and updates JWT
 - [ ] Unauthorized access redirects to login
 - [ ] JWT tokens are stored in httpOnly cookies
 - [ ] No business logic in frontend components
@@ -172,7 +183,6 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 - [ ] No hardcoded secrets in codebase
 - [ ] All inputs validated
-- [ ] Rate limiting configured on ALB
 - [ ] CloudWatch dashboard created
 - [ ] CloudTrail enabled
 - [ ] README includes deployment instructions
@@ -180,3 +190,22 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] All TODO comments resolved or documented
 - [ ] No PHI in any log output
 - [ ] HTTPS enforced on all connections
+
+---
+
+## Phase 9: CI/CD
+
+- [ ] Infrastructure pipeline runs Terraform init/validate/plan/apply
+- [ ] Infrastructure pipeline requires manual approval for production
+- [ ] Backend pipeline runs format, lint, unit tests, build
+- [ ] Backend pipeline builds and pushes Docker image to ECR
+- [ ] Backend pipeline runs database migrations before deployment
+- [ ] Backend pipeline deploys to ECS and validates health check
+- [ ] Frontend pipeline runs format, typecheck, unit tests, integration tests
+- [ ] Frontend pipeline builds and exports static assets
+- [ ] Frontend pipeline uploads to S3 and invalidates CloudFront
+- [ ] GitHub OIDC configured for AWS authentication (no long-lived credentials)
+- [ ] Path-based triggers configured (infrastructure/, backend/, frontend/)
+- [ ] Concurrency groups prevent parallel deployments of same component
+- [ ] Each pipeline supports independent rollback
+- [ ] CI/CD strategy documented in CI_CD_STRATEGY.md

@@ -70,7 +70,7 @@ Tenant
 
 **Invariants:**
 - Tenant name must be non-empty and unique within the system
-- Status transitions: Active → Suspended (no reactivation in PoC)
+- Status transitions: Active ↔ Suspended
 
 #### User (Aggregate Root)
 
@@ -89,6 +89,7 @@ User
 - Password must meet minimum complexity requirements
 - Status transitions: Active ↔ Inactive
 - A user has no inherent tenant — tenant membership is defined by `UserTenant`
+- Registration creates a user without tenant membership; an admin must add the user to a tenant via `AddUserToTenant`
 
 #### UserTenant (Entity)
 
@@ -113,6 +114,7 @@ UserTenant
 |---------|-------------|
 | `CreateTenant` | Register a new healthcare organization |
 | `SuspendTenant` | Disable a tenant (all users lose access to that tenant) |
+| `ReactivateTenant` | Restore a suspended tenant to active status |
 | `RegisterUser` | Create a new user (no tenant assignment) |
 | `AuthenticateUser` | Validate email + password, return available tenants |
 | `SelectTenant` | User selects a tenant, receives JWT with tenant_id + role |
@@ -128,6 +130,7 @@ UserTenant
 | `GetUserByEmail` | Retrieve user by email (tenant-independent) |
 | `ListTenantsByUser` | List all tenants a user belongs to (with roles) |
 | `ListUsersByTenant` | List all users for a tenant (with roles) |
+| `ListTenantMembers` | List tenant members with user details (joined query) |
 
 ### Domain Events
 
@@ -135,6 +138,7 @@ UserTenant
 |-------|---------|
 | `TenantCreated` | New tenant registered |
 | `TenantSuspended` | Tenant status changed to Suspended |
+| `TenantReactivated` | Tenant status changed back to Active |
 | `UserRegistered` | New user created (no tenant) |
 | `UserAddedToTenant` | User associated with a tenant |
 | `UserRemovedFromTenant` | User's access to a tenant revoked |
@@ -214,7 +218,7 @@ Diagnosis
 | `ListCasesByPatient` | List all cases for a patient (tenant-scoped) |
 | `ListCasesByDoctor` | List all cases assigned to a doctor (tenant-scoped) |
 | `ListOpenCases` | List all cases with status Open (admin view) |
-| `ListAllCases` | List all cases for a tenant (admin view) |
+| `ListAllCases` | List all cases for a tenant (admin view, filterable by status, sortable by created_at) |
 
 ### Domain Events
 
@@ -331,7 +335,7 @@ All value objects are immutable and implement equality based on their attributes
 |-------------|---------|-------|
 | `TenantID` | Everywhere | UUID format |
 | `UserID` | Everywhere | UUID format |
-| `Email` | User | Valid email format, unique within tenant |
+| `Email` | User | Valid email format, unique system-wide |
 | `PasswordHash` | User | bcrypt hash |
 | `CaseID` | Clinical, Imaging | UUID format |
 | `ImageID` | Imaging | UUID format |

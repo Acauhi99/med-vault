@@ -10,7 +10,7 @@ This document defines the functional and non-functional requirements for MedVaul
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| P-01 | Register a new account within a tenant | Must |
+| P-01 | Register a new account (system-wide, no tenant assignment) | Must |
 | P-02 | Authenticate (login/logout) | Must |
 | P-03 | Submit a new medical case with symptoms | Must |
 | P-04 | Add symptoms to an existing case | Must |
@@ -37,7 +37,11 @@ This document defines the functional and non-functional requirements for MedVaul
 | A-03 | Assign doctors to cases | Must |
 | A-04 | Close diagnosed cases | Must |
 | A-05 | Inspect audit logs | Must |
-| A-06 | Manage tenant-level resources (future) | Could |
+| A-06 | Add users to tenant (assign role) | Must |
+| A-07 | Remove users from tenant | Must |
+| A-08 | List tenant members | Must |
+| A-09 | Reactivate suspended tenant | Should |
+| A-10 | Manage tenant-level resources (future) | Could |
 
 ---
 
@@ -57,6 +61,7 @@ This document defines the functional and non-functional requirements for MedVaul
 | NF-S08 | Audit logging for all state-changing operations | Must |
 | NF-S09 | No PHI in logs | Must |
 | NF-S10 | bcrypt password hashing (cost factor ≥ 12) | Must |
+| NF-S11 | Rate limiting on authentication endpoints | Must |
 
 ### Performance
 
@@ -122,7 +127,11 @@ This document defines the functional and non-functional requirements for MedVaul
 | POST | /api/v1/auth/select-tenant | Yes | — | Select tenant, receive JWT with tenant + role |
 | POST | /api/v1/auth/refresh | Yes | — | Refresh access token |
 | GET | /api/v1/users/me | Yes | Any | Get current user profile |
-| GET | /api/v1/cases | Yes | Patient, Doctor, Admin | List cases (filtered by role) |
+| GET | /api/v1/tenants/members | Yes | Admin | List tenant members |
+| POST | /api/v1/tenants/members | Yes | Admin | Add user to tenant with role |
+| DELETE | /api/v1/tenants/members/{user_id} | Yes | Admin | Remove user from tenant |
+| POST | /api/v1/tenants/{id}/reactivate | Yes | Admin | Reactivate suspended tenant |
+| GET | /api/v1/cases | Yes | Patient, Doctor, Admin | List cases (filtered by role, filterable by status) |
 | POST | /api/v1/cases | Yes | Patient | Create new case |
 | GET | /api/v1/cases/{id} | Yes | Patient, Doctor, Admin | Get case details |
 | POST | /api/v1/cases/{id}/symptoms | Yes | Patient | Add symptom to case |
@@ -164,6 +173,26 @@ This document defines the functional and non-functional requirements for MedVaul
   }
 }
 ```
+
+### Error Codes
+
+| HTTP Status | Error Code | When |
+|-------------|------------|------|
+| 400 | `VALIDATION_ERROR` | Request body or parameters fail validation |
+| 401 | `UNAUTHORIZED` | Missing, invalid, or expired token |
+| 403 | `FORBIDDEN` | Valid token but insufficient role/permissions |
+| 404 | `NOT_FOUND` | Resource does not exist or belongs to another tenant |
+| 409 | `CONFLICT` | Duplicate resource (e.g., email already registered) |
+| 422 | `BUSINESS_RULE_VIOLATION` | Domain invariant violated (e.g., close case without diagnosis) |
+| 429 | `RATE_LIMITED` | Too many requests (retry-after header included) |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+
+**Rules:**
+- `404` is returned instead of `403` when a resource belongs to another tenant (prevents tenant enumeration)
+- `error.details[]` contains field-level validation errors (field name + message)
+- `error.code` is a machine-readable string, never changes between API versions
+- `error.message` is human-readable, safe to display to end users
+- `meta.request_id` is included in every response (success and error) for log correlation
 
 ---
 

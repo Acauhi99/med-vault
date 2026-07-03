@@ -38,7 +38,7 @@ This document defines the security architecture, controls, and threat model for 
 | SQL injection | High | Parameterized queries via pgx + sqlc code generation |
 | Cross-site scripting (XSS) | Medium | Input validation, output encoding |
 | Cross-site request forgery (CSRF) | Medium | SameSite cookies, CSRF tokens |
-| Brute force | Medium | Rate limiting, account lockout |
+| Brute force | Medium | Rate limiting on auth endpoints, account lockout |
 | Session hijacking | Medium | Short-lived JWT, httpOnly cookies |
 | Man-in-the-middle | High | TLS 1.2+ everywhere |
 | Data exfiltration | High | Encryption at rest, access controls |
@@ -354,15 +354,15 @@ This project operates under the AWS Shared Responsibility Model.
 
 ## Security Checklist
 
-- [ ] No hardcoded secrets
-- [ ] All endpoints require authentication
-- [ ] All endpoints enforce RBAC
-- [ ] All queries include tenant_id
-- [ ] Passwords hashed with bcrypt
-- [ ] JWT tokens have short expiration
-- [ ] Audit logging on all mutations
-- [ ] PHI excluded from logs
-- [ ] TLS enforced on all connections
-- [ ] S3 bucket has no public access
-- [ ] RDS is in private subnet
-- [ ] Secrets stored in Secrets Manager
+- [x] No hardcoded secrets
+- [x] All endpoints require authentication
+- [x] All endpoints enforce RBAC
+- [x] All queries include tenant_id
+- [x] Passwords hashed with bcrypt
+- [x] JWT tokens have short expiration
+- [x] Audit logging on all mutations
+- [x] PHI excluded from logs
+- [x] TLS enforced on all connections
+- [x] S3 bucket has no public access
+- [x] RDS is in private subnet
+- [x] Secrets stored in Secrets Manager

@@ -72,6 +72,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | JWT authentication middleware | ⬜ |
 | Tenant context middleware | ⬜ |
 | RBAC middleware | ⬜ |
+| Rate limiting middleware (auth endpoints) | ⬜ |
 | Repository interfaces and implementations | ⬜ |
 | Error handling and response format | ⬜ |
 | `log/slog` structured logging | ⬜ |
@@ -95,6 +96,10 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Authenticate user command | ⬜ |
 | Refresh token command | ⬜ |
 | Get current user query | ⬜ |
+| Add user to tenant command | ⬜ |
+| Remove user from tenant command | ⬜ |
+| List tenant members query | ⬜ |
+| Reactivate tenant command | ⬜ |
 | Audit logging for auth events | ⬜ |
 
 ---
@@ -158,6 +163,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Image upload component | ⬜ |
 | Diagnosis view | ⬜ |
 | Audit log viewer | ⬜ |
+| Tenant switcher component | ⬜ |
 | Vitest configured with `@testing-library/react` and MSW | ⬜ |
 | Component tests with `@testing-library/react` + `@testing-library/user-event` | ⬜ |
 | API mocking with MSW | ⬜ |
@@ -173,7 +179,6 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 |------|--------|
 | Security review | ⬜ |
 | Input validation | ⬜ |
-| Rate limiting | ⬜ |
 | CloudWatch dashboards | ⬜ |
 | CloudTrail integration | ⬜ |
 | Updated README with deployment instructions | ⬜ |
@@ -181,11 +186,17 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 ---
 
-## Phase 9: Future (Post-PoC)
+## Phase 9: CI/CD (Post-PoC)
+
+**Goal:** Implement the three-pipeline deployment architecture. See [CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md) for full philosophy and boundaries.
 
 | Task | Status |
 |------|--------|
-| CI/CD pipeline (GitHub Actions) | ⬜ |
-| Container registry (ECR) | ⬜ |
-| Blue/green deployments | ⬜ |
+| Infrastructure pipeline (Terraform init/validate/plan/apply) | ⬜ |
+| Backend pipeline (lint, test, build, migrate, deploy, health check) | ⬜ |
+| Frontend pipeline (lint, typecheck, test, build, export, S3 upload, CF invalidation) | ⬜ |
+| GitHub OIDC for AWS authentication | ⬜ |
+| Path-based triggers (infrastructure/, backend/, frontend/) | ⬜ |
+| Concurrency groups per pipeline | ⬜ |
+| Deployment validation (health checks, smoke tests) | ⬜ |
 | Notifications (email/SMS) | ⬜ |
