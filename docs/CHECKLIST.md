@@ -50,18 +50,18 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ## Phase 2: Infrastructure
 
-- [ ] Module structure follows capability-based design (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
-- [ ] `network` module: VPC, public/private subnets, NAT, route tables, internet gateway
-- [ ] `database` module: RDS PostgreSQL in private subnet, encryption enabled
-- [ ] `storage` module: S3 buckets with encryption, versioning, lifecycle rules
-- [ ] `application` module: ECS Fargate cluster, ALB, task definition, security groups
-- [ ] `security` module: IAM roles, policies, KMS, Secrets Manager
-- [ ] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs
+- [x] Module structure follows capability-based design (see [INFRASTRUCTURE.md](INFRASTRUCTURE.md))
+- [x] `network` module: VPC, public/private subnets, optional NAT, route tables, internet gateway
+- [x] `database` module: RDS PostgreSQL in private subnet, encryption enabled
+- [x] `storage` module: S3 buckets with encryption, versioning, lifecycle rules
+- [x] `application` module: ECS Fargate cluster, ALB, task definition, security groups
+- [x] `security` module: IAM roles, policies, KMS, Secrets Manager
+- [x] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs
 - [x] Production environment composes modules correctly
 - [x] Remote state in S3 with versioning and encryption
-- [ ] Security groups configured (ALB → ECS → RDS)
-- [ ] S3 bucket public access blocked
-- [ ] WAF associated with ALB
+- [x] Security groups configured (ALB → ECS → RDS)
+- [x] S3 bucket public access blocked
+- [x] WAF associated with ALB
 
 ---
 

@@ -43,12 +43,47 @@ variable "container_port" {
   type        = number
 }
 
+variable "db_endpoint" {
+  description = "RDS endpoint hostname"
+  type        = string
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+}
+
+variable "kms_key_arn" {
+  description = "KMS key ARN for encryption"
+  type        = string
+}
+
 variable "db_secret_arn" {
   description = "Secrets Manager ARN for DB credentials"
   type        = string
 }
 
+variable "jwt_secret_arn" {
+  description = "JWT signing key secret ARN"
+  type        = string
+}
+
 variable "s3_bucket_arn" {
   description = "S3 bucket ARN for medical images"
+  type        = string
+}
+
+variable "audit_logs_bucket_name" {
+  description = "S3 bucket name for ALB access logs"
+  type        = string
+}
+
+variable "alb_security_group_id" {
+  description = "ALB security group ID"
+  type        = string
+}
+
+variable "ecs_security_group_id" {
+  description = "ECS security group ID"
   type        = string
 }

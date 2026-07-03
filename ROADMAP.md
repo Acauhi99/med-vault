@@ -61,15 +61,15 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| `network` module (VPC, public/private subnets, NAT, routes) | ⬜ |
-| `database` module (RDS PostgreSQL, private subnet, encryption) | ⬜ |
-| `storage` module (S3 buckets, lifecycle rules, encryption) | ⬜ |
-| `application` module (ECS Fargate, ALB, task definition) | ⬜ |
-| `security` module (IAM roles, policies, KMS, Secrets Manager) | ⬜ |
-| `observability` module (CloudWatch, CloudTrail, VPC Flow Logs) | ⬜ |
+| `network` module (VPC, public/private subnets, optional NAT, routes) | ✅ |
+| `database` module (RDS PostgreSQL, private subnet, encryption) | ✅ |
+| `storage` module (S3 buckets, lifecycle rules, encryption) | ✅ |
+| `application` module (ECS Fargate, ALB, task definition) | ✅ |
+| `security` module (IAM roles, policies, KMS, Secrets Manager) | ✅ |
+| `observability` module (CloudWatch, CloudTrail, VPC Flow Logs) | ✅ |
 | Production environment composition | ✅ |
 | Remote state in S3 with versioning and encryption | ✅ |
-| WAF associated with ALB | ⬜ |
+| WAF associated with ALB | ✅ |
 | Route 53 + CloudFront (optional for PoC) | ⬜ |
 
 ---

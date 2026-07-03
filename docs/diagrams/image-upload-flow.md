@@ -93,7 +93,7 @@ sequenceDiagram
 | Upload URL expiry | 15 minutes |
 | Download URL expiry | 15 minutes |
 | Storage path | `/{tenant_id}/{case_id}/{image_id}/{filename}` |
-| Encryption at rest | AES-256 (SSE-S3) |
+| Encryption at rest | AWS KMS CMK |
 | Encryption in transit | TLS 1.2+ |
 | Access control | Patient (own), Doctor (assigned), Admin (tenant) |
 | Audit | Every upload and download logged |

@@ -286,14 +286,15 @@ Every IAM role grants only the permissions required for its function. No wildcar
 - RDS in private subnets
 - ALB in public subnets only
 - Security groups restrict inter-service communication
+- Private outbound internet access is optional for the PoC; enable NAT only when private ECS tasks need external access without VPC endpoints
 
 ### Encryption at Rest
 
 | Resource | Method |
 |----------|--------|
 | RDS PostgreSQL | AES-256 (AWS KMS) |
-| S3 medical images | AES-256 (SSE-S3) |
-| S3 audit logs | AES-256 (SSE-S3) |
+| S3 medical images | AWS KMS CMK |
+| S3 audit logs | AWS KMS CMK |
 | Secrets | AES-256 (Secrets Manager) |
 
 ### Encryption in Transit
@@ -316,7 +317,7 @@ Every IAM role grants only the permissions required for its function. No wildcar
 ### Audit Logging
 
 - CloudTrail for AWS API audit trail
-- VPC Flow Logs for network audit
+- VPC Flow Logs for rejected network traffic audit
 - Application audit logs via CloudWatch
 
 ### Immutable Infrastructure
@@ -345,6 +346,10 @@ The project intentionally balances production realism with cost awareness.
 - RDS PostgreSQL over Aurora (simpler for PoC)
 - S3 standard over S3 Intelligent-Tiering (predictable access patterns)
 - CloudWatch over Datadog (AWS-native, no additional cost)
+- Optional NAT gateway, disabled while ECS desired count is zero
+- VPC Flow Logs record rejected traffic instead of all accepted traffic
+- CloudTrail writes encrypted logs to S3; CloudWatch/SNS alerting is deferred until alert subscribers exist
+- WAF protection is enabled, while full WAF request logging is deferred to reduce cost and unnecessary header capture
 
 ---
 

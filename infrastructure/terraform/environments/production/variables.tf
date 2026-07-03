@@ -28,6 +28,12 @@ variable "availability_zones" {
   default     = ["us-east-1a", "us-east-1b"]
 }
 
+variable "enable_private_egress" {
+  description = "Create NAT gateway and private default route for ECS outbound access"
+  type        = bool
+  default     = false
+}
+
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
@@ -61,7 +67,7 @@ variable "ecs_task_memory" {
 variable "ecs_desired_count" {
   description = "Number of ECS tasks to run"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "container_port" {

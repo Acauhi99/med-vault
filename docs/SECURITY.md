@@ -369,8 +369,8 @@ All breaches must be documented regardless of size:
 | Resource | Method | Key Management |
 |----------|--------|----------------|
 | RDS PostgreSQL | AES-256 | AWS KMS |
-| S3 medical images | AES-256 (SSE-S3) | AWS managed |
-| S3 audit logs | AES-256 (SSE-S3) | AWS managed |
+| S3 medical images | AWS KMS CMK | Customer managed |
+| S3 audit logs | AWS KMS CMK | Customer managed |
 | Secrets | AES-256 | AWS Secrets Manager |
 
 ### In Transit
@@ -486,6 +486,7 @@ All breaches must be documented regardless of size:
 - Never include PHI in error messages
 - Never expose PHI in API responses without authorization
 - Medical images encrypted at rest and in transit
+- Full request logging at edge controls is minimized unless needed for active investigation, reducing unnecessary PHI/header exposure
 
 ### Data Retention
 

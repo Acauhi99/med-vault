@@ -23,3 +23,13 @@ output "s3_medical_images_bucket" {
   description = "S3 bucket for medical images"
   value       = module.storage.medical_images_bucket_name
 }
+
+output "cloudtrail_arn" {
+  description = "CloudTrail ARN"
+  value       = module.observability.cloudtrail_arn
+}
+
+output "vpc_flow_logs_group_name" {
+  description = "VPC Flow Logs CloudWatch log group name"
+  value       = module.observability.vpc_flow_logs_group_name
+}
