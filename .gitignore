@@ -1,1 +1,43 @@
-.codegraph  
+# CodeGraph
+.codegraph
+
+# Go
+backend/bin/
+backend/coverage.out
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+
+# Terraform
+infrastructure/terraform/**/.terraform/
+infrastructure/terraform/**/*.tfstate
+infrastructure/terraform/**/*.tfstate.backup
+infrastructure/terraform/**/.terraform.lock.hcl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+bin/
+dist/

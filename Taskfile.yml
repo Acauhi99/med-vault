@@ -168,9 +168,9 @@ tasks:
 
   generate:backend:
     desc: Generate Go server interfaces from OpenAPI
-    dir: '{{.ROOT_DIR}}'
+    dir: '{{.BACKEND_DIR}}'
     cmds:
-      - oapi-codegen -generate types,server -package generated -o backend/internal/generated/api.go spec/openapi.yaml
+      - oapi-codegen -generate types,std-http -package generated -o internal/generated/api.go ../spec/openapi.yaml
 
   generate:frontend:
     desc: Generate TypeScript types from OpenAPI
