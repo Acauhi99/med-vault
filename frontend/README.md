@@ -1,4 +1,16 @@
-MedVault frontend.
+# Frontend
+
+Next.js App Router app for MedVault.
+
+## Official Docs
+
+- [Context](../CONTEXT.md)
+- [Architecture](../docs/ARCHITECTURE.md)
+- [Security](../docs/SECURITY.md)
+- [Testing Strategy](../docs/TESTING_STRATEGY.md)
+- [Quality Gates](../docs/QUALITY_GATES.md)
+- [Frontend ADR-015](../docs/adr/015-frontend-feature-based-architecture.md)
+- [Design-First API ADR-016](../docs/adr/016-design-first-api-documentation.md)
 
 ## Commands
 
@@ -9,19 +21,8 @@ pnpm lint
 pnpm test
 ```
 
-## Environment
-
-```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-```
-
 ## Structure
 
 - `app/` route shell and layout
-- `features/authentication/` auth UI, schema, and service layer
+- `features/` feature modules
 - `infrastructure/` API client, query provider, and session store
-
-## Validation
-
-- Zod v4 helpers in use: `z.email()`, `z.uuid()`, `z.iso.datetime()`
-- Check the official Zod docs before adding validators; deprecated helpers still exist in typings

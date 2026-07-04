@@ -10,6 +10,18 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 
 **Primary goal:** Architecture demonstration, not production software.
 
+## Agent Start
+
+When a session starts:
+
+1. Read this file.
+2. Read [CONTEXT.md](CONTEXT.md).
+3. Read only the docs relevant to the task from the source-of-truth table below.
+4. Read the matching flow diagram in `docs/diagrams/` when the task touches a user flow.
+5. Use `codegraph_explore` to inspect the code path before editing.
+6. Keep README files as navigation only; do not restate rules there.
+7. Update docs and tests in the same change set when behavior changes.
+
 ---
 
 ## Rules
@@ -52,6 +64,14 @@ MedVault is a healthcare platform PoC demonstrating secure, multi-tenant archite
 | Implementation progress | [ROADMAP.md](ROADMAP.md) |
 | Acceptance criteria | [CHECKLIST.md](docs/CHECKLIST.md) |
 | Technology decisions | [docs/adr/](docs/adr/) |
+
+## Documentation Navigation
+
+- Prefer the narrowest relevant doc set over reading everything.
+- For frontend work, start with `CONTEXT.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, and the matching ADR/diagram.
+- For backend work, start with `CONTEXT.md`, `docs/DOMAIN.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, and the matching ADR/diagram.
+- For infrastructure work, start with `CONTEXT.md`, `docs/INFRASTRUCTURE.md`, `docs/SECURITY.md`, and the matching ADR.
+- If docs and code disagree, fix the truth and keep both in sync.
 
 ---
 
