@@ -1,0 +1,8 @@
+.git
+.github
+*.md
+docs/
+infrastructure/
+frontend/
+testdata/
+.env*

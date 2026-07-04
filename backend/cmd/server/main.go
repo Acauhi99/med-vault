@@ -7,32 +7,31 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+
+	"github.com/Acauhi99/med-vault/internal/server"
+	"github.com/Acauhi99/med-vault/internal/shared/config"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	slog.SetDefault(logger)
 
-	mux := http.NewServeMux()
+	cfg, err := config.Load()
+	if err != nil {
+		slog.Error("config failed", "error", err)
+		os.Exit(1)
+	}
 
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
-	})
-
-	srv := &http.Server{
-		Addr:         ":8080",
-		Handler:      mux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+	app, err := server.New(context.Background(), cfg, logger)
+	if err != nil {
+		slog.Error("server init failed", "error", err)
+		os.Exit(1)
 	}
 
 	go func() {
-		slog.Info("server starting", "addr", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		slog.Info("server starting", "addr", app.Server.Addr)
+		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			app.Close()
 			slog.Error("server failed", "error", err)
 			os.Exit(1)
 		}
@@ -44,13 +43,16 @@ func main() {
 
 	slog.Info("server shutting down")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := app.Server.Shutdown(ctx); err != nil {
+		cancel()
+		app.Close()
 		slog.Error("server forced to shutdown", "error", err)
 		os.Exit(1)
 	}
+	cancel()
+	app.Close()
 
 	slog.Info("server stopped")
 }
