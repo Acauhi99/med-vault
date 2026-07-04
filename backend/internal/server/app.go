@@ -49,18 +49,24 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 	registerCmd := application.NewRegisterCommand(userRepo, hasher)
 	authenticateCmd := application.NewAuthenticateCommand(userRepo, tenantRepo, hasher, jwtGen, cfg.JWTTempTTL)
 	selectTenantCmd := application.NewSelectTenantCommand(tenantRepo, jwtGen, cfg.JWTAccessTTL, cfg.JWTRefreshTTL)
-	refreshTokenCmd := application.NewRefreshTokenCommand(jwtGen, cfg.JWTAccessTTL, cfg.JWTRefreshTTL)
+	tokenStore := application.NewTokenStore(cfg.JWTRefreshTTL)
+	refreshTokenCmd := application.NewRefreshTokenCommand(jwtGen, cfg.JWTAccessTTL, cfg.JWTRefreshTTL, tokenStore)
 	getCurrentUserQuery := application.NewGetCurrentUserQuery(userRepo, tenantRepo)
 	addMemberCmd := application.NewAddMemberCommand(tenantRepo)
 	removeMemberCmd := application.NewRemoveMemberCommand(tenantRepo)
 	listMembersQuery := application.NewListMembersQuery(tenantRepo)
 	reactivateTenantCmd := application.NewReactivateTenantCommand(tenantRepo)
+	createTenantCmd := application.NewCreateTenantCommand(tenantRepo)
+	suspendTenantCmd := application.NewSuspendTenantCommand(tenantRepo)
 
 	clinicalRepo := pgxclinical.NewCaseRepository(db)
 	clinicalAPI := clinicalapi.NewAPI(clinicalRepo, tenantRepo)
 
 	imagingRepo := pgximaging.NewImageRepository(db)
-	storage := imagingstorage.NewStubStorage(cfg.S3Bucket, cfg.AWSRegion)
+	storage, err := imagingstorage.NewS3Storage(ctx, cfg.S3Bucket, cfg.AWSRegion)
+	if err != nil {
+		return nil, err
+	}
 	imagingAPI := imagingapi.NewAPI(imagingRepo, clinicalRepo, storage)
 
 	auditRepo := pgxaudit.NewAuditRepository(db)
@@ -76,7 +82,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 		httpx.WriteJSON(w, r, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	api := NewAPI(registerCmd, authenticateCmd, selectTenantCmd, refreshTokenCmd, getCurrentUserQuery, addMemberCmd, removeMemberCmd, listMembersQuery, reactivateTenantCmd, logger)
+	api := NewAPI(registerCmd, authenticateCmd, selectTenantCmd, refreshTokenCmd, getCurrentUserQuery, addMemberCmd, removeMemberCmd, listMembersQuery, reactivateTenantCmd, createTenantCmd, suspendTenantCmd, tokenStore, logger)
 	api.ClinicalAPI = clinicalAPI
 	api.ImagingAPI = imagingAPI
 	api.AuditAPI = auditAPI

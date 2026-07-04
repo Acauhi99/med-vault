@@ -9,7 +9,6 @@ import (
 	"github.com/Acauhi99/med-vault/internal/shared/auth"
 	"github.com/Acauhi99/med-vault/internal/shared/httpx"
 	"github.com/google/uuid"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type API struct {
@@ -45,13 +44,20 @@ func (a *API) ListAuditLogs(w http.ResponseWriter, r *http.Request, params gener
 	if params.ResourceType != nil {
 		resourceType = *params.ResourceType
 	}
+	var action string
+	if params.Action != nil {
+		action = *params.Action
+	}
+	var userID *uuid.UUID
+	if params.UserId != nil {
+		userID = params.UserId
+	}
 	var resourceID *uuid.UUID
 	if params.ResourceId != nil {
-		id := uuid.UUID(*params.ResourceId)
-		resourceID = &id
+		resourceID = params.ResourceId
 	}
 
-	logs, total, err := a.listAuditLogs.Execute(r.Context(), principal, page, pageSize, resourceType, resourceID)
+	logs, total, err := a.listAuditLogs.Execute(r.Context(), principal, page, pageSize, action, userID, resourceType, resourceID)
 	if err != nil {
 		switch err {
 		case application.ErrInvalidRole:
@@ -67,10 +73,10 @@ func (a *API) ListAuditLogs(w http.ResponseWriter, r *http.Request, params gener
 		action := log.Action
 		resourceType := log.ResourceType
 		ip := log.IPAddress
-		meta := map[string]interface{}(log.Details)
-		tenantID := openapi_types.UUID(log.TenantID)
-		userID := openapi_types.UUID(log.UserID)
-		resourceUUID := openapi_types.UUID(log.ResourceID)
+		meta := log.Details
+		tenantID := log.TenantID
+		userID := log.UserID
+		resourceUUID := log.ResourceID
 		summaries[i] = generated.AuditLogResponse{
 			Id:           &log.ID,
 			TenantId:     &tenantID,

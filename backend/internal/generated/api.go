@@ -367,6 +367,11 @@ type CreateCaseRequest struct {
 	Symptoms []AddSymptomRequest `json:"symptoms"`
 }
 
+// CreateTenantRequest defines model for CreateTenantRequest.
+type CreateTenantRequest struct {
+	Name string `json:"name"`
+}
+
 // DiagnosisResponse defines model for DiagnosisResponse.
 type DiagnosisResponse struct {
 	CaseId    *openapi_types.UUID `json:"case_id,omitempty"`
@@ -428,6 +433,11 @@ type LoginResponse struct {
 // LoginResponseDataTenantsRole defines model for LoginResponse.Data.Tenants.Role.
 type LoginResponseDataTenantsRole string
 
+// LogoutRequest defines model for LogoutRequest.
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 // PaginationMeta defines model for PaginationMeta.
 type PaginationMeta struct {
 	Page     *int `json:"page,omitempty"`
@@ -457,6 +467,12 @@ type SelectTenantRequest struct {
 	TenantId openapi_types.UUID `json:"tenant_id"`
 }
 
+// SuccessResponse defines model for SuccessResponse.
+type SuccessResponse struct {
+	Data *map[string]interface{} `json:"data,omitempty"`
+	Meta *ResponseMeta           `json:"meta,omitempty"`
+}
+
 // SymptomResponse defines model for SymptomResponse.
 type SymptomResponse struct {
 	Description *string                  `json:"description,omitempty"`
@@ -479,6 +495,16 @@ type TenantMember struct {
 // TenantMemberRole defines model for TenantMember.Role.
 type TenantMemberRole string
 
+// TenantResponse defines model for TenantResponse.
+type TenantResponse struct {
+	Data *struct {
+		CreatedAt *time.Time          `json:"created_at,omitempty"`
+		Id        *openapi_types.UUID `json:"id,omitempty"`
+		Name      *string             `json:"name,omitempty"`
+		Status    *string             `json:"status,omitempty"`
+	} `json:"data,omitempty"`
+}
+
 // TokenResponse defines model for TokenResponse.
 type TokenResponse struct {
 	Data *struct {
@@ -495,6 +521,7 @@ type TokenResponse struct {
 type UploadURLRequest struct {
 	ContentType UploadURLRequestContentType `json:"content_type"`
 	FileName    string                      `json:"file_name"`
+	FileSize    int64                       `json:"file_size"`
 }
 
 // UploadURLRequestContentType defines model for UploadURLRequest.ContentType.
@@ -554,6 +581,8 @@ type bearerAuthContextKey string
 type ListAuditLogsParams struct {
 	Page         *PageParam          `form:"page,omitempty" json:"page,omitempty"`
 	PageSize     *PageSizeParam      `form:"page_size,omitempty" json:"page_size,omitempty"`
+	Action       *string             `form:"action,omitempty" json:"action,omitempty"`
+	UserId       *openapi_types.UUID `form:"user_id,omitempty" json:"user_id,omitempty"`
 	ResourceType *string             `form:"resource_type,omitempty" json:"resource_type,omitempty"`
 	ResourceId   *openapi_types.UUID `form:"resource_id,omitempty" json:"resource_id,omitempty"`
 }
@@ -570,6 +599,9 @@ type ListCasesParamsStatus string
 
 // AuthenticateUserJSONRequestBody defines body for AuthenticateUser for application/json ContentType.
 type AuthenticateUserJSONRequestBody = LoginRequest
+
+// LogoutUserJSONRequestBody defines body for LogoutUser for application/json ContentType.
+type LogoutUserJSONRequestBody = LogoutRequest
 
 // RefreshTokenJSONRequestBody defines body for RefreshToken for application/json ContentType.
 type RefreshTokenJSONRequestBody = RefreshRequest
@@ -598,6 +630,9 @@ type RequestUploadURLJSONRequestBody = UploadURLRequest
 // AddSymptomJSONRequestBody defines body for AddSymptom for application/json ContentType.
 type AddSymptomJSONRequestBody = AddSymptomRequest
 
+// CreateTenantJSONRequestBody defines body for CreateTenant for application/json ContentType.
+type CreateTenantJSONRequestBody = CreateTenantRequest
+
 // AddTenantMemberJSONRequestBody defines body for AddTenantMember for application/json ContentType.
 type AddTenantMemberJSONRequestBody = AddTenantMemberRequest
 
@@ -609,6 +644,9 @@ type ServerInterface interface {
 	// Authenticate user and return available tenants
 	// (POST /auth/login)
 	AuthenticateUser(w http.ResponseWriter, r *http.Request)
+	// Invalidate refresh token and log out
+	// (POST /auth/logout)
+	LogoutUser(w http.ResponseWriter, r *http.Request)
 	// Refresh access token
 	// (POST /auth/refresh)
 	RefreshToken(w http.ResponseWriter, r *http.Request)
@@ -648,9 +686,15 @@ type ServerInterface interface {
 	// Add symptom to case
 	// (POST /cases/{id}/symptoms)
 	AddSymptom(w http.ResponseWriter, r *http.Request, id CaseIdParam)
+	// Delete an image (admin only)
+	// (DELETE /images/{id})
+	DeleteImage(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// Get pre-signed download URL
 	// (GET /images/{id}/download-url)
 	GetDownloadURL(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// Create a new tenant (admin only)
+	// (POST /tenants)
+	CreateTenant(w http.ResponseWriter, r *http.Request)
 	// List all members of a tenant
 	// (GET /tenants/{tenant_id}/members)
 	ListTenantMembers(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
@@ -663,6 +707,9 @@ type ServerInterface interface {
 	// Reactivate a suspended tenant (admin only)
 	// (POST /tenants/{tenant_id}/reactivate)
 	ReactivateTenant(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
+	// Suspend an active tenant (admin only)
+	// (POST /tenants/{tenant_id}/suspend)
+	SuspendTenant(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
 	// Get current user profile
 	// (GET /users/me)
 	GetCurrentUser(w http.ResponseWriter, r *http.Request)
@@ -679,6 +726,7 @@ type MiddlewareFunc func(http.Handler) http.Handler
 
 // ListAuditLogs operation middleware
 func (siw *ServerInterfaceWrapper) ListAuditLogs(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -713,6 +761,32 @@ func (siw *ServerInterfaceWrapper) ListAuditLogs(w http.ResponseWriter, r *http.
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "page_size"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "action" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "action", r.URL.Query(), &params.Action, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "action"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "action", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "user_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "user_id", r.URL.Query(), &params.UserId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "user_id"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "user_id", Err: err})
 		}
 		return
 	}
@@ -756,6 +830,7 @@ func (siw *ServerInterfaceWrapper) ListAuditLogs(w http.ResponseWriter, r *http.
 
 // AuthenticateUser operation middleware
 func (siw *ServerInterfaceWrapper) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AuthenticateUser(w, r)
 	}))
@@ -767,8 +842,29 @@ func (siw *ServerInterfaceWrapper) AuthenticateUser(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// LogoutUser operation middleware
+func (siw *ServerInterfaceWrapper) LogoutUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LogoutUser(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // RefreshToken operation middleware
 func (siw *ServerInterfaceWrapper) RefreshToken(w http.ResponseWriter, r *http.Request) {
+
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -788,6 +884,7 @@ func (siw *ServerInterfaceWrapper) RefreshToken(w http.ResponseWriter, r *http.R
 
 // RegisterUser operation middleware
 func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.Request) {
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.RegisterUser(w, r)
 	}))
@@ -801,6 +898,7 @@ func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.R
 
 // SelectTenant operation middleware
 func (siw *ServerInterfaceWrapper) SelectTenant(w http.ResponseWriter, r *http.Request) {
+
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -820,6 +918,7 @@ func (siw *ServerInterfaceWrapper) SelectTenant(w http.ResponseWriter, r *http.R
 
 // ListCases operation middleware
 func (siw *ServerInterfaceWrapper) ListCases(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -884,6 +983,7 @@ func (siw *ServerInterfaceWrapper) ListCases(w http.ResponseWriter, r *http.Requ
 
 // CreateCase operation middleware
 func (siw *ServerInterfaceWrapper) CreateCase(w http.ResponseWriter, r *http.Request) {
+
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -903,6 +1003,7 @@ func (siw *ServerInterfaceWrapper) CreateCase(w http.ResponseWriter, r *http.Req
 
 // GetCase operation middleware
 func (siw *ServerInterfaceWrapper) GetCase(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -934,6 +1035,7 @@ func (siw *ServerInterfaceWrapper) GetCase(w http.ResponseWriter, r *http.Reques
 
 // AssignDoctor operation middleware
 func (siw *ServerInterfaceWrapper) AssignDoctor(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -965,6 +1067,7 @@ func (siw *ServerInterfaceWrapper) AssignDoctor(w http.ResponseWriter, r *http.R
 
 // CloseCase operation middleware
 func (siw *ServerInterfaceWrapper) CloseCase(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -996,6 +1099,7 @@ func (siw *ServerInterfaceWrapper) CloseCase(w http.ResponseWriter, r *http.Requ
 
 // WriteDiagnosis operation middleware
 func (siw *ServerInterfaceWrapper) WriteDiagnosis(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1027,6 +1131,7 @@ func (siw *ServerInterfaceWrapper) WriteDiagnosis(w http.ResponseWriter, r *http
 
 // ListImages operation middleware
 func (siw *ServerInterfaceWrapper) ListImages(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1058,6 +1163,7 @@ func (siw *ServerInterfaceWrapper) ListImages(w http.ResponseWriter, r *http.Req
 
 // ConfirmUpload operation middleware
 func (siw *ServerInterfaceWrapper) ConfirmUpload(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1089,6 +1195,7 @@ func (siw *ServerInterfaceWrapper) ConfirmUpload(w http.ResponseWriter, r *http.
 
 // RequestUploadURL operation middleware
 func (siw *ServerInterfaceWrapper) RequestUploadURL(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1120,6 +1227,7 @@ func (siw *ServerInterfaceWrapper) RequestUploadURL(w http.ResponseWriter, r *ht
 
 // AddSymptom operation middleware
 func (siw *ServerInterfaceWrapper) AddSymptom(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1149,8 +1257,41 @@ func (siw *ServerInterfaceWrapper) AddSymptom(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteImage operation middleware
+func (siw *ServerInterfaceWrapper) DeleteImage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteImage(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetDownloadURL operation middleware
 func (siw *ServerInterfaceWrapper) GetDownloadURL(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1180,8 +1321,29 @@ func (siw *ServerInterfaceWrapper) GetDownloadURL(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// CreateTenant operation middleware
+func (siw *ServerInterfaceWrapper) CreateTenant(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateTenant(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListTenantMembers operation middleware
 func (siw *ServerInterfaceWrapper) ListTenantMembers(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1213,6 +1375,7 @@ func (siw *ServerInterfaceWrapper) ListTenantMembers(w http.ResponseWriter, r *h
 
 // AddTenantMember operation middleware
 func (siw *ServerInterfaceWrapper) AddTenantMember(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1244,6 +1407,7 @@ func (siw *ServerInterfaceWrapper) AddTenantMember(w http.ResponseWriter, r *htt
 
 // RemoveTenantMember operation middleware
 func (siw *ServerInterfaceWrapper) RemoveTenantMember(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1284,6 +1448,7 @@ func (siw *ServerInterfaceWrapper) RemoveTenantMember(w http.ResponseWriter, r *
 
 // ReactivateTenant operation middleware
 func (siw *ServerInterfaceWrapper) ReactivateTenant(w http.ResponseWriter, r *http.Request) {
+
 	var err error
 	_ = err
 
@@ -1313,8 +1478,41 @@ func (siw *ServerInterfaceWrapper) ReactivateTenant(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// SuspendTenant operation middleware
+func (siw *ServerInterfaceWrapper) SuspendTenant(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "tenant_id" -------------
+	var tenantId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tenant_id", r.PathValue("tenant_id"), &tenantId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tenant_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SuspendTenant(w, r, tenantId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetCurrentUser operation middleware
 func (siw *ServerInterfaceWrapper) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -1454,6 +1652,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/audit-logs", wrapper.ListAuditLogs)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/auth/login", wrapper.AuthenticateUser)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/auth/logout", wrapper.LogoutUser)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/auth/refresh", wrapper.RefreshToken)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/auth/register", wrapper.RegisterUser)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/auth/select-tenant", wrapper.SelectTenant)
@@ -1467,11 +1666,14 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/cases/{id}/images", wrapper.ConfirmUpload)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/cases/{id}/images/upload-url", wrapper.RequestUploadURL)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/cases/{id}/symptoms", wrapper.AddSymptom)
+	m.HandleFunc(http.MethodDelete+" "+options.BaseURL+"/images/{id}", wrapper.DeleteImage)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/images/{id}/download-url", wrapper.GetDownloadURL)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants", wrapper.CreateTenant)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/tenants/{tenant_id}/members", wrapper.ListTenantMembers)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants/{tenant_id}/members", wrapper.AddTenantMember)
 	m.HandleFunc(http.MethodDelete+" "+options.BaseURL+"/tenants/{tenant_id}/members/{user_id}", wrapper.RemoveTenantMember)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants/{tenant_id}/reactivate", wrapper.ReactivateTenant)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants/{tenant_id}/suspend", wrapper.SuspendTenant)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/users/me", wrapper.GetCurrentUser)
 
 	return m

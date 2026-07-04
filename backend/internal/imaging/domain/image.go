@@ -23,4 +23,5 @@ type Repository interface {
 	ListByCase(ctx context.Context, tenantID, caseID uuid.UUID) ([]Image, error)
 	GetByID(ctx context.Context, tenantID, imageID uuid.UUID) (*Image, error)
 	FindByS3Key(ctx context.Context, tenantID, caseID uuid.UUID, s3Key string) (*Image, error)
+	Delete(ctx context.Context, tenantID, imageID uuid.UUID) error
 }

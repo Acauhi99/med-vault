@@ -3,8 +3,8 @@ package server
 import (
 	"encoding/json"
 	"log/slog"
-	"net/http"
 	"net"
+	"net/http"
 
 	auditapi "github.com/Acauhi99/med-vault/internal/audit"
 	"github.com/Acauhi99/med-vault/internal/auth/application"
@@ -28,6 +28,9 @@ type API struct {
 	removeMember        *application.RemoveMemberCommand
 	listMembers         *application.ListMembersQuery
 	reactivateTenantCmd *application.ReactivateTenantCommand
+	createTenantCmd     *application.CreateTenantCommand
+	suspendTenantCmd    *application.SuspendTenantCommand
+	tokenStore          *application.TokenStore
 	logger              *slog.Logger
 	ClinicalAPI         *clinicalapi.API
 	ImagingAPI          *imagingapi.API
@@ -45,6 +48,9 @@ func NewAPI(
 	removeMember *application.RemoveMemberCommand,
 	listMembers *application.ListMembersQuery,
 	reactivateTenantCmd *application.ReactivateTenantCommand,
+	createTenantCmd *application.CreateTenantCommand,
+	suspendTenantCmd *application.SuspendTenantCommand,
+	tokenStore *application.TokenStore,
 	logger *slog.Logger,
 ) *API {
 	return &API{
@@ -57,6 +63,9 @@ func NewAPI(
 		removeMember:        removeMember,
 		listMembers:         listMembers,
 		reactivateTenantCmd: reactivateTenantCmd,
+		createTenantCmd:     createTenantCmd,
+		suspendTenantCmd:    suspendTenantCmd,
+		tokenStore:          tokenStore,
 		logger:              logger,
 	}
 }
@@ -114,6 +123,24 @@ func (a *API) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (a *API) LogoutUser(w http.ResponseWriter, r *http.Request) {
+	var input generated.LogoutRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+
+	if a.tokenStore != nil && input.RefreshToken != "" {
+		a.tokenStore.Revoke(input.RefreshToken)
+	}
+
+	if a.auditLog != nil {
+		a.auditLog.Log(r.Context(), r, "user.logged_out", "user", uuid.UUID{}, nil)
+	}
+
+	httpx.WriteJSON(w, r, http.StatusOK, map[string]any{"data": nil})
+}
+
 func (a *API) logLoginFailure(r *http.Request, email string, err error) {
 	if a.logger == nil {
 		return
@@ -124,7 +151,8 @@ func (a *API) logLoginFailure(r *http.Request, email string, err error) {
 		ip = host
 	}
 
-	a.logger.Warn("auth.login_failed",
+	a.logger.Warn(
+		"auth.login_failed",
 		slog.String("request_id", httpx.RequestID(r)),
 		slog.String("email", email),
 		slog.String("remote_addr", ip),
@@ -244,6 +272,10 @@ func (a *API) AddSymptom(w http.ResponseWriter, r *http.Request, id generated.Ca
 
 func (a *API) GetDownloadURL(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	a.ImagingAPI.GetDownloadURL(w, r, id)
+}
+
+func (a *API) DeleteImage(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	a.ImagingAPI.DeleteImage(w, r, id)
 }
 
 func (a *API) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
@@ -389,6 +421,89 @@ func (a *API) ReactivateTenant(w http.ResponseWriter, r *http.Request, tenantId 
 
 	if a.auditLog != nil {
 		a.auditLog.Log(r.Context(), r, "tenant.reactivated", "tenant", tenantId, nil)
+	}
+
+	httpx.WriteJSON(w, r, http.StatusOK, map[string]any{
+		"data": map[string]any{
+			"id":         tenant.ID,
+			"name":       tenant.Name,
+			"status":     tenant.Status,
+			"created_at": tenant.CreatedAt,
+		},
+	})
+}
+
+func (a *API) CreateTenant(w http.ResponseWriter, r *http.Request) {
+	principal, ok := auth.PrincipalFromContext(r.Context())
+	if !ok {
+		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
+		return
+	}
+
+	var input generated.CreateTenantRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+
+	if input.Name == "" {
+		httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "name is required")
+		return
+	}
+
+	appPrincipal := application.Principal{
+		UserID:   principal.UserID,
+		TenantID: principal.TenantID,
+		Role:     string(principal.Role),
+	}
+	tenant, err := a.createTenantCmd.Execute(r.Context(), appPrincipal, input.Name)
+	if err != nil {
+		if err == application.ErrNotAdmin {
+			httpx.WriteError(w, r, http.StatusForbidden, "NOT_ADMIN", "principal is not an administrator")
+			return
+		}
+		httpx.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", err.Error())
+		return
+	}
+
+	if a.auditLog != nil {
+		a.auditLog.Log(r.Context(), r, "tenant.created", "tenant", tenant.ID, nil)
+	}
+
+	httpx.WriteJSON(w, r, http.StatusCreated, map[string]any{
+		"data": map[string]any{
+			"id":         tenant.ID,
+			"name":       tenant.Name,
+			"status":     tenant.Status,
+			"created_at": tenant.CreatedAt,
+		},
+	})
+}
+
+func (a *API) SuspendTenant(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID) {
+	principal, ok := auth.PrincipalFromContext(r.Context())
+	if !ok {
+		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
+		return
+	}
+
+	appPrincipal := application.Principal{
+		UserID:   principal.UserID,
+		TenantID: principal.TenantID,
+		Role:     string(principal.Role),
+	}
+	tenant, err := a.suspendTenantCmd.Execute(r.Context(), appPrincipal, tenantId)
+	if err != nil {
+		if err == application.ErrNotAdmin {
+			httpx.WriteError(w, r, http.StatusForbidden, "NOT_ADMIN", "principal is not an administrator of this tenant")
+			return
+		}
+		httpx.WriteError(w, r, http.StatusNotFound, "NOT_FOUND", err.Error())
+		return
+	}
+
+	if a.auditLog != nil {
+		a.auditLog.Log(r.Context(), r, "tenant.suspended", "tenant", tenantId, nil)
 	}
 
 	httpx.WriteJSON(w, r, http.StatusOK, map[string]any{

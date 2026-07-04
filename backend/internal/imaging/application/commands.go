@@ -14,15 +14,18 @@ import (
 )
 
 var (
-	ErrCaseNotFound   = errors.New("case not found")
-	ErrAccessDenied   = errors.New("access denied")
-	ErrInvalidRole    = errors.New("invalid role for this operation")
-	ErrCaseNotOpen    = errors.New("case is not in open status")
-	ErrImageNotFound  = errors.New("image not found")
-	ErrInvalidFileExt = errors.New("unsupported file extension")
+	ErrCaseNotFound       = errors.New("case not found")
+	ErrAccessDenied       = errors.New("access denied")
+	ErrInvalidRole        = errors.New("invalid role for this operation")
+	ErrCaseNotOpen        = errors.New("case is not in open status")
+	ErrImageNotFound      = errors.New("image not found")
+	ErrInvalidFileExt     = errors.New("unsupported file extension")
 	ErrInvalidContentType = errors.New("unsupported content type")
 	ErrInvalidFileName    = errors.New("invalid file name")
+	ErrFileTooLarge       = errors.New("file size exceeds 50MB limit")
 )
+
+const maxUploadSizeBytes int64 = 50 * 1024 * 1024
 
 type RequestUploadURLCommand struct {
 	repo     imagingdomain.Repository
@@ -34,9 +37,12 @@ func NewRequestUploadURLCommand(repo imagingdomain.Repository, caseRepo clinical
 	return &RequestUploadURLCommand{repo: repo, caseRepo: caseRepo, storage: storage}
 }
 
-func (c *RequestUploadURLCommand) Execute(ctx context.Context, principal sharedauth.Principal, caseID uuid.UUID, fileName, contentType string) (uploadURL, s3Key string, expiresIn int, err error) {
+func (c *RequestUploadURLCommand) Execute(ctx context.Context, principal sharedauth.Principal, caseID uuid.UUID, fileName, contentType string, fileSize int64) (uploadURL, s3Key string, expiresIn int, err error) {
 	if principal.Role != sharedauth.RolePatient {
 		return "", "", 0, ErrInvalidRole
+	}
+	if fileSize <= 0 || fileSize > maxUploadSizeBytes {
+		return "", "", 0, ErrFileTooLarge
 	}
 
 	cs, err := c.caseRepo.GetByID(ctx, principal.TenantID, caseID)
@@ -197,4 +203,19 @@ func isAllowedContentType(contentType string) bool {
 		return true
 	}
 	return false
+}
+
+type DeleteImageCommand struct {
+	repo imagingdomain.Repository
+}
+
+func NewDeleteImageCommand(repo imagingdomain.Repository) *DeleteImageCommand {
+	return &DeleteImageCommand{repo: repo}
+}
+
+func (c *DeleteImageCommand) Execute(ctx context.Context, principal sharedauth.Principal, imageID uuid.UUID) error {
+	if principal.Role != sharedauth.RoleAdministrator {
+		return ErrInvalidRole
+	}
+	return c.repo.Delete(ctx, principal.TenantID, imageID)
 }

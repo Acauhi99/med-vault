@@ -44,4 +44,6 @@ type TenantRepository interface {
 	RemoveMember(ctx context.Context, tenantID, userID uuid.UUID) error
 	ListMembers(ctx context.Context, tenantID uuid.UUID) ([]UserTenant, error)
 	Reactivate(ctx context.Context, tenantID uuid.UUID) (*Tenant, error)
+	Create(ctx context.Context, name string) (*Tenant, error)
+	Suspend(ctx context.Context, tenantID uuid.UUID) (*Tenant, error)
 }

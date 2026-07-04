@@ -43,11 +43,22 @@ func (m *mockTenantRepo) FindUserTenant(userID, tenantID uuid.UUID) (*authdomain
 }
 
 func (m *mockTenantRepo) AddMember(context.Context, uuid.UUID, uuid.UUID, string) error { return nil }
-func (m *mockTenantRepo) RemoveMember(context.Context, uuid.UUID, uuid.UUID) error      { return nil }
+
+func (m *mockTenantRepo) RemoveMember(context.Context, uuid.UUID, uuid.UUID) error { return nil }
+
 func (m *mockTenantRepo) ListMembers(context.Context, uuid.UUID) ([]authdomain.UserTenant, error) {
 	return nil, nil
 }
-func (m *mockTenantRepo) Reactivate(context.Context, uuid.UUID) (*authdomain.Tenant, error) { return nil, nil }
+
+func (m *mockTenantRepo) Reactivate(context.Context, uuid.UUID) (*authdomain.Tenant, error) {
+	return nil, nil
+}
+
+func (m *mockTenantRepo) Create(context.Context, string) (*authdomain.Tenant, error) { return nil, nil }
+
+func (m *mockTenantRepo) Suspend(context.Context, uuid.UUID) (*authdomain.Tenant, error) {
+	return nil, nil
+}
 
 func newMockRepo() *mockCaseRepo {
 	return &mockCaseRepo{cases: make(map[uuid.UUID]*domain.Case)}

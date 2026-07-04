@@ -52,7 +52,8 @@ func (r *CaseRepository) Create(ctx context.Context, c *domain.Case) error {
 
 func (r *CaseRepository) GetByID(ctx context.Context, tenantID, caseID uuid.UUID) (*domain.Case, error) {
 	var c domain.Case
-	err := r.pool.QueryRow(ctx,
+	err := r.pool.QueryRow(
+		ctx,
 		`SELECT id, tenant_id, patient_id, doctor_id, status, created_at, updated_at, closed_at
 		 FROM cases WHERE id = $1 AND tenant_id = $2`,
 		caseID, tenantID,
@@ -85,7 +86,8 @@ func (r *CaseRepository) GetByID(ctx context.Context, tenantID, caseID uuid.UUID
 	}
 
 	var diag domain.Diagnosis
-	err = r.pool.QueryRow(ctx,
+	err = r.pool.QueryRow(
+		ctx,
 		`SELECT id, doctor_id, notes, written_at
 		 FROM diagnoses WHERE case_id = $1`,
 		caseID,
@@ -129,7 +131,8 @@ func (r *CaseRepository) listCases(ctx context.Context, whereClause string, base
 	}
 
 	var total int
-	err := r.pool.QueryRow(ctx,
+	err := r.pool.QueryRow(
+		ctx,
 		`SELECT COUNT(*) FROM cases WHERE `+whereClause+statusFilter, args...,
 	).Scan(&total)
 	if err != nil {

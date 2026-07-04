@@ -22,12 +22,25 @@ func (m *mockAuditRepo) Create(_ context.Context, log *domain.AuditLog) error {
 	return nil
 }
 
-func (m *mockAuditRepo) ListByTenant(_ context.Context, tenantID uuid.UUID, offset, limit int, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
+func (m *mockAuditRepo) ListByTenant(_ context.Context, tenantID uuid.UUID, offset, limit int, action string, userID *uuid.UUID, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
 	var filtered []domain.AuditLog
 	for _, l := range m.logs {
-		if l.TenantID == tenantID {
-			filtered = append(filtered, l)
+		if l.TenantID != tenantID {
+			continue
 		}
+		if action != "" && l.Action != action {
+			continue
+		}
+		if userID != nil && l.UserID != *userID {
+			continue
+		}
+		if resourceType != "" && l.ResourceType != resourceType {
+			continue
+		}
+		if resourceID != nil && l.ResourceID != *resourceID {
+			continue
+		}
+		filtered = append(filtered, l)
 	}
 	total := len(filtered)
 	if offset >= total {
@@ -73,7 +86,8 @@ func TestLogActionSuccess(t *testing.T) {
 func TestListAuditLogsAdminSuccess(t *testing.T) {
 	repo := newMockRepo()
 	tenantID := uuid.New()
-	repo.logs = append(repo.logs,
+	repo.logs = append(
+		repo.logs,
 		domain.AuditLog{ID: uuid.New(), TenantID: tenantID, Action: "a1"},
 		domain.AuditLog{ID: uuid.New(), TenantID: tenantID, Action: "a2"},
 	)
@@ -81,7 +95,7 @@ func TestListAuditLogsAdminSuccess(t *testing.T) {
 	q := NewListAuditLogsQuery(repo)
 	p := sharedauth.Principal{UserID: uuid.New(), TenantID: tenantID, Role: sharedauth.RoleAdministrator}
 
-	logs, total, err := q.Execute(context.Background(), p, 1, 20, "", nil)
+	logs, total, err := q.Execute(context.Background(), p, 1, 20, "", nil, "", nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -98,8 +112,33 @@ func TestListAuditLogsNonAdminFails(t *testing.T) {
 	q := NewListAuditLogsQuery(repo)
 	p := sharedauth.Principal{UserID: uuid.New(), TenantID: uuid.New(), Role: sharedauth.RolePatient}
 
-	_, _, err := q.Execute(context.Background(), p, 1, 20, "", nil)
+	_, _, err := q.Execute(context.Background(), p, 1, 20, "", nil, "", nil)
 	if err != ErrInvalidRole {
 		t.Errorf("expected ErrInvalidRole, got %v", err)
+	}
+}
+
+func TestListAuditLogsFilters(t *testing.T) {
+	repo := newMockRepo()
+	tenantID := uuid.New()
+	userID := uuid.New()
+	repo.logs = append(
+		repo.logs,
+		domain.AuditLog{ID: uuid.New(), TenantID: tenantID, UserID: userID, Action: "case.create", ResourceType: "case"},
+		domain.AuditLog{ID: uuid.New(), TenantID: tenantID, UserID: uuid.New(), Action: "case.close", ResourceType: "case"},
+	)
+
+	q := NewListAuditLogsQuery(repo)
+	p := sharedauth.Principal{UserID: uuid.New(), TenantID: tenantID, Role: sharedauth.RoleAdministrator}
+
+	logs, total, err := q.Execute(context.Background(), p, 1, 20, "case.create", &userID, "case", nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if total != 1 {
+		t.Fatalf("total = %d, want 1", total)
+	}
+	if len(logs) != 1 || logs[0].Action != "case.create" {
+		t.Fatalf("logs = %#v, want one filtered log", logs)
 	}
 }

@@ -54,7 +54,8 @@ func (r *ImageRepository) ListByCase(ctx context.Context, tenantID, caseID uuid.
 
 func (r *ImageRepository) GetByID(ctx context.Context, tenantID, imageID uuid.UUID) (*domain.Image, error) {
 	var img domain.Image
-	err := r.pool.QueryRow(ctx,
+	err := r.pool.QueryRow(
+		ctx,
 		`SELECT i.id, i.tenant_id, i.patient_id, i.case_id, i.file_name, i.content_type, i.s3_key, i.uploaded_at
 		 FROM images i
 		 JOIN cases c ON c.id = i.case_id
@@ -72,7 +73,8 @@ func (r *ImageRepository) GetByID(ctx context.Context, tenantID, imageID uuid.UU
 
 func (r *ImageRepository) FindByS3Key(ctx context.Context, tenantID, caseID uuid.UUID, s3Key string) (*domain.Image, error) {
 	var img domain.Image
-	err := r.pool.QueryRow(ctx,
+	err := r.pool.QueryRow(
+		ctx,
 		`SELECT i.id, i.tenant_id, i.patient_id, i.case_id, i.file_name, i.content_type, i.s3_key, i.uploaded_at
 		 FROM images i
 		 JOIN cases c ON c.id = i.case_id
@@ -86,4 +88,18 @@ func (r *ImageRepository) FindByS3Key(ctx context.Context, tenantID, caseID uuid
 		return nil, err
 	}
 	return &img, nil
+}
+
+func (r *ImageRepository) Delete(ctx context.Context, tenantID, imageID uuid.UUID) error {
+	tag, err := r.pool.Exec(ctx,
+		`DELETE FROM images i USING cases c
+		 WHERE i.case_id = c.id AND i.id = $1 AND c.tenant_id = $2`,
+		imageID, tenantID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

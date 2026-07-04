@@ -10,9 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrInvalidRole = errors.New("invalid role for this operation")
-)
+var ErrInvalidRole = errors.New("invalid role for this operation")
 
 type LogActionCommand struct {
 	repo domain.Repository
@@ -62,7 +60,7 @@ func NewListAuditLogsQuery(repo domain.Repository) *ListAuditLogsQuery {
 	return &ListAuditLogsQuery{repo: repo}
 }
 
-func (q *ListAuditLogsQuery) Execute(ctx context.Context, principal sharedauth.Principal, page, pageSize int, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
+func (q *ListAuditLogsQuery) Execute(ctx context.Context, principal sharedauth.Principal, page, pageSize int, action string, userID *uuid.UUID, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
 	if principal.Role != sharedauth.RoleAdministrator {
 		return nil, 0, ErrInvalidRole
 	}
@@ -77,5 +75,5 @@ func (q *ListAuditLogsQuery) Execute(ctx context.Context, principal sharedauth.P
 	}
 
 	offset := (page - 1) * pageSize
-	return q.repo.ListByTenant(ctx, principal.TenantID, offset, pageSize, resourceType, resourceID)
+	return q.repo.ListByTenant(ctx, principal.TenantID, offset, pageSize, action, userID, resourceType, resourceID)
 }

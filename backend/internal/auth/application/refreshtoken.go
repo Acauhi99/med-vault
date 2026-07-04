@@ -21,16 +21,19 @@ type RefreshTokenCommand struct {
 	jwtGen     JWTGenerator
 	accessTTL  time.Duration
 	refreshTTL time.Duration
+	tokenStore *TokenStore
 }
 
 func NewRefreshTokenCommand(
 	jwtGen JWTGenerator,
 	accessTTL, refreshTTL time.Duration,
+	tokenStore *TokenStore,
 ) *RefreshTokenCommand {
 	return &RefreshTokenCommand{
 		jwtGen:     jwtGen,
 		accessTTL:  accessTTL,
 		refreshTTL: refreshTTL,
+		tokenStore: tokenStore,
 	}
 }
 
@@ -45,6 +48,10 @@ func (c *RefreshTokenCommand) Execute(input RefreshTokenInput) (RefreshTokenOutp
 	}
 
 	if claims.TenantID == (uuid.UUID{}) {
+		return RefreshTokenOutput{}, ErrInvalidRefreshToken
+	}
+
+	if c.tokenStore != nil && c.tokenStore.IsRevoked(input.RefreshToken) {
 		return RefreshTokenOutput{}, ErrInvalidRefreshToken
 	}
 

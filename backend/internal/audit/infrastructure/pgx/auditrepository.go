@@ -31,9 +31,17 @@ func (r *AuditRepository) Create(ctx context.Context, log *domain.AuditLog) erro
 	return err
 }
 
-func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, offset, limit int, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
+func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, offset, limit int, action string, userID *uuid.UUID, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
 	where := "tenant_id = $1"
 	args := []any{tenantID}
+	if action != "" {
+		where += fmt.Sprintf(" AND action = $%d", len(args)+1)
+		args = append(args, action)
+	}
+	if userID != nil {
+		where += fmt.Sprintf(" AND user_id = $%d", len(args)+1)
+		args = append(args, *userID)
+	}
 	if resourceType != "" {
 		where += fmt.Sprintf(" AND resource_type = $%d", len(args)+1)
 		args = append(args, resourceType)

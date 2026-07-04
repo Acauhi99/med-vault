@@ -92,7 +92,8 @@ func (r *TenantRepository) ListMembers(ctx context.Context, tenantID uuid.UUID) 
 
 func (r *TenantRepository) Reactivate(ctx context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
 	var t domain.Tenant
-	err := r.pool.QueryRow(ctx,
+	err := r.pool.QueryRow(
+		ctx,
 		`UPDATE tenants SET status = 'active', updated_at = NOW()
 		 WHERE id = $1 AND status = 'suspended'
 		 RETURNING id, name, status, created_at, updated_at`, tenantID,
@@ -100,6 +101,37 @@ func (r *TenantRepository) Reactivate(ctx context.Context, tenantID uuid.UUID) (
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errors.New("tenant not found or not suspended")
+		}
+		return nil, err
+	}
+	return &t, nil
+}
+
+func (r *TenantRepository) Create(ctx context.Context, name string) (*domain.Tenant, error) {
+	var t domain.Tenant
+	err := r.pool.QueryRow(
+		ctx,
+		`INSERT INTO tenants (name, status)
+		 VALUES ($1, 'active')
+		 RETURNING id, name, status, created_at, updated_at`, name,
+	).Scan(&t.ID, &t.Name, &t.Status, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+func (r *TenantRepository) Suspend(ctx context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
+	var t domain.Tenant
+	err := r.pool.QueryRow(
+		ctx,
+		`UPDATE tenants SET status = 'suspended', updated_at = NOW()
+		 WHERE id = $1 AND status = 'active'
+		 RETURNING id, name, status, created_at, updated_at`, tenantID,
+	).Scan(&t.ID, &t.Name, &t.Status, &t.CreatedAt, &t.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("tenant not found or not active")
 		}
 		return nil, err
 	}

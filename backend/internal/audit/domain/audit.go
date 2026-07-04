@@ -22,5 +22,5 @@ type AuditLog struct {
 
 type Repository interface {
 	Create(ctx context.Context, log *AuditLog) error
-	ListByTenant(ctx context.Context, tenantID uuid.UUID, offset, limit int, resourceType string, resourceID *uuid.UUID) ([]AuditLog, int, error)
+	ListByTenant(ctx context.Context, tenantID uuid.UUID, offset, limit int, action string, userID *uuid.UUID, resourceType string, resourceID *uuid.UUID) ([]AuditLog, int, error)
 }

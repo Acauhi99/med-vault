@@ -71,6 +71,14 @@ func (m *mockTenantMemberRepo) Reactivate(_ context.Context, tenantID uuid.UUID)
 	return &domain.Tenant{ID: tenantID, Name: "Test", Status: "active"}, nil
 }
 
+func (m *mockTenantMemberRepo) Create(_ context.Context, name string) (*domain.Tenant, error) {
+	return &domain.Tenant{Name: name, Status: "active"}, nil
+}
+
+func (m *mockTenantMemberRepo) Suspend(_ context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
+	return &domain.Tenant{ID: tenantID, Name: "Test", Status: "suspended"}, nil
+}
+
 func TestAddMemberAdminOK(t *testing.T) {
 	repo := newMockTenantMemberRepo()
 	cmd := NewAddMemberCommand(repo)

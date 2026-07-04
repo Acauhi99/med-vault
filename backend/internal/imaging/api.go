@@ -20,6 +20,7 @@ type API struct {
 	confirmUpload    *application.ConfirmUploadCommand
 	listImages       *application.ListImagesQuery
 	getDownloadURL   *application.GetDownloadURLCommand
+	deleteImage      *application.DeleteImageCommand
 	AuditLogger      *auditlog.Logger
 }
 
@@ -29,6 +30,7 @@ func NewAPI(repo imagingdomain.Repository, caseRepo clinicaldomain.Repository, s
 		confirmUpload:    application.NewConfirmUploadCommand(repo, caseRepo),
 		listImages:       application.NewListImagesQuery(repo, caseRepo),
 		getDownloadURL:   application.NewGetDownloadURLCommand(repo, caseRepo, storage),
+		deleteImage:      application.NewDeleteImageCommand(repo),
 	}
 }
 
@@ -44,12 +46,12 @@ func (a *API) RequestUploadURL(w http.ResponseWriter, r *http.Request, id genera
 		httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
-	if strings.TrimSpace(input.FileName) == "" || !input.ContentType.Valid() {
+	if strings.TrimSpace(input.FileName) == "" || !input.ContentType.Valid() || input.FileSize <= 0 {
 		httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "invalid upload request")
 		return
 	}
 
-	url, s3Key, expiresIn, err := a.requestUploadURL.Execute(r.Context(), principal, id, input.FileName, string(input.ContentType))
+	url, s3Key, expiresIn, err := a.requestUploadURL.Execute(r.Context(), principal, id, input.FileName, string(input.ContentType), input.FileSize)
 	if err != nil {
 		switch err {
 		case application.ErrInvalidRole:
@@ -64,6 +66,8 @@ func (a *API) RequestUploadURL(w http.ResponseWriter, r *http.Request, id genera
 			httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "unsupported file extension")
 		case application.ErrInvalidContentType, application.ErrInvalidFileName:
 			httpx.WriteError(w, r, http.StatusBadRequest, "VALIDATION_ERROR", err.Error())
+		case application.ErrFileTooLarge:
+			httpx.WriteError(w, r, http.StatusRequestEntityTooLarge, "PAYLOAD_TOO_LARGE", err.Error())
 		default:
 			httpx.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to generate upload URL")
 		}
@@ -189,5 +193,34 @@ func (a *API) GetDownloadURL(w http.ResponseWriter, r *http.Request, id uuid.UUI
 	httpx.WriteJSON(w, r, http.StatusOK, map[string]any{
 		"download_url": url,
 		"expires_in":   expiresIn,
+	})
+}
+
+func (a *API) DeleteImage(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+	principal, ok := auth.PrincipalFromContext(r.Context())
+	if !ok {
+		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
+		return
+	}
+
+	err := a.deleteImage.Execute(r.Context(), principal, id)
+	if err != nil {
+		switch err {
+		case application.ErrInvalidRole:
+			httpx.WriteError(w, r, http.StatusForbidden, "FORBIDDEN", "only administrators can delete images")
+		case application.ErrImageNotFound:
+			httpx.WriteError(w, r, http.StatusNotFound, "NOT_FOUND", "image not found")
+		default:
+			httpx.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to delete image")
+		}
+		return
+	}
+
+	if a.AuditLogger != nil {
+		a.AuditLogger.Log(r.Context(), r, "image.deleted", "image", id, nil)
+	}
+
+	httpx.WriteJSON(w, r, http.StatusOK, map[string]any{
+		"data": "image deleted",
 	})
 }

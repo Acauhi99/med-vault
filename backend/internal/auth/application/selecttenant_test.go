@@ -64,6 +64,14 @@ func (m *selectTenantMockRepo) Reactivate(ctx context.Context, tenantID uuid.UUI
 	return nil, nil
 }
 
+func (m *selectTenantMockRepo) Create(ctx context.Context, name string) (*domain.Tenant, error) {
+	return nil, nil
+}
+
+func (m *selectTenantMockRepo) Suspend(ctx context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
+	return nil, nil
+}
+
 func TestSelectTenantUsesRefreshToken(t *testing.T) {
 	userID := uuid.New()
 	tenantID := uuid.New()

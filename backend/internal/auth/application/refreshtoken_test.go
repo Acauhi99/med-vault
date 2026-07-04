@@ -37,7 +37,7 @@ func (m *refreshMockJWTGen) Verify(rawToken string) (JWTClaims, error) {
 }
 
 func TestRefreshTokenSuccess(t *testing.T) {
-	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour)
+	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour, nil)
 
 	out, err := cmd.Execute(RefreshTokenInput{RefreshToken: "valid-refresh-token"})
 	if err != nil {
@@ -55,7 +55,7 @@ func TestRefreshTokenSuccess(t *testing.T) {
 }
 
 func TestRefreshTokenInvalid(t *testing.T) {
-	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour)
+	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour, nil)
 
 	_, err := cmd.Execute(RefreshTokenInput{RefreshToken: "bad-token"})
 	if err != ErrInvalidRefreshToken {
@@ -64,7 +64,7 @@ func TestRefreshTokenInvalid(t *testing.T) {
 }
 
 func TestRefreshTokenWrongType(t *testing.T) {
-	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour)
+	cmd := NewRefreshTokenCommand(&refreshMockJWTGen{}, 15*time.Minute, 168*time.Hour, nil)
 
 	_, err := cmd.Execute(RefreshTokenInput{RefreshToken: "temp-token"})
 	if err != ErrInvalidRefreshToken {

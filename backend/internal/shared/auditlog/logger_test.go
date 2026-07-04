@@ -15,7 +15,7 @@ import (
 type stubRepo struct{}
 
 func (s *stubRepo) Create(_ context.Context, _ *domain.AuditLog) error { return nil }
-func (s *stubRepo) ListByTenant(_ context.Context, _ uuid.UUID, _, _ int, _ string, _ *uuid.UUID) ([]domain.AuditLog, int, error) {
+func (s *stubRepo) ListByTenant(_ context.Context, _ uuid.UUID, _, _ int, _ string, _ *uuid.UUID, _ string, _ *uuid.UUID) ([]domain.AuditLog, int, error) {
 	return nil, 0, nil
 }
 

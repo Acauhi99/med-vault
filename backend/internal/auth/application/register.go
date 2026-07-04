@@ -3,8 +3,8 @@ package application
 import (
 	"errors"
 	"strings"
-	"unicode"
 	"time"
+	"unicode"
 
 	"github.com/Acauhi99/med-vault/internal/auth/domain"
 	"github.com/google/uuid"

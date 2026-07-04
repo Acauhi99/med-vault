@@ -51,6 +51,15 @@ func (m *mockImageRepo) FindByS3Key(_ context.Context, tenantID, caseID uuid.UUI
 	return nil, ErrImageNotFound
 }
 
+func (m *mockImageRepo) Delete(_ context.Context, tenantID, imageID uuid.UUID) error {
+	img, ok := m.images[imageID]
+	if !ok || img.TenantID != tenantID {
+		return ErrImageNotFound
+	}
+	delete(m.images, imageID)
+	return nil
+}
+
 type mockCaseRepo struct {
 	cases map[uuid.UUID]*clinicaldomain.Case
 }
@@ -175,7 +184,7 @@ func TestRequestUploadURLSuccess(t *testing.T) {
 	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
 	p := newPrincipal(patientID, tenantID, sharedauth.RolePatient)
 
-	url, s3Key, expiresIn, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png")
+	url, s3Key, expiresIn, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png", 1024)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -200,7 +209,7 @@ func TestRequestUploadURLDoctorRejected(t *testing.T) {
 	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
 	p := newPrincipal(doctorID, tenantID, sharedauth.RoleDoctor)
 
-	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png")
+	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png", 1024)
 	if err != ErrInvalidRole {
 		t.Errorf("expected ErrInvalidRole, got %v", err)
 	}
@@ -214,7 +223,7 @@ func TestRequestUploadURLCaseNotFound(t *testing.T) {
 	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
 	p := newPrincipal(patientID, tenantID, sharedauth.RolePatient)
 
-	_, _, _, err := cmd.Execute(context.Background(), p, uuid.New(), "xray.png", "image/png")
+	_, _, _, err := cmd.Execute(context.Background(), p, uuid.New(), "xray.png", "image/png", 1024)
 	if err != ErrCaseNotFound {
 		t.Errorf("expected ErrCaseNotFound, got %v", err)
 	}
@@ -231,7 +240,7 @@ func TestRequestUploadURLAccessDenied(t *testing.T) {
 	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
 	p := newPrincipal(patientID, tenantID, sharedauth.RolePatient)
 
-	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png")
+	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png", 1024)
 	if err != ErrAccessDenied {
 		t.Errorf("expected ErrAccessDenied, got %v", err)
 	}
@@ -247,9 +256,25 @@ func TestRequestUploadURLCaseNotOpen(t *testing.T) {
 	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
 	p := newPrincipal(patientID, tenantID, sharedauth.RolePatient)
 
-	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png")
+	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png", 1024)
 	if err != ErrCaseNotOpen {
 		t.Errorf("expected ErrCaseNotOpen, got %v", err)
+	}
+}
+
+func TestRequestUploadURLTooLarge(t *testing.T) {
+	imgRepo, caseRepo, storage := setupTestRepos()
+	patientID := uuid.New()
+	tenantID := uuid.New()
+	caseID := uuid.New()
+	seedOpenCase(caseRepo, caseID, tenantID, patientID)
+
+	cmd := NewRequestUploadURLCommand(imgRepo, caseRepo, storage)
+	p := newPrincipal(patientID, tenantID, sharedauth.RolePatient)
+
+	_, _, _, err := cmd.Execute(context.Background(), p, caseID, "xray.png", "image/png", maxUploadSizeBytes+1)
+	if err != ErrFileTooLarge {
+		t.Errorf("expected ErrFileTooLarge, got %v", err)
 	}
 }
 

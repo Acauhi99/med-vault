@@ -28,7 +28,6 @@ type Meta struct {
 
 func WriteJSON(w http.ResponseWriter, r *http.Request, status int, data any) {
 	write(w, r, status, Response{Data: data, Meta: meta(r)})
-
 }
 
 func WriteJSONWithMeta(w http.ResponseWriter, r *http.Request, status int, data any, responseMeta Meta) {

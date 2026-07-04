@@ -86,6 +86,14 @@ func (m *mockTenantRepo) Reactivate(_ context.Context, tenantID uuid.UUID) (*dom
 	return &domain.Tenant{ID: tenantID, Name: "Test", Status: "active"}, nil
 }
 
+func (m *mockTenantRepo) Create(_ context.Context, name string) (*domain.Tenant, error) {
+	return &domain.Tenant{Name: name, Status: "active"}, nil
+}
+
+func (m *mockTenantRepo) Suspend(_ context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
+	return &domain.Tenant{ID: tenantID, Name: "Test", Status: "suspended"}, nil
+}
+
 type mockHasher struct{}
 
 func (m *mockHasher) Hash(password string) (string, error) {

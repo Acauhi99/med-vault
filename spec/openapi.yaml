@@ -20,6 +20,10 @@ tags:
     description: Authentication and registration
   - name: Users
     description: User profile management
+  - name: Tenants
+    description: Tenant management
+  - name: Tenant Members
+    description: Tenant member management
   - name: Cases
     description: Medical case lifecycle
   - name: Symptoms
@@ -99,6 +103,27 @@ paths:
         '403':
           description: User does not belong to this tenant
 
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutUser
+      summary: Invalidate refresh token and log out
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /auth/refresh:
     post:
       tags: [Auth]
@@ -134,6 +159,31 @@ paths:
                 $ref: '#/components/schemas/UserResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  /tenants:
+    post:
+      tags: [Tenants]
+      operationId: createTenant
+      summary: Create a new tenant (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Tenant name already exists
 
   /tenants/{tenant_id}/members:
     get:
@@ -237,6 +287,46 @@ paths:
       responses:
         '200':
           description: Tenant reactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      status:
+                        type: string
+                      created_at:
+                        type: string
+                        format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Principal is not an administrator
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /tenants/{tenant_id}/suspend:
+    post:
+      tags: [Tenants]
+      operationId: suspendTenant
+      summary: Suspend an active tenant (admin only)
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant suspended
           content:
             application/json:
               schema:
@@ -538,6 +628,33 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /images/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    delete:
+      tags: [Images]
+      operationId: deleteImage
+      summary: Delete an image (admin only)
+      responses:
+        '200':
+          description: Image deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only administrators can delete images
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /audit-logs:
     get:
       tags: [Audit]
@@ -546,6 +663,15 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PageSizeParam'
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
         - name: resource_type
           in: query
           schema:
@@ -678,6 +804,22 @@ components:
       properties:
         refresh_token:
           type: string
+
+    LogoutRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    SuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          nullable: true
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
 
     TokenResponse:
       type: object
@@ -856,13 +998,17 @@ components:
 
     UploadURLRequest:
       type: object
-      required: [file_name, content_type]
+      required: [file_name, content_type, file_size]
       properties:
         file_name:
           type: string
         content_type:
           type: string
           enum: [image/jpeg, image/png, image/dicom]
+        file_size:
+          type: integer
+          format: int64
+          minimum: 1
 
     UploadURLResponse:
       type: object
@@ -977,6 +1123,32 @@ components:
         role:
           type: string
           enum: [patient, doctor, administrator]
+
+    CreateTenantRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+
+    TenantResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            status:
+              type: string
+            created_at:
+              type: string
+              format: date-time
 
     ErrorResponse:
       type: object
