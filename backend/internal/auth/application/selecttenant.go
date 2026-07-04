@@ -50,7 +50,7 @@ func (c *SelectTenantCommand) Execute(input SelectTenantInput) (SelectTenantOutp
 		return SelectTenantOutput{}, err
 	}
 
-	refreshToken, err := c.jwtGen.GenerateAccessToken(membership.UserID, membership.TenantID, membership.Role, c.refreshTTL)
+	refreshToken, err := c.jwtGen.GenerateRefreshToken(membership.UserID, membership.TenantID, membership.Role, c.refreshTTL)
 	if err != nil {
 		return SelectTenantOutput{}, err
 	}
