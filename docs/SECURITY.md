@@ -159,9 +159,9 @@ HIPAA requires automatic logoff after a period of inactivity (45 CFR §164.312(a
 | Re-authentication required | After inactivity timeout | User must authenticate again |
 
 **Implementation:**
-- Frontend currently clears the in-memory session on explicit sign-out
-- Inactivity timeout is not wired in yet
-- Refresh tokens are invalidated on the server
+- Frontend clears the in-memory session on explicit sign-out and calls `POST /auth/logout` to revoke the refresh token server-side
+- Inactivity timeout (15 minutes) auto-logs the user out via `useInactivityLogoff` hook
+- Refresh tokens are invalidated on the server via in-memory token store with SHA-256 hash lookup, and explicit logout revokes the current refresh token
 
 ### Emergency Access Procedure
 
@@ -255,6 +255,12 @@ Patients must receive a written notice describing:
 ### Business Associate Agreements (BAAs)
 
 Any third party that creates, receives, maintains, or transmits PHI must sign a BAA.
+
+### Image Storage
+
+- Medical images are stored in S3 with server-side encryption and versioning enabled.
+- Backend issues time-limited pre-signed S3 URLs for upload and download.
+- Access stays tenant-scoped through application checks before URL issuance.
 
 | Vendor | Service | BAA Required |
 |--------|---------|--------------|

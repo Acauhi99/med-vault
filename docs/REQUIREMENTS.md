@@ -41,7 +41,7 @@ This document defines the functional and non-functional requirements for MedVaul
 | A-07 | Remove users from tenant | Must |
 | A-08 | List tenant members | Must |
 | A-09 | Reactivate suspended tenant | Should |
-| A-10 | Manage tenant-level resources (future) | Could |
+| A-10 | Manage tenant-level resources (future) | Deferred |
 
 ---
 
@@ -165,7 +165,7 @@ This document defines the functional and non-functional requirements for MedVaul
 | POST | /api/v1/cases/{id}/images | Yes | Patient | Confirm image upload |
 | GET | /api/v1/cases/{id}/images | Yes | Patient, Doctor, Admin | List images for case |
 | GET | /api/v1/images/{id}/download-url | Yes | Patient, Doctor, Admin | Get pre-signed download URL |
-| GET | /api/v1/audit-logs | Yes | Admin | List audit logs |
+| GET | /api/v1/audit-logs | Yes | Admin | List audit logs (filterable by action, user, resource type, and resource id) |
 
 ### Response Format
 

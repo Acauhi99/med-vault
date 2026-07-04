@@ -136,6 +136,7 @@ Modules should represent complete capabilities with cohesive resources:
 - Bucket Policies
 - Encryption
 - Versioning
+- Pre-signed upload/download URLs for images
 
 **security**
 - IAM

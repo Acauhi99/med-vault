@@ -26,3 +26,16 @@ pnpm test
 - `app/` route shell and layout
 - `features/` feature modules
 - `infrastructure/` API client, query provider, and session store
+
+## Current Surface
+
+- `/` auth workspace: login, register, tenant select
+- `/cases` patient, doctor, admin case views
+- `/cases/new` patient case creation
+- `/members` admin tenant members
+- tenant reactivation dialog on `/members`
+- `/audit` admin audit logs
+
+## Not Yet In UI
+
+- explicit tenant switch outside auth flow

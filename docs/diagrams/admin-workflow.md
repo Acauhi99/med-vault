@@ -6,11 +6,11 @@
 flowchart TD
     A[Admin visits MedVault] --> B[Login]
     B --> C[Select tenant]
-    C --> D[Admin Dashboard]
+    C --> D[Admin area]
 
-    D --> E[Manage Cases]
-    D --> F[Manage Users]
-    D --> G[View Audit Logs]
+    D --> E[Cases page /cases]
+    D --> F[Members page /members]
+    D --> G[Audit logs page /audit]
 
     E --> E1[View all cases]
     E1 --> E2[Filter by status]
@@ -155,9 +155,9 @@ sequenceDiagram
     participant DB
 
     Admin->>Frontend: Click "Audit Logs"
-    Frontend->>Backend: GET /api/v1/audit-logs
+    Frontend->>Backend: GET /api/v1/audit-logs?action=&user_id=&resource_type=&resource_id=
     Backend->>Backend: Validate JWT + role = admin
-    Backend->>DB: SELECT audit_logs WHERE tenant_id = $1 ORDER BY timestamp DESC
+    Backend->>DB: SELECT audit_logs WHERE tenant_id = $1 AND ... ORDER BY timestamp DESC
     DB-->>Backend: Audit log entries
     Backend-->>Frontend: 200 OK {audit_logs[]}
     Frontend-->>Admin: Show audit log table
