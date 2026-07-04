@@ -5,20 +5,22 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 export function QueryProvider({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            refetchOnWindowFocus: false,
-            retry: false,
-          },
-          mutations: {
-            retry: false,
-          },
-        },
-      }),
-  );
+	const [queryClient] = useState(
+		() =>
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						refetchOnWindowFocus: false,
+						retry: false,
+					},
+					mutations: {
+						retry: false,
+					},
+				},
+			}),
+	);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+	return (
+		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+	);
 }
