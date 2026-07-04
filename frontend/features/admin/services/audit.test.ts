@@ -59,6 +59,8 @@ describe("admin audit service", () => {
 		await listAuditLogs({
 			page: 2,
 			pageSize: 10,
+			action: "case.create",
+			userId: uuid3,
 			resourceType: "case",
 			resourceId: uuid1,
 		});
@@ -66,6 +68,8 @@ describe("admin audit service", () => {
 		const url = new URL(capturedUrl);
 		expect(url.searchParams.get("page")).toBe("2");
 		expect(url.searchParams.get("page_size")).toBe("10");
+		expect(url.searchParams.get("action")).toBe("case.create");
+		expect(url.searchParams.get("user_id")).toBe(uuid3);
 		expect(url.searchParams.get("resource_type")).toBe("case");
 		expect(url.searchParams.get("resource_id")).toBe(uuid1);
 	});

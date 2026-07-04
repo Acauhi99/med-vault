@@ -13,6 +13,8 @@ export const auditLogSchema = z.object({
 });
 
 export const auditLogFiltersSchema = z.object({
+	action: z.string().optional(),
+	userId: z.string().optional(),
 	resourceType: z.string().optional(),
 	resourceId: z.string().optional(),
 	page: z.number().optional(),

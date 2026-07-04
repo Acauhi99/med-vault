@@ -5,6 +5,8 @@ import { listAuditLogs } from "../services/audit";
 export function useAuditLogs(params: {
 	page?: number;
 	pageSize?: number;
+	action?: string;
+	userId?: string;
 	resourceType?: string;
 	resourceId?: string;
 }) {

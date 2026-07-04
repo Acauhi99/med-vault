@@ -14,6 +14,10 @@ export const addMemberSchema = z.object({
 	role: memberRoleSchema,
 });
 
+export const reactivateTenantSchema = z.object({
+	tenantId: z.uuid("Enter a valid tenant ID"),
+});
+
 export const paginationSchema = z.object({
 	page: z.number(),
 	pageSize: z.number(),
@@ -23,3 +27,4 @@ export const paginationSchema = z.object({
 export type MemberRole = z.infer<typeof memberRoleSchema>;
 export type TenantMember = z.infer<typeof tenantMemberSchema>;
 export type AddMemberInput = z.infer<typeof addMemberSchema>;
+export type ReactivateTenantInput = z.infer<typeof reactivateTenantSchema>;

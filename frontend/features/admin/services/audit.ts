@@ -31,6 +31,8 @@ function normalizeAuditLog(raw: AuditLogRaw) {
 export async function listAuditLogs(params: {
 	page?: number;
 	pageSize?: number;
+	action?: string;
+	userId?: string;
 	resourceType?: string;
 	resourceId?: string;
 }) {
@@ -39,6 +41,8 @@ export async function listAuditLogs(params: {
 			query: {
 				page: params.page,
 				page_size: params.pageSize,
+				action: params.action,
+				user_id: params.userId,
 				resource_type: params.resourceType,
 				resource_id: params.resourceId,
 			},

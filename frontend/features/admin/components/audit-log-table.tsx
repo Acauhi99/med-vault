@@ -19,17 +19,33 @@ import { useAuditLogs } from "../hooks/use-audit-logs";
 
 export function AuditLogTable() {
 	const [page, setPage] = useState(1);
+	const [action, setAction] = useState("");
+	const [userId, setUserId] = useState("");
 	const [resourceType, setResourceType] = useState("");
-	const [filterType, setFilterType] = useState("");
+	const [resourceId, setResourceId] = useState("");
+	const [filters, setFilters] = useState({
+		action: "",
+		userId: "",
+		resourceType: "",
+		resourceId: "",
+	});
 
 	const { data, isLoading, error, refetch } = useAuditLogs({
 		page,
 		pageSize: 20,
-		resourceType: filterType || undefined,
+		action: filters.action || undefined,
+		userId: filters.userId || undefined,
+		resourceType: filters.resourceType || undefined,
+		resourceId: filters.resourceId || undefined,
 	});
 
 	function handleFilter() {
-		setFilterType(resourceType);
+		setFilters({
+			action,
+			userId,
+			resourceType,
+			resourceId,
+		});
 		setPage(1);
 	}
 
@@ -65,7 +81,21 @@ export function AuditLogTable() {
 		<div>
 			<PageHeader title="Audit Logs" description="System audit trail" />
 
-			<div className="mt-6 flex gap-2">
+			<div className="mt-6 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+				<input
+					type="text"
+					value={action}
+					onChange={(e) => setAction(e.target.value)}
+					placeholder="Filter by action"
+					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
+				/>
+				<input
+					type="text"
+					value={userId}
+					onChange={(e) => setUserId(e.target.value)}
+					placeholder="Filter by user ID"
+					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
+				/>
 				<input
 					type="text"
 					value={resourceType}
@@ -73,9 +103,18 @@ export function AuditLogTable() {
 					placeholder="Filter by resource type"
 					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 				/>
-				<Button variant="secondary" size="sm" onClick={handleFilter}>
-					Filter
-				</Button>
+				<input
+					type="text"
+					value={resourceId}
+					onChange={(e) => setResourceId(e.target.value)}
+					placeholder="Filter by resource ID"
+					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
+				/>
+				<div className="lg:col-span-4">
+					<Button variant="secondary" size="sm" onClick={handleFilter}>
+						Filter
+					</Button>
+				</div>
 			</div>
 
 			<div className="mt-4">

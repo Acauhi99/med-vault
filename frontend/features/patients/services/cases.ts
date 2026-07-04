@@ -17,6 +17,7 @@ import {
 	type SymptomResponse,
 	symptomResponseSchema,
 	type UploadURLResponse,
+	uploadURLRequestSchema,
 	uploadURLResponseSchema,
 } from "../schemas/cases";
 
@@ -166,10 +167,17 @@ export async function requestUploadURL(
 	caseId: string,
 	fileName: string,
 	contentType: "image/jpeg" | "image/png" | "image/dicom",
+	fileSize: number,
 ): Promise<UploadURLResponse> {
+	const body = { fileName, contentType, fileSize };
+	const parsed = uploadURLRequestSchema.parse(body);
 	const response = await apiClient.POST("/cases/{id}/images/upload-url", {
 		params: { path: { id: caseId } },
-		body: { file_name: fileName, content_type: contentType },
+		body: {
+			file_name: parsed.fileName,
+			content_type: parsed.contentType,
+			file_size: parsed.fileSize,
+		},
 	});
 
 	if (response.error) {

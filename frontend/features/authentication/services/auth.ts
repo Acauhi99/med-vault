@@ -148,6 +148,14 @@ export async function refreshSession(refreshToken: string) {
 	});
 }
 
+export async function logout(refreshToken: string) {
+	await apiClient.POST("/auth/logout", {
+		body: {
+			refresh_token: refreshToken,
+		},
+	});
+}
+
 export async function getCurrentUser(accessToken: string) {
 	const response = await apiClient.GET("/users/me", {
 		headers: authHeaders(accessToken),

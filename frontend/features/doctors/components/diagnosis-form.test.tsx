@@ -75,7 +75,7 @@ describe("DiagnosisForm", () => {
 	});
 
 	it("disables submit while request is in flight", async () => {
-		let resolveRequest: () => void;
+		let resolveRequest = () => {};
 		server.use(
 			http.post(`${apiBase}/cases/${uuid1}/diagnosis`, () => {
 				return new Promise((resolve) => {
@@ -107,6 +107,6 @@ describe("DiagnosisForm", () => {
 			).toBeDisabled();
 		});
 
-		resolveRequest?.();
+		resolveRequest();
 	});
 });

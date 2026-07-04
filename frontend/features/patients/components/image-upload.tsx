@@ -69,7 +69,9 @@ export function ImageUpload({ caseId }: ImageUploadProps) {
 				)}
 			</div>
 
-			<p className="text-xs text-slate-500">Accepted: JPEG, PNG, DICOM</p>
+			<p className="text-xs text-slate-500">
+				Accepted: JPEG, PNG, DICOM. Max 50MB.
+			</p>
 		</div>
 	);
 }

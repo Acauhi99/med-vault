@@ -159,18 +159,28 @@ describe("patient cases service", () => {
 
 	it("requests an upload URL", async () => {
 		server.use(
-			http.post(`${apiBase}/cases/${uuid1}/images/upload-url`, () => {
-				return HttpResponse.json({
-					data: {
-						upload_url: "https://s3.example.com/upload",
-						s3_key: "cases/1/img.jpg",
-						expires_in: 300,
-					},
-				});
-			}),
+			http.post(
+				`${apiBase}/cases/${uuid1}/images/upload-url`,
+				async ({ request }) => {
+					const body = (await request.json()) as { file_size: number };
+					expect(body.file_size).toBe(1024);
+					return HttpResponse.json({
+						data: {
+							upload_url: "https://s3.example.com/upload",
+							s3_key: "cases/1/img.jpg",
+							expires_in: 300,
+						},
+					});
+				},
+			),
 		);
 
-		const result = await requestUploadURL(uuid1, "scan.jpg", "image/jpeg");
+		const result = await requestUploadURL(
+			uuid1,
+			"scan.jpg",
+			"image/jpeg",
+			1024,
+		);
 		expect(result.uploadUrl).toBe("https://s3.example.com/upload");
 		expect(result.s3Key).toBe("cases/1/img.jpg");
 		expect(result.expiresIn).toBe(300);

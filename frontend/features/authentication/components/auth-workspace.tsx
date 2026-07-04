@@ -9,6 +9,8 @@ import {
 	updateAuthSession,
 } from "@/infrastructure/auth/session-store";
 import { useAuthSession } from "@/infrastructure/auth/use-auth-session";
+import { useInactivityLogoff } from "@/infrastructure/auth/use-inactivity-logoff";
+import { useTokenRefresh } from "@/infrastructure/auth/use-token-refresh";
 import {
 	loginInputSchema,
 	registerInputSchema,
@@ -18,6 +20,7 @@ import {
 import {
 	getCurrentUser,
 	login,
+	logout,
 	register,
 	selectTenant,
 } from "../services/auth";
@@ -38,6 +41,11 @@ const emptyRegisterForm = {
 export function AuthWorkspace() {
 	const session = useAuthSession();
 	const queryClient = useQueryClient();
+	const tokenRefresh = useTokenRefresh();
+	const isAuthed = Boolean(session.accessToken && session.activeTenant);
+
+	useInactivityLogoff(isAuthed, handleSignOut);
+
 	const authEpoch = useRef(0);
 	const [mode, setMode] = useState<AuthMode>("login");
 	const [loginForm, setLoginForm] = useState(emptyLoginForm);
@@ -104,6 +112,8 @@ export function AuthWorkspace() {
 			activeTenant: activeTenant ?? null,
 			user: null,
 		});
+
+		tokenRefresh.start(result.expiresIn);
 	}
 
 	async function handleLogin(event: SubmitEvent<HTMLFormElement>) {
@@ -192,6 +202,14 @@ export function AuthWorkspace() {
 	}
 
 	async function handleSignOut() {
+		tokenRefresh.stop();
+		if (session.refreshToken) {
+			try {
+				await logout(session.refreshToken);
+			} catch {
+				// Server may be unreachable; still clear local state.
+			}
+		}
 		authEpoch.current += 1;
 		await queryClient.cancelQueries({ queryKey: ["current-user"] });
 		queryClient.clear();

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
 import type { ContentType } from "../schemas/cases";
+import { maxImageUploadSizeBytes } from "../schemas/cases";
 import {
 	confirmUpload,
 	getDownloadURL,
@@ -49,12 +50,19 @@ export function useImageUpload(caseId: string) {
 			setStatus("requesting");
 			setError(null);
 
+			if (file.size > maxImageUploadSizeBytes) {
+				setStatus("error");
+				setError("File is too large. Max 50MB.");
+				return;
+			}
+
 			try {
 				const contentType = file.type as ContentType;
 				const { uploadUrl, s3Key } = await requestUploadURL(
 					caseId,
 					file.name,
 					contentType,
+					file.size,
 				);
 
 				setStatus("uploading");

@@ -48,7 +48,13 @@ export default function AuditPage() {
 			</header>
 
 			<main className="mx-auto grid max-w-6xl gap-6 px-6 py-8 lg:grid-cols-[280px_minmax(0,1fr)]">
-				<Sidebar user={session.user} onSignOut={handleSignOut} />
+				<Sidebar
+					user={session.user}
+					tenants={session.tenants}
+					activeTenant={session.activeTenant}
+					accessToken={session.accessToken ?? ""}
+					onSignOut={handleSignOut}
+				/>
 				<section>
 					<AuditLogTable />
 				</section>

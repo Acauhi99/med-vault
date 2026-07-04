@@ -6,6 +6,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { apiBase, renderWith, ts, uuid1 } from "../../../test/setup";
 import { ImageUpload } from "./image-upload";
+import { maxImageUploadSizeBytes } from "../schemas/cases";
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
@@ -23,16 +24,21 @@ describe("ImageUpload", () => {
 		let confirmCalled = false;
 
 		server.use(
-			http.post(`${apiBase}/cases/${uuid1}/images/upload-url`, () => {
-				uploadUrlCalled = true;
-				return HttpResponse.json({
-					data: {
-						upload_url: "https://s3.example.com/upload",
-						s3_key: "cases/1/scan.jpg",
-						expires_in: 300,
-					},
-				});
-			}),
+			http.post(
+				`${apiBase}/cases/${uuid1}/images/upload-url`,
+				async ({ request }) => {
+					const body = (await request.json()) as { file_size: number };
+					expect(body.file_size).toBeGreaterThan(0);
+					uploadUrlCalled = true;
+					return HttpResponse.json({
+						data: {
+							upload_url: "https://s3.example.com/upload",
+							s3_key: "cases/1/scan.jpg",
+							expires_in: 300,
+						},
+					});
+				},
+			),
 			http.put("https://s3.example.com/upload", () => {
 				s3PutCalled = true;
 				return new HttpResponse(null, { status: 200 });
@@ -71,6 +77,24 @@ describe("ImageUpload", () => {
 
 		await waitFor(() => {
 			expect(screen.getByText(/uploaded successfully/i)).toBeInTheDocument();
+		});
+	});
+
+	it("shows error when file exceeds 50mb", async () => {
+		const { user } = renderWith(<ImageUpload caseId={uuid1} />);
+
+		const file = new File(
+			[new Uint8Array(maxImageUploadSizeBytes + 1)],
+			"big.jpg",
+			{
+				type: "image/jpeg",
+			},
+		);
+		const input = screen.getByLabelText(/upload image file/i);
+		await user.upload(input, file);
+
+		await waitFor(() => {
+			expect(screen.getByText(/file is too large/i)).toBeInTheDocument();
 		});
 	});
 
@@ -121,7 +145,7 @@ describe("ImageUpload", () => {
 	});
 
 	it("disables upload button while uploading", async () => {
-		let resolveUpload: () => void;
+		let resolveUpload = () => {};
 		server.use(
 			http.post(`${apiBase}/cases/${uuid1}/images/upload-url`, () => {
 				return HttpResponse.json({
@@ -159,7 +183,7 @@ describe("ImageUpload", () => {
 			expect(screen.getByRole("button", { name: /uploading/i })).toBeDisabled();
 		});
 
-		resolveUpload?.();
+		resolveUpload();
 
 		await waitFor(() => {
 			expect(screen.getByText(/uploaded successfully/i)).toBeInTheDocument();

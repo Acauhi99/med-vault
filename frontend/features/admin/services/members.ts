@@ -1,6 +1,10 @@
 import { apiClient } from "@/infrastructure/api/client";
 
-import { addMemberSchema, tenantMemberSchema } from "../schemas/members";
+import {
+	addMemberSchema,
+	reactivateTenantSchema,
+	tenantMemberSchema,
+} from "../schemas/members";
 
 type MemberRaw = {
 	user_id?: string;
@@ -98,5 +102,19 @@ export async function removeMember(tenantId: string, userId: string) {
 
 	if (response.error) {
 		throw new Error("Unable to remove member.");
+	}
+}
+
+export async function reactivateTenant(input: { tenantId: string }) {
+	const body = reactivateTenantSchema.parse(input);
+	const response = await apiClient.POST(
+		"/tenants/{tenant_id}/reactivate" as never,
+		{
+			params: { path: { tenant_id: body.tenantId } },
+		} as never,
+	);
+
+	if (response.error) {
+		throw new Error("Unable to reactivate tenant.");
 	}
 }

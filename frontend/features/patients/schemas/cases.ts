@@ -8,6 +8,8 @@ export const contentTypeSchema = z.enum([
 	"image/dicom",
 ]);
 
+export const maxImageUploadSizeBytes = 50 * 1024 * 1024;
+
 export const addSymptomInputSchema = z.object({
 	description: z.string().min(1, "Description is required").trim(),
 	severity: severitySchema,
@@ -64,6 +66,7 @@ export const imageResponseSchema = z.object({
 export const uploadURLRequestSchema = z.object({
 	fileName: z.string().min(1),
 	contentType: contentTypeSchema,
+	fileSize: z.number().int().positive().max(maxImageUploadSizeBytes),
 });
 
 export const uploadURLResponseSchema = z.object({

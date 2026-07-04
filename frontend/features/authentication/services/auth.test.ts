@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
 	getCurrentUser,
 	login,
+	logout,
 	refreshSession,
 	register,
 	selectTenant,
@@ -173,6 +174,23 @@ describe("auth service", () => {
 			accessToken: "refreshed-token",
 			refreshToken: "refresh-token-2",
 			expiresIn: 7200,
+		});
+	});
+
+	it("logs out and sends refresh token", async () => {
+		let receivedBody: unknown = null;
+
+		server.use(
+			http.post(`${apiBase}/auth/logout`, async ({ request }) => {
+				receivedBody = await request.json();
+				return HttpResponse.json({ data: null });
+			}),
+		);
+
+		await logout("refresh-token-to-invalidate");
+
+		expect(receivedBody).toEqual({
+			refresh_token: "refresh-token-to-invalidate",
 		});
 	});
 });

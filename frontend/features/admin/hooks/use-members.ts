@@ -2,7 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthSession } from "@/infrastructure/auth/use-auth-session";
 
-import { addMember, listMembers, removeMember } from "../services/members";
+import {
+	addMember,
+	listMembers,
+	reactivateTenant,
+	removeMember,
+} from "../services/members";
 
 export function useMemberList() {
 	const session = useAuthSession();
@@ -41,6 +46,17 @@ export function useRemoveMember() {
 
 	return useMutation({
 		mutationFn: (userId: string) => removeMember(tenantId, userId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["members"] });
+		},
+	});
+}
+
+export function useReactivateTenant() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (tenantId: string) => reactivateTenant({ tenantId }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["members"] });
 		},

@@ -2,7 +2,12 @@ import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { addMember, listMembers, removeMember } from "./members";
+import {
+	addMember,
+	listMembers,
+	reactivateTenant,
+	removeMember,
+} from "./members";
 
 const apiBase = "http://localhost:8080";
 const server = setupServer();
@@ -80,6 +85,16 @@ describe("admin members service", () => {
 
 		await removeMember(tenantId, userId);
 		expect(called).toBe(true);
+	});
+
+	it("reactivates a tenant", async () => {
+		server.use(
+			http.post(`${apiBase}/tenants/${tenantId}/reactivate`, () => {
+				return HttpResponse.json({ data: {} });
+			}),
+		);
+
+		await reactivateTenant({ tenantId });
 	});
 
 	it("throws on API error", async () => {
