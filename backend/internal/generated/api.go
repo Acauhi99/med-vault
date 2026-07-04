@@ -44,6 +44,27 @@ func (e AddSymptomRequestSeverity) Valid() bool {
 	}
 }
 
+// Defines values for AddTenantMemberRequestRole.
+const (
+	AddTenantMemberRequestRoleAdministrator AddTenantMemberRequestRole = "administrator"
+	AddTenantMemberRequestRoleDoctor        AddTenantMemberRequestRole = "doctor"
+	AddTenantMemberRequestRolePatient       AddTenantMemberRequestRole = "patient"
+)
+
+// Valid indicates whether the value is a known member of the AddTenantMemberRequestRole enum.
+func (e AddTenantMemberRequestRole) Valid() bool {
+	switch e {
+	case AddTenantMemberRequestRoleAdministrator:
+		return true
+	case AddTenantMemberRequestRoleDoctor:
+		return true
+	case AddTenantMemberRequestRolePatient:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CaseResponseDataStatus.
 const (
 	CaseResponseDataStatusAssigned  CaseResponseDataStatus = "assigned"
@@ -158,6 +179,27 @@ func (e SymptomResponseSeverity) Valid() bool {
 	}
 }
 
+// Defines values for TenantMemberRole.
+const (
+	TenantMemberRoleAdministrator TenantMemberRole = "administrator"
+	TenantMemberRoleDoctor        TenantMemberRole = "doctor"
+	TenantMemberRolePatient       TenantMemberRole = "patient"
+)
+
+// Valid indicates whether the value is a known member of the TenantMemberRole enum.
+func (e TenantMemberRole) Valid() bool {
+	switch e {
+	case TenantMemberRoleAdministrator:
+		return true
+	case TenantMemberRoleDoctor:
+		return true
+	case TenantMemberRolePatient:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UploadURLRequestContentType.
 const (
 	UploadURLRequestContentTypeImagedicom UploadURLRequestContentType = "image/dicom"
@@ -218,6 +260,30 @@ func (e UserResponseDataStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListCasesParamsStatus.
+const (
+	Assigned  ListCasesParamsStatus = "assigned"
+	Closed    ListCasesParamsStatus = "closed"
+	Diagnosed ListCasesParamsStatus = "diagnosed"
+	Open      ListCasesParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ListCasesParamsStatus enum.
+func (e ListCasesParamsStatus) Valid() bool {
+	switch e {
+	case Assigned:
+		return true
+	case Closed:
+		return true
+	case Diagnosed:
+		return true
+	case Open:
+		return true
+	default:
+		return false
+	}
+}
+
 // AddSymptomRequest defines model for AddSymptomRequest.
 type AddSymptomRequest struct {
 	Description string                    `json:"description"`
@@ -226,6 +292,15 @@ type AddSymptomRequest struct {
 
 // AddSymptomRequestSeverity defines model for AddSymptomRequest.Severity.
 type AddSymptomRequestSeverity string
+
+// AddTenantMemberRequest defines model for AddTenantMemberRequest.
+type AddTenantMemberRequest struct {
+	Role   AddTenantMemberRequestRole `json:"role"`
+	UserId openapi_types.UUID         `json:"user_id"`
+}
+
+// AddTenantMemberRequestRole defines model for AddTenantMemberRequest.Role.
+type AddTenantMemberRequestRole string
 
 // AssignDoctorRequest defines model for AssignDoctorRequest.
 type AssignDoctorRequest struct {
@@ -393,6 +468,17 @@ type SymptomResponse struct {
 // SymptomResponseSeverity defines model for SymptomResponse.Severity.
 type SymptomResponseSeverity string
 
+// TenantMember defines model for TenantMember.
+type TenantMember struct {
+	Name     *string             `json:"name,omitempty"`
+	Role     *TenantMemberRole   `json:"role,omitempty"`
+	TenantId *openapi_types.UUID `json:"tenant_id,omitempty"`
+	UserId   *openapi_types.UUID `json:"user_id,omitempty"`
+}
+
+// TenantMemberRole defines model for TenantMember.Role.
+type TenantMemberRole string
+
 // TokenResponse defines model for TokenResponse.
 type TokenResponse struct {
 	Data *struct {
@@ -474,9 +560,13 @@ type ListAuditLogsParams struct {
 
 // ListCasesParams defines parameters for ListCases.
 type ListCasesParams struct {
-	Page     *PageParam     `form:"page,omitempty" json:"page,omitempty"`
-	PageSize *PageSizeParam `form:"page_size,omitempty" json:"page_size,omitempty"`
+	Page     *PageParam             `form:"page,omitempty" json:"page,omitempty"`
+	PageSize *PageSizeParam         `form:"page_size,omitempty" json:"page_size,omitempty"`
+	Status   *ListCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 }
+
+// ListCasesParamsStatus defines parameters for ListCases.
+type ListCasesParamsStatus string
 
 // AuthenticateUserJSONRequestBody defines body for AuthenticateUser for application/json ContentType.
 type AuthenticateUserJSONRequestBody = LoginRequest
@@ -507,6 +597,9 @@ type RequestUploadURLJSONRequestBody = UploadURLRequest
 
 // AddSymptomJSONRequestBody defines body for AddSymptom for application/json ContentType.
 type AddSymptomJSONRequestBody = AddSymptomRequest
+
+// AddTenantMemberJSONRequestBody defines body for AddTenantMember for application/json ContentType.
+type AddTenantMemberJSONRequestBody = AddTenantMemberRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -558,6 +651,18 @@ type ServerInterface interface {
 	// Get pre-signed download URL
 	// (GET /images/{id}/download-url)
 	GetDownloadURL(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// List all members of a tenant
+	// (GET /tenants/{tenant_id}/members)
+	ListTenantMembers(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
+	// Add a user to a tenant (admin only)
+	// (POST /tenants/{tenant_id}/members)
+	AddTenantMember(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
+	// Remove a user from a tenant (admin only)
+	// (DELETE /tenants/{tenant_id}/members/{user_id})
+	RemoveTenantMember(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID, userId openapi_types.UUID)
+	// Reactivate a suspended tenant (admin only)
+	// (POST /tenants/{tenant_id}/reactivate)
+	ReactivateTenant(w http.ResponseWriter, r *http.Request, tenantId openapi_types.UUID)
 	// Get current user profile
 	// (GET /users/me)
 	GetCurrentUser(w http.ResponseWriter, r *http.Request)
@@ -574,7 +679,6 @@ type MiddlewareFunc func(http.Handler) http.Handler
 
 // ListAuditLogs operation middleware
 func (siw *ServerInterfaceWrapper) ListAuditLogs(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -652,7 +756,6 @@ func (siw *ServerInterfaceWrapper) ListAuditLogs(w http.ResponseWriter, r *http.
 
 // AuthenticateUser operation middleware
 func (siw *ServerInterfaceWrapper) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AuthenticateUser(w, r)
 	}))
@@ -666,7 +769,6 @@ func (siw *ServerInterfaceWrapper) AuthenticateUser(w http.ResponseWriter, r *ht
 
 // RefreshToken operation middleware
 func (siw *ServerInterfaceWrapper) RefreshToken(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -686,7 +788,6 @@ func (siw *ServerInterfaceWrapper) RefreshToken(w http.ResponseWriter, r *http.R
 
 // RegisterUser operation middleware
 func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.Request) {
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.RegisterUser(w, r)
 	}))
@@ -700,7 +801,6 @@ func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.R
 
 // SelectTenant operation middleware
 func (siw *ServerInterfaceWrapper) SelectTenant(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -720,7 +820,6 @@ func (siw *ServerInterfaceWrapper) SelectTenant(w http.ResponseWriter, r *http.R
 
 // ListCases operation middleware
 func (siw *ServerInterfaceWrapper) ListCases(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -759,6 +858,19 @@ func (siw *ServerInterfaceWrapper) ListCases(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		}
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListCases(w, r, params)
 	}))
@@ -772,7 +884,6 @@ func (siw *ServerInterfaceWrapper) ListCases(w http.ResponseWriter, r *http.Requ
 
 // CreateCase operation middleware
 func (siw *ServerInterfaceWrapper) CreateCase(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -792,7 +903,6 @@ func (siw *ServerInterfaceWrapper) CreateCase(w http.ResponseWriter, r *http.Req
 
 // GetCase operation middleware
 func (siw *ServerInterfaceWrapper) GetCase(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -824,7 +934,6 @@ func (siw *ServerInterfaceWrapper) GetCase(w http.ResponseWriter, r *http.Reques
 
 // AssignDoctor operation middleware
 func (siw *ServerInterfaceWrapper) AssignDoctor(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -856,7 +965,6 @@ func (siw *ServerInterfaceWrapper) AssignDoctor(w http.ResponseWriter, r *http.R
 
 // CloseCase operation middleware
 func (siw *ServerInterfaceWrapper) CloseCase(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -888,7 +996,6 @@ func (siw *ServerInterfaceWrapper) CloseCase(w http.ResponseWriter, r *http.Requ
 
 // WriteDiagnosis operation middleware
 func (siw *ServerInterfaceWrapper) WriteDiagnosis(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -920,7 +1027,6 @@ func (siw *ServerInterfaceWrapper) WriteDiagnosis(w http.ResponseWriter, r *http
 
 // ListImages operation middleware
 func (siw *ServerInterfaceWrapper) ListImages(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -952,7 +1058,6 @@ func (siw *ServerInterfaceWrapper) ListImages(w http.ResponseWriter, r *http.Req
 
 // ConfirmUpload operation middleware
 func (siw *ServerInterfaceWrapper) ConfirmUpload(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -984,7 +1089,6 @@ func (siw *ServerInterfaceWrapper) ConfirmUpload(w http.ResponseWriter, r *http.
 
 // RequestUploadURL operation middleware
 func (siw *ServerInterfaceWrapper) RequestUploadURL(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -1016,7 +1120,6 @@ func (siw *ServerInterfaceWrapper) RequestUploadURL(w http.ResponseWriter, r *ht
 
 // AddSymptom operation middleware
 func (siw *ServerInterfaceWrapper) AddSymptom(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -1048,7 +1151,6 @@ func (siw *ServerInterfaceWrapper) AddSymptom(w http.ResponseWriter, r *http.Req
 
 // GetDownloadURL operation middleware
 func (siw *ServerInterfaceWrapper) GetDownloadURL(w http.ResponseWriter, r *http.Request) {
-
 	var err error
 	_ = err
 
@@ -1078,9 +1180,141 @@ func (siw *ServerInterfaceWrapper) GetDownloadURL(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// ListTenantMembers operation middleware
+func (siw *ServerInterfaceWrapper) ListTenantMembers(w http.ResponseWriter, r *http.Request) {
+	var err error
+	_ = err
+
+	// ------------- Path parameter "tenant_id" -------------
+	var tenantId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tenant_id", r.PathValue("tenant_id"), &tenantId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tenant_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTenantMembers(w, r, tenantId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddTenantMember operation middleware
+func (siw *ServerInterfaceWrapper) AddTenantMember(w http.ResponseWriter, r *http.Request) {
+	var err error
+	_ = err
+
+	// ------------- Path parameter "tenant_id" -------------
+	var tenantId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tenant_id", r.PathValue("tenant_id"), &tenantId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tenant_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddTenantMember(w, r, tenantId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveTenantMember operation middleware
+func (siw *ServerInterfaceWrapper) RemoveTenantMember(w http.ResponseWriter, r *http.Request) {
+	var err error
+	_ = err
+
+	// ------------- Path parameter "tenant_id" -------------
+	var tenantId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tenant_id", r.PathValue("tenant_id"), &tenantId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tenant_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "user_id" -------------
+	var userId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "user_id", r.PathValue("user_id"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "user_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveTenantMember(w, r, tenantId, userId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReactivateTenant operation middleware
+func (siw *ServerInterfaceWrapper) ReactivateTenant(w http.ResponseWriter, r *http.Request) {
+	var err error
+	_ = err
+
+	// ------------- Path parameter "tenant_id" -------------
+	var tenantId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tenant_id", r.PathValue("tenant_id"), &tenantId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tenant_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReactivateTenant(w, r, tenantId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetCurrentUser operation middleware
 func (siw *ServerInterfaceWrapper) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -1234,6 +1468,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/cases/{id}/images/upload-url", wrapper.RequestUploadURL)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/cases/{id}/symptoms", wrapper.AddSymptom)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/images/{id}/download-url", wrapper.GetDownloadURL)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/tenants/{tenant_id}/members", wrapper.ListTenantMembers)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants/{tenant_id}/members", wrapper.AddTenantMember)
+	m.HandleFunc(http.MethodDelete+" "+options.BaseURL+"/tenants/{tenant_id}/members/{user_id}", wrapper.RemoveTenantMember)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/tenants/{tenant_id}/reactivate", wrapper.ReactivateTenant)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/users/me", wrapper.GetCurrentUser)
 
 	return m

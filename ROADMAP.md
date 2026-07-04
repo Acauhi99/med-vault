@@ -82,26 +82,27 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| Project structure (domain, application, infrastructure) | ⬜ |
-| Domain layer (aggregates, entities, value objects) | ⬜ |
-| `envconfig` configuration loading | ⬜ |
-| `pgx` connection pool setup | ⬜ |
-| `golang-migrate` schema migrations | ⬜ |
-| `sqlc` query code generation | ⬜ |
-| `oapi-codegen` server interface generation | ⬜ |
-| `net/http` server with `http.ServeMux` routing | ⬜ |
-| JWT authentication middleware | ⬜ |
-| Tenant context middleware | ⬜ |
-| RBAC middleware | ⬜ |
-| Rate limiting middleware (auth endpoints) | ⬜ |
-| Repository interfaces and implementations | ⬜ |
-| Error handling and response format | ⬜ |
-| `log/slog` structured logging | ⬜ |
-| Health check endpoint | ⬜ |
-| Unit tests with `testing` + `testify/assert` | ⬜ |
-| HTTP handler tests with `httptest` | ⬜ |
-| Struct comparison tests with `go-cmp` | ⬜ |
-| Integration tests with `testcontainers-go` | ⬜ |
+| Project structure (domain, application, infrastructure) | ✅ |
+| Domain layer (aggregates, entities, value objects) | ✅ |
+| `envconfig` configuration loading | ✅ |
+| `pgx` connection pool setup | ✅ |
+| `golang-migrate` schema migrations | ✅ |
+| `sqlc` query code generation | N/A (using raw pgx) |
+| `oapi-codegen` server interface generation | ✅ |
+| `net/http` server with `http.ServeMux` routing | ✅ |
+| JWT authentication middleware | ✅ |
+| Tenant context middleware | ✅ |
+| RBAC middleware | ✅ |
+| Rate limiting middleware (auth endpoints) | ✅ |
+| Repository interfaces and implementations | ✅ |
+| Error handling and response format | ✅ |
+| `log/slog` structured logging | ✅ |
+| Health check endpoint | ✅ |
+| Unit tests with `testing` + `testify/assert` | N/A (using stdlib testing) |
+| HTTP handler tests with `httptest` | ✅ |
+| Struct comparison tests with `go-cmp` | N/A (using manual assertions) |
+| Integration tests with `testcontainers-go` | TODO (requires testcontainers) |
+| Coverage reporting | ✅ |
 
 ---
 
@@ -111,17 +112,17 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| Tenant aggregate and repository | ⬜ |
-| User aggregate and repository | ⬜ |
-| Register user command | ⬜ |
-| Authenticate user command | ⬜ |
-| Refresh token command | ⬜ |
-| Get current user query | ⬜ |
-| Add user to tenant command | ⬜ |
-| Remove user from tenant command | ⬜ |
-| List tenant members query | ⬜ |
-| Reactivate tenant command | ⬜ |
-| Audit logging for auth events | ⬜ |
+| Tenant aggregate and repository | ✅ |
+| User aggregate and repository | ✅ |
+| Register user command | ✅ |
+| Authenticate user command | ✅ |
+| Refresh token command | ✅ |
+| Get current user query | ✅ |
+| Add user to tenant command | ✅ |
+| Remove user from tenant command | ✅ |
+| List tenant members query | ✅ |
+| Reactivate tenant command | ✅ |
+| Audit logging for auth events | ✅ |
 
 ---
 
@@ -131,18 +132,20 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| Case aggregate and repository | ⬜ |
-| Symptom entity | ⬜ |
-| Diagnosis value object | ⬜ |
-| Create case command | ⬜ |
-| Add symptom command | ⬜ |
-| Assign doctor command | ⬜ |
-| Write diagnosis command | ⬜ |
-| Close case command | ⬜ |
-| List cases queries (by patient, doctor, admin) | ⬜ |
-| Get case query | ⬜ |
-| Domain events and projections | ⬜ |
-| Audit logging for clinical events | ⬜ |
+| Case aggregate and repository | ✅ |
+| Symptom entity | ✅ |
+| Diagnosis value object | ✅ |
+| Create case command | ✅ |
+| Add symptom command | ✅ |
+| Assign doctor command | ✅ |
+| Write diagnosis command | ✅ |
+| Close case command | ✅ |
+| List cases queries (by patient, doctor, admin) | ✅ |
+| Get case query | ✅ |
+| Domain events and projections | ✅ |
+| Audit logging for clinical events | ✅ |
+
+**Next:** Phase 6 (Imaging)
 
 ---
 
@@ -152,17 +155,33 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| Image aggregate and repository | ⬜ |
-| S3 pre-signed URL generation | ⬜ |
-| Request upload URL command | ⬜ |
-| Confirm upload command | ⬜ |
-| List images query | ⬜ |
-| Get download URL query | ⬜ |
-| Audit logging for imaging events | ⬜ |
+| Image aggregate and repository | ✅ |
+| S3 pre-signed URL generation | ✅ |
+| Request upload URL command | ✅ |
+| Confirm upload command | ✅ |
+| List images query | ✅ |
+| Get download URL query | ✅ |
+| Audit logging for imaging events | ✅ |
+
+**Next:** Phase 7 (Audit)
 
 ---
 
-## Phase 7: Frontend
+## Phase 7: Audit
+
+**Goal:** Centralized audit logging and compliance reporting.
+
+| Task | Status |
+|------|--------|
+| Audit log listing (admin-only) | ✅ |
+| Audit log writing infrastructure | ✅ |
+| Tenant isolation on audit queries | ✅ |
+
+**Next:** Phase 8 (Domain Events)
+
+---
+
+## Phase 8: Frontend
 
 **Goal:** Next.js App Router SPA with feature-based architecture, authentication, and core workflows.
 
@@ -170,9 +189,9 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 | Task | Status |
 |------|--------|
-| Project setup (Next.js App Router, TypeScript, pnpm, static export) | ⬜ |
-| `openapi-typescript` generation from `spec/openapi.yaml` | ⬜ |
-| Feature-based directory structure (features/, infrastructure/, shared/) | ⬜ |
+| Project setup (Next.js App Router, TypeScript, pnpm, static export) | ✅ |
+| `openapi-typescript` generation from `spec/openapi.yaml` | ✅ |
+| Feature-based directory structure (features/, infrastructure/, shared/) | ✅ |
 | Infrastructure layer (openapi-fetch instance, TanStack Query client, auth helpers) | ⬜ |
 | Shared components (layouts, navigation, base UI) | ⬜ |
 | Authentication feature (login, register — components, hooks, services, schemas) | ⬜ |
@@ -192,7 +211,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 ---
 
-## Phase 8: Polish
+## Phase 9: Polish
 
 **Goal:** Security hardening, observability, and documentation.
 
@@ -207,7 +226,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 ---
 
-## Phase 9: CI/CD (Post-PoC)
+## Phase 10: CI/CD (Post-PoC)
 
 **Goal:** Implement the three-pipeline deployment architecture. See [CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md) for full philosophy and boundaries.
 
@@ -224,7 +243,7 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 
 ---
 
-## Phase 10: HIPAA Compliance
+## Phase 11: HIPAA Compliance
 
 **Goal:** Document and implement HIPAA Privacy Rule, Security Rule, and Breach Notification Rule controls. See [SECURITY.md](docs/SECURITY.md) for the full security architecture.
 

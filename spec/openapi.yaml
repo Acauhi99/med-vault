@@ -135,6 +135,133 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /tenants/{tenant_id}/members:
+    get:
+      tags: [Tenant Members]
+      operationId: listTenantMembers
+      summary: List all members of a tenant
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of tenant members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TenantMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not a member of this tenant
+
+    post:
+      tags: [Tenant Members]
+      operationId: addTenantMember
+      summary: Add a user to a tenant (admin only)
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTenantMemberRequest'
+      responses:
+        '201':
+          description: Member added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TenantMember'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Principal is not an administrator
+
+  /tenants/{tenant_id}/members/{user_id}:
+    delete:
+      tags: [Tenant Members]
+      operationId: removeTenantMember
+      summary: Remove a user from a tenant (admin only)
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Member removed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Principal is not an administrator
+
+  /tenants/{tenant_id}/reactivate:
+    post:
+      tags: [Tenant Members]
+      operationId: reactivateTenant
+      summary: Reactivate a suspended tenant (admin only)
+      parameters:
+        - name: tenant_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tenant reactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      status:
+                        type: string
+                      created_at:
+                        type: string
+                        format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Principal is not an administrator
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /cases:
     get:
       tags: [Cases]
@@ -143,6 +270,11 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PageSizeParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, assigned, diagnosed, closed]
       responses:
         '200':
           description: List of cases
@@ -819,6 +951,32 @@ components:
         created_at:
           type: string
           format: date-time
+
+    TenantMember:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [patient, doctor, administrator]
+        name:
+          type: string
+
+    AddTenantMemberRequest:
+      type: object
+      required: [user_id, role]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [patient, doctor, administrator]
 
     ErrorResponse:
       type: object

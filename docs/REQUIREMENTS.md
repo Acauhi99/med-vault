@@ -150,9 +150,9 @@ This document defines the functional and non-functional requirements for MedVaul
 | POST | /api/v1/auth/select-tenant | Yes | — | Select tenant, receive JWT with tenant + role |
 | POST | /api/v1/auth/refresh | Yes | — | Refresh access token |
 | GET | /api/v1/users/me | Yes | Any | Get current user profile |
-| GET | /api/v1/tenants/members | Yes | Admin | List tenant members |
-| POST | /api/v1/tenants/members | Yes | Admin | Add user to tenant with role |
-| DELETE | /api/v1/tenants/members/{user_id} | Yes | Admin | Remove user from tenant |
+| GET | /api/v1/tenants/{tenant_id}/members | Yes | Admin | List tenant members |
+| POST | /api/v1/tenants/{tenant_id}/members | Yes | Admin | Add user to tenant with role |
+| DELETE | /api/v1/tenants/{tenant_id}/members/{user_id} | Yes | Admin | Remove user from tenant |
 | POST | /api/v1/tenants/{id}/reactivate | Yes | Admin | Reactivate suspended tenant |
 | GET | /api/v1/cases | Yes | Patient, Doctor, Admin | List cases (filtered by role, filterable by status) |
 | POST | /api/v1/cases | Yes | Patient | Create new case |

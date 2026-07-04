@@ -123,6 +123,12 @@ POST /auth/select-tenant { tenant_id }  (with temporary JWT)
 
 To switch tenants, the user calls select-tenant again without re-authenticating.
 
+### Authentication Telemetry
+
+- Successful login continues into the audit trail once a user is identified.
+- Failed login is recorded as a structured security log with request ID, email, IP, and user agent.
+- Failed login is not stored in `audit_logs` because it has no trusted tenant context.
+
 ### Password Policy
 
 - Minimum 12 characters

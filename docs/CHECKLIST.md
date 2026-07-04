@@ -67,103 +67,111 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ## Phase 3: Backend Foundation
 
-- [ ] Project structure follows DDD layers (domain, application, infrastructure)
-- [ ] Domain layer has no external dependencies
-- [ ] Aggregates defined per bounded context
-- [ ] Value objects are immutable
-- [ ] `envconfig` loads configuration from environment variables
-- [ ] `pgx` connection pool configured and tested
-- [ ] `golang-migrate` migrations run successfully
-- [ ] `sqlc` generates type-safe query code
-- [ ] `oapi-codegen` generates Go server interfaces from OpenAPI
-- [ ] `net/http` server starts with `http.ServeMux` routing
-- [ ] JWT middleware validates tokens
-- [ ] Tenant context middleware extracts tenant_id
-- [ ] RBAC middleware enforces role-based access
-- [ ] Repository interfaces defined in domain layer
-- [ ] Repository implementations in infrastructure layer
-- [ ] Error responses follow standard format
-- [ ] `log/slog` structured JSON logging works
-- [ ] Health check endpoint returns 200
-- [ ] Rate limiting middleware on auth endpoints (login, register, refresh)
-- [ ] Unit tests pass with `testing` + `testify/assert`
-- [ ] HTTP handler tests pass with `httptest`
-- [ ] Struct comparison tests pass with `go-cmp`
-- [ ] Integration tests pass with `testcontainers-go`
-- [ ] Coverage reporting works with `go test -cover`
-- [ ] Dockerfile created with multi-stage build (see [ADR-019](adr/019-docker-image-strategy.md))
-- [ ] Build stage: Go toolchain, module download, compilation, validation
-- [ ] Runtime stage: distroless, binary + CA certs only
-- [ ] CGO disabled, static binary
-- [ ] Non-root user, read-only binary
-- [ ] `.dockerignore` excludes git, IDE, caches, docs, test artifacts
-- [ ] BuildKit cache mounts for Go modules and compiler
-- [ ] No Go compiler, source code, or build tools in production image
-- [ ] Image builds successfully with `docker build`
+- [x] Project structure follows DDD layers (domain, application, infrastructure)
+- [x] Domain layer has no external dependencies
+- [x] Aggregates defined per bounded context
+- [x] Value objects are immutable
+- [x] `envconfig` loads configuration from environment variables
+- [x] `pgx` connection pool configured and tested
+- [x] `golang-migrate` migrations run successfully
+- [ ] `sqlc` generates type-safe query code (N/A — using raw pgx)
+- [x] `oapi-codegen` generates Go server interfaces from OpenAPI
+- [x] `net/http` server starts with `http.ServeMux` routing
+- [x] JWT middleware validates tokens
+- [x] Tenant context middleware extracts tenant_id
+- [x] RBAC middleware enforces role-based access
+- [x] Repository interfaces defined in domain layer
+- [x] Repository implementations in infrastructure layer
+- [x] Error responses follow standard format
+- [x] `log/slog` structured JSON logging works
+- [x] Health check endpoint returns 200
+- [x] Rate limiting middleware on auth endpoints (login, register, refresh)
+- [ ] Unit tests pass with `testing` + `testify/assert` (N/A — using stdlib testing)
+- [x] HTTP handler tests pass with `httptest`
+- [ ] Struct comparison tests pass with `go-cmp` (N/A — using manual assertions)
+- [ ] Integration tests pass with `testcontainers-go` (TODO — requires testcontainers)
+- [x] Coverage reporting works with `go test -cover`
+- [x] Dockerfile created with multi-stage build (see [ADR-019](adr/019-docker-image-strategy.md))
+- [x] Build stage: Go toolchain, module download, compilation, validation
+- [x] Runtime stage: distroless, binary + CA certs only
+- [x] CGO disabled, static binary
+- [x] Non-root user, read-only binary
+- [x] `.dockerignore` excludes git, IDE, caches, docs, test artifacts
+- [x] BuildKit cache mounts for Go modules and compiler
+- [x] No Go compiler, source code, or build tools in production image
+- [x] Image builds successfully with `docker build`
 
 ---
 
 ## Phase 4: Identity & Access
 
-- [ ] Tenant can be created
-- [ ] Suspended tenant can be reactivated
-- [ ] User can be registered with valid email
-- [ ] Email is unique system-wide (duplicate registration rejected)
-- [ ] Password is hashed with bcrypt
-- [ ] Authentication returns JWT with correct claims
-- [ ] Invalid credentials are rejected
-- [ ] Refresh token issues new access token
-- [ ] Invalid/expired refresh token is rejected
-- [ ] Current user endpoint returns correct profile
-- [ ] Admin can add user to tenant with role
-- [ ] Admin can remove user from tenant
-- [ ] Admin can list tenant members
-- [ ] Non-admin cannot manage tenant members
-- [ ] Audit log created for registration
-- [ ] Audit log created for login success
-- [ ] Audit log created for login failure
-- [ ] Audit log created for member added/removed
+- [x] Tenant can be created
+- [x] Suspended tenant can be reactivated
+- [x] User can be registered with valid email
+- [x] Email is unique system-wide (duplicate registration rejected)
+- [x] Password is hashed with bcrypt
+- [x] Authentication returns JWT with correct claims
+- [x] Invalid credentials are rejected
+- [x] Refresh token issues new access token
+- [x] Invalid/expired refresh token is rejected
+- [x] Current user endpoint returns correct profile
+- [x] Admin can add user to tenant with role
+- [x] Admin can remove user from tenant
+- [x] Admin can list tenant members
+- [x] Non-admin cannot manage tenant members
+- [x] Audit log created for registration
+- [x] Audit log created for login success
+- [x] Login failure emitted as structured security log
+- [x] Audit log created for member added/removed
 
 ---
 
 ## Phase 5: Clinical Core
 
-- [ ] Patient can create a case
-- [ ] Case is linked to tenant and patient
-- [ ] Patient can add symptoms to a case
-- [ ] Admin can assign a doctor to a case
-- [ ] Case status transitions correctly (Open → Assigned)
-- [ ] Doctor can write a diagnosis
-- [ ] Diagnosis is linked to the assigned doctor
-- [ ] Case status transitions to Diagnosed
-- [ ] Admin can close a diagnosed case
-- [ ] Case status transitions to Closed
-- [ ] Patient can list own cases
-- [ ] Doctor can list assigned cases
-- [ ] Admin can list all cases for tenant
-- [ ] Cases can be filtered by status
-- [ ] List endpoints return paginated results with pagination metadata
-- [ ] Cross-tenant access is blocked
-- [ ] Domain events are published for each mutation
-- [ ] Audit logs created for all clinical events
+- [x] Patient can create a case
+- [x] Case is linked to tenant and patient
+- [x] Patient can add symptoms to a case
+- [x] Admin can assign a doctor to a case
+- [x] Case status transitions correctly (Open → Assigned)
+- [x] Doctor can write a diagnosis
+- [x] Diagnosis is linked to the assigned doctor
+- [x] Case status transitions to Diagnosed
+- [x] Admin can close a diagnosed case
+- [x] Case status transitions to Closed
+- [x] Patient can list own cases
+- [x] Doctor can list assigned cases
+- [x] Admin can list all cases for tenant
+- [x] Cases can be filtered by status
+- [x] List endpoints return paginated results with pagination metadata
+- [x] Cross-tenant access is blocked
+- [x] Domain events are published for each mutation
+- [x] Audit logs created for all clinical events
 
 ---
 
 ## Phase 6: Imaging
 
-- [ ] Pre-signed upload URL is generated
-- [ ] Upload URL is scoped to tenant path
-- [ ] Upload URL expires after defined period
-- [ ] Image metadata is recorded after upload
-- [ ] Image is linked to correct case and tenant
-- [ ] Images can be listed by case
-- [ ] Pre-signed download URL is generated
-- [ ] Cross-tenant image access is blocked
-- [ ] Audit logs created for imaging events
+- [x] Pre-signed upload URL is generated
+- [x] Upload URL is scoped to tenant path
+- [x] Upload URL expires after defined period
+- [x] Image metadata is recorded after upload
+- [x] Image is linked to correct case and tenant
+- [x] Images can be listed by case
+- [x] Pre-signed download URL is generated
+- [x] Cross-tenant image access is blocked
+- [x] Audit logs created for imaging events
 
 ---
 
-## Phase 7: Frontend
+## Phase 7: Audit
+
+- [x] Audit log listing (admin-only)
+- [x] Audit log writing infrastructure
+- [x] Tenant isolation on audit queries
+
+---
+
+## Phase 8: Frontend
 
 - [x] Next.js App Router project initialized
 - [x] pnpm configured as package manager
@@ -205,7 +213,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ---
 
-## Phase 8: Polish
+## Phase 9: Polish
 
 - [ ] No hardcoded secrets in codebase
 - [ ] All inputs validated
@@ -219,7 +227,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ---
 
-## Phase 9: CI/CD
+## Phase 10: CI/CD
 
 - [ ] Infrastructure pipeline runs Terraform init/validate/plan/apply
 - [ ] Infrastructure pipeline requires manual approval for production
@@ -238,7 +246,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 
 ---
 
-## Phase 10: HIPAA Compliance
+## Phase 11: HIPAA Compliance
 
 ### Privacy Rule (45 CFR §164.500–534)
 - [ ] Notice of Privacy Practices (NPP) defined and available to patients

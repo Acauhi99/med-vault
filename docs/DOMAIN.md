@@ -314,10 +314,10 @@ AuditLog
 
 | Query | Description |
 |-------|-------------|
-| `GetAuditLogByID` | Retrieve a specific audit log entry |
-| `ListAuditLogsByTenant` | List all audit logs for a tenant |
-| `ListAuditLogsByUser` | List all audit logs for a specific user |
-| `ListAuditLogsByResource` | List all audit logs for a specific resource |
+| `GetAuditLogByID` | Not implemented in backend yet |
+| `ListAuditLogsByTenant` | List all audit logs for a tenant (filterable by resource_type/resource_id) |
+| `ListAuditLogsByUser` | Not implemented in backend yet |
+| `ListAuditLogsByResource` | Not implemented in backend yet |
 
 ### Domain Events
 
