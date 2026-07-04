@@ -49,7 +49,7 @@ sequenceDiagram
         DB-->>Backend: Role for this tenant
         Backend->>Backend: Generate final JWT {user_id, tenant_id, role}
         Backend-->>Frontend: 200 OK {access_token, refresh_token}
-        Frontend->>Frontend: Store in httpOnly cookie
+        Frontend->>Frontend: Store tokens in session state
         Frontend-->>User: Dashboard (role-specific)
     end
 ```
@@ -68,9 +68,9 @@ sequenceDiagram
     Backend-->>Frontend: 401 Unauthorized
     Frontend->>Backend: POST /api/v1/auth/refresh {refresh_token}
     Backend->>Backend: Validate refresh token
-    Backend->>Backend: Generate new access token (same tenant_id + role)
-    Backend-->>Frontend: 200 OK {new_access_token}
-    Frontend->>Frontend: Update stored token
+    Backend->>Backend: Generate new access token + refresh token (same tenant_id + role)
+    Backend-->>Frontend: 200 OK {new_access_token, new_refresh_token}
+    Frontend->>Frontend: Update session state
     Frontend->>Backend: Retry original request with new token
     Backend-->>Frontend: 200 OK
     Frontend-->>User: Response
@@ -90,9 +90,9 @@ sequenceDiagram
     Backend->>Backend: Validate current JWT
     Backend->>DB: SELECT user_tenants WHERE user_id = $1 AND tenant_id = $2
     DB-->>Backend: Role for new tenant
-    Backend->>Backend: Generate new JWT {user_id, new_tenant_id, new_role}
-    Backend-->>Frontend: 200 OK {new_access_token}
-    Frontend->>Frontend: Replace stored token
+    Backend->>Backend: Generate new JWT pair {user_id, new_tenant_id, new_role}
+    Backend-->>Frontend: 200 OK {new_access_token, new_refresh_token}
+    Frontend->>Frontend: Replace tokens in session state
     Frontend-->>User: Dashboard (new tenant context)
 ```
 

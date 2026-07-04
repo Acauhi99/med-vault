@@ -179,7 +179,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] TypeScript strict mode enabled
 - [x] `openapi-typescript` generates types from `spec/openapi.yaml`
 - [x] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`, `generated/`)
-- [ ] Infrastructure layer configured (openapi-fetch instance, TanStack Query client, auth helpers)
+- [x] Infrastructure layer configured (openapi-fetch instance, TanStack Query client, auth helpers)
 - [ ] Shared components created (layouts, navigation, base UI)
 - [x] TanStack Query installed and configured
 - [x] `openapi-fetch` installed and configured
@@ -187,10 +187,10 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] Tailwind CSS installed and configured
 - [ ] shadcn/ui installed with base components
 - [ ] All components use `'use client'` directive
-- [ ] No API Routes present
-- [ ] No Server Actions present
-- [ ] No SSR (static export only)
-- [ ] Authentication feature complete (login, register — components, hooks, services, schemas)
+- [x] No API Routes present
+- [x] No Server Actions present
+- [x] No SSR (static export only)
+- [x] Authentication feature complete (login, register — components, hooks, services, schemas)
 - [ ] Patients feature complete (dashboard, case list)
 - [ ] Doctors feature complete (assigned cases, diagnosis)
 - [ ] Admin feature complete (case management, audit logs)
@@ -199,16 +199,16 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Image upload works with pre-signed URL
 - [ ] Diagnosis is viewable by authorized roles
 - [ ] Audit log viewer is accessible to admins
-- [ ] Tenant switcher component allows switching between tenants
-- [ ] Tenant switcher calls select-tenant API and updates JWT
+- [x] Tenant switcher component allows switching between tenants
+- [x] Tenant switcher calls select-tenant API and updates JWT
 - [ ] Unauthorized access redirects to login
-- [ ] JWT tokens are stored in httpOnly cookies
-- [ ] No business logic in frontend components
+- [x] JWT tokens are stored in client session state
+- [x] No business logic in frontend components
 - [ ] Each feature is self-contained (components, hooks, services, schemas, types)
 - [ ] No unnecessary coupling between features
-- [ ] Vitest configured with `@testing-library/react` and MSW
+- [x] Vitest configured with `@testing-library/react` and MSW
 - [ ] Component tests pass with `@testing-library/react` + `@testing-library/user-event`
-- [ ] API mocking works with MSW
+- [x] API mocking works with MSW
 - [ ] Coverage reporting works with `@vitest/coverage-v8`
 
 ---
@@ -300,7 +300,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 ### Technical Safeguards (45 CFR §164.312)
 - [x] Unique user identification (JWT user_id claim)
 - [x] Emergency access procedure documented
-- [x] Automatic logoff implemented (15 minutes)
+- [ ] Automatic logoff implemented (15 minutes)
 - [x] Audit controls implemented (structured logging)
 - [x] Integrity controls implemented (referential integrity, validation)
 - [x] Person/entity authentication implemented (JWT)

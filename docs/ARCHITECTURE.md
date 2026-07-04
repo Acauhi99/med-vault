@@ -66,7 +66,7 @@ The frontend does NOT follow MVC, MVP, or MVVM. Every business capability is imp
 | TanStack Query | Server state management, caching |
 | openapi-fetch | Type-safe HTTP client (generated from OpenAPI) |
 | React Hook Form | Form handling |
-| Zod | Schema validation |
+| Zod v4 | Schema validation |
 | Tailwind CSS | Utility-first styling |
 | shadcn/ui | Component system |
 
@@ -92,7 +92,7 @@ frontend/
 │   │   ├── components/         # Presentation components
 │   │   ├── hooks/              # TanStack Query hooks, UI orchestration
 │   │   ├── services/           # openapi-fetch API calls
-│   │   ├── schemas/            # Zod validation schemas
+│   │   ├── schemas/            # Zod v4 validation schemas
 │   │   ├── types/              # TypeScript types
 │   │   └── index.ts            # Public exports
 │   ├── patients/
@@ -119,7 +119,7 @@ frontend/
 | Components | Presentation only | Props-only data flow, no HTTP calls |
 | Hooks | UI orchestration, TanStack Query | No raw HTTP requests |
 | Services | API communication (openapi-fetch) | No business rules |
-| Schemas | Validation (Zod) | One schema per feature |
+| Schemas | Validation (Zod v4) | One schema per feature |
 | Infrastructure | openapi-fetch, auth, query client | External integrations only |
 | Shared | Reusable UI, layouts, utilities | Never a dumping ground |
 
@@ -131,7 +131,9 @@ Component → Hook → TanStack Query → Service → openapi-fetch → Go REST 
 Component ← Hook ← TanStack Query Cache ←←←←←←←←← Response
 ```
 
-**Business Logic:** All business rules live exclusively in the Go backend. The frontend validates user input (Zod) and handles UI state only.
+**Business Logic:** All business rules live exclusively in the Go backend. The frontend validates user input (Zod v4) and handles UI state only.
+
+When adding Zod validators, prefer the current helpers from the official Zod docs (`z.email()`, `z.uuid()`, `z.iso.datetime()`) instead of deprecated string-format methods.
 
 **Multi-Tenant:** The frontend propagates tenant context from JWT. Tenant isolation is enforced by the backend. The frontend never enforces tenant security.
 
@@ -150,7 +152,7 @@ next build → S3 → CloudFront → Client
 
 **Security:**
 - No PHI stored locally
-- Session tokens in httpOnly cookies
+- Session tokens kept in client session state during the current browser session
 - API calls authenticated via JWT
 
 **Why this architecture:**
@@ -299,8 +301,8 @@ Client → ALB → Backend
   4. Client sends tenant_id (with temporary JWT)
   5. Backend validates user belongs to tenant
   6. Backend returns final JWT (access token + refresh token) with tenant_id + role
-  7. Client stores token in httpOnly cookie
-  8. Subsequent requests include JWT in Authorization header
+  7. Client stores access/refresh tokens in session state
+  8. Subsequent requests include the access JWT in the Authorization header
 ```
 
 ### Request Lifecycle (Authenticated)

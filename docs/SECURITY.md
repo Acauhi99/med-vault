@@ -76,7 +76,7 @@ When PHI must be de-identified (e.g., for analytics, reporting, or research):
 | Cross-site scripting (XSS) | Medium | Input validation, output encoding |
 | Cross-site request forgery (CSRF) | Medium | SameSite cookies, CSRF tokens |
 | Brute force | Medium | Rate limiting on auth endpoints, account lockout |
-| Session hijacking | Medium | Short-lived JWT, httpOnly cookies |
+| Session hijacking | Medium | Short-lived JWT, client session state |
 | Man-in-the-middle | High | TLS 1.2+ everywhere |
 | Data exfiltration | High | Encryption at rest, access controls |
 | Privilege escalation | High | RBAC enforcement, tenant isolation |
@@ -91,7 +91,7 @@ When PHI must be de-identified (e.g., for analytics, reporting, or research):
 - **Algorithm:** HMAC-SHA256 (symmetric) for PoC
 - **Access token lifetime:** 15 minutes
 - **Refresh token lifetime:** 7 days
-- **Token storage:** httpOnly, Secure, SameSite=Strict cookies
+- **Token storage:** client session state (in-memory for the current browser session)
 - **Token transmission:** Authorization header for API calls
 - **Login flow:** Two-step (authenticate → select tenant)
 
@@ -143,7 +143,7 @@ Client → Backend
   1. Access token expires (401 response)
   2. Client sends refresh token
   3. Backend validates refresh token
-  4. Backend issues new access token (same tenant_id + role)
+  4. Backend issues new access + refresh tokens (same tenant_id + role)
   5. Client retries original request
 ```
 
@@ -159,9 +159,8 @@ HIPAA requires automatic logoff after a period of inactivity (45 CFR §164.312(a
 | Re-authentication required | After inactivity timeout | User must authenticate again |
 
 **Implementation:**
-- Frontend monitors user activity (mouse, keyboard, touch)
-- After 15 minutes of inactivity, session is terminated
-- User is redirected to login page
+- Frontend currently clears the in-memory session on explicit sign-out
+- Inactivity timeout is not wired in yet
 - Refresh tokens are invalidated on the server
 
 ### Emergency Access Procedure
