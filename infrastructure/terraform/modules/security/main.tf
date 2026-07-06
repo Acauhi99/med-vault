@@ -2,6 +2,11 @@ locals {
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
+resource "random_password" "jwt_signing_key" {
+  length  = 64
+  special = true
+}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
@@ -239,4 +244,9 @@ resource "aws_secretsmanager_secret" "jwt_signing_key" {
   tags = {
     Name = "${local.name_prefix}-jwt-signing-key"
   }
+}
+
+resource "aws_secretsmanager_secret_version" "jwt_signing_key" {
+  secret_id     = aws_secretsmanager_secret.jwt_signing_key.id
+  secret_string = random_password.jwt_signing_key.result
 }
