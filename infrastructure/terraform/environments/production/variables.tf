@@ -75,3 +75,9 @@ variable "container_port" {
   type        = number
   default     = 8080
 }
+
+variable "image_tag" {
+  description = "Backend Docker image tag"
+  type        = string
+  default     = "bootstrap"
+}

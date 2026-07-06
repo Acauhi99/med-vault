@@ -89,6 +89,8 @@ Infrastructure provisions the platform. Applications consume the platform.
 
 The Backend pipeline owns the Go application runtime.
 
+Current GitHub Actions for this repo enforce the validation slice only: lint, unit tests, and build. The deployment slice below remains the target Phase 10 pipeline.
+
 ### Execution Flow
 
 ```
@@ -115,6 +117,8 @@ The Backend pipeline produces a Docker image stored in Amazon ECR.
 
 The image is the sole artifact. It is immutable, versioned, and independently deployable.
 
+Terraform ECS task definitions reference a configurable image tag, with `bootstrap` as the default so initial infrastructure apply can succeed before the release pipeline publishes a real tag.
+
 > **Docker image strategy:** See [ADR-019: Docker Image Strategy](adr/019-docker-image-strategy.md) for multi-stage build, distroless runtime, security constraints, and layering strategy.
 
 ### Boundaries
@@ -130,6 +134,8 @@ The Backend pipeline must NOT:
 ## Frontend Pipeline
 
 The Frontend pipeline owns the static web application.
+
+Current GitHub Actions for this repo enforce the validation slice only: lint, type check, unit tests, and build. The deploy slice below remains the target Phase 10 pipeline.
 
 ### Execution Flow
 
@@ -229,14 +235,18 @@ Injected through ECS task definition via AWS Secrets Manager or AWS Systems Mana
 
 | Variable | Source |
 |----------|--------|
-| Database connection string | Secrets Manager |
+| Database host | RDS / Parameter Store |
+| Database port | Parameter Store |
+| Database name | Parameter Store |
+| Database username | Secrets Manager |
+| Database password | Secrets Manager |
 | JWT signing key | Secrets Manager |
 | AWS Region | Parameter Store |
-| S3 bucket names | Parameter Store |
+| S3 bucket name | Parameter Store |
 | KMS key ARNs | Parameter Store |
 | Application config | Environment-specific |
 
-The deployment pipeline references secrets. It never exposes secret values.
+The deployment pipeline references secrets. It never exposes secret values. The backend composes `DATABASE_URL` from the injected database settings when the full URL is not supplied directly.
 
 ### Frontend Variables
 

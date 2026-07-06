@@ -236,8 +236,8 @@ This document outlines the phased delivery plan for MedVault. Each phase builds 
 | Backend pipeline (lint, test, build, migrate, deploy, health check) | ⬜ |
 | Frontend pipeline (lint, typecheck, test, build, export, S3 upload, CF invalidation) | ⬜ |
 | GitHub OIDC for AWS authentication | ✅ |
-| Path-based triggers (infrastructure/, backend/, frontend/) | ⬜ |
-| Concurrency groups per pipeline | ⬜ |
+| Path-based triggers (infrastructure/, backend/, frontend/) | ✅ |
+| Concurrency groups per pipeline | ✅ |
 | Deployment validation (health checks, smoke tests) | ⬜ |
 | Notifications (email/SMS) | ⬜ |
 

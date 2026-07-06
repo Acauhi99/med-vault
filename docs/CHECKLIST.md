@@ -239,8 +239,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Frontend pipeline builds and exports static assets
 - [ ] Frontend pipeline uploads to S3 and invalidates CloudFront
 - [x] GitHub OIDC configured for AWS authentication (no long-lived credentials)
-- [ ] Path-based triggers configured (infrastructure/, backend/, frontend/)
-- [ ] Concurrency groups prevent parallel deployments of same component
+- [x] Path-based triggers configured (infrastructure/, backend/, frontend/)
+- [x] Concurrency groups prevent parallel deployments of same component
 - [ ] Each pipeline supports independent rollback
 - [ ] CI/CD strategy documented in CI_CD_STRATEGY.md
 

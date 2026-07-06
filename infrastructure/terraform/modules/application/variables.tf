@@ -43,6 +43,12 @@ variable "container_port" {
   type        = number
 }
 
+variable "image_tag" {
+  description = "Backend Docker image tag"
+  type        = string
+  default     = "bootstrap"
+}
+
 variable "db_endpoint" {
   description = "RDS endpoint hostname"
   type        = string
@@ -65,6 +71,11 @@ variable "db_secret_arn" {
 
 variable "jwt_secret_arn" {
   description = "JWT signing key secret ARN"
+  type        = string
+}
+
+variable "s3_bucket_name" {
+  description = "S3 bucket name for medical images"
   type        = string
 }
 

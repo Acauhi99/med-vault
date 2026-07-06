@@ -270,6 +270,12 @@ GitHub Actions authenticates via **GitHub OIDC** (no long-lived credentials).
 
 - Image scanning on push enabled
 - AES256 encryption
+- ECS task definitions use an explicit image tag; `bootstrap` is the default tag for the initial apply path until the backend pipeline publishes a release tag.
+
+### ALB Certificate
+
+- HTTPS listener resolves the issued ACM certificate for `medvault.example.com`
+- No manual ACM ARN input is required in production tfvars
 
 ---
 

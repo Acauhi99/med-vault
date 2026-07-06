@@ -43,8 +43,28 @@ data "aws_iam_policy_document" "task_s3_access" {
   }
 }
 
-data "aws_ecr_repository" "backend" {
-  name = "${var.project_name}/backend"
+data "aws_acm_certificate" "https" {
+  domain      = "medvault.example.com"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+resource "aws_ecr_repository" "backend" {
+  name                 = "${var.project_name}/backend"
+  image_tag_mutability = "IMMUTABLE"
+
+  encryption_configuration {
+    encryption_type = "KMS"
+    kms_key         = var.kms_key_arn
+  }
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-backend-ecr"
+  }
 }
 
 resource "aws_cloudwatch_log_group" "backend" {
@@ -99,7 +119,6 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_lb" "main" {
-  #checkov:skip=CKV2_AWS_20:HTTP redirect requires ACM certificate and HTTPS listener, tracked for TLS phase.
   #checkov:skip=CKV2_AWS_76:WAF has AWSManagedRulesKnownBadInputsRuleSet; Checkov does not infer it through this module association.
   name               = "${local.name_prefix}-alb"
   internal           = false
@@ -145,13 +164,13 @@ resource "aws_lb_target_group" "backend" {
   }
 }
 
-resource "aws_lb_listener" "http" {
-  #checkov:skip=CKV_AWS_2:HTTPS requires ACM certificate and DNS setup, tracked for TLS phase.
-  #checkov:skip=CKV_AWS_103:HTTPS requires ACM certificate and DNS setup, tracked for TLS phase.
-  #checkov:skip=CKV2_AWS_20:HTTP redirect requires HTTPS listener, tracked for TLS phase.
+resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = data.aws_acm_certificate.https.arn
+
+  ssl_policy = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 
   default_action {
     type             = "forward"
@@ -171,7 +190,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode([
     {
       name                   = "backend"
-      image                  = "${data.aws_ecr_repository.backend.repository_url}:latest"
+      image                  = "${aws_ecr_repository.backend.repository_url}:${var.image_tag}"
       essential              = true
       readonlyRootFilesystem = true
 
@@ -192,15 +211,31 @@ resource "aws_ecs_task_definition" "backend" {
           value = var.db_name
         },
         {
-          name  = "S3_BUCKET_ARN"
-          value = var.s3_bucket_arn
-        }
+          name  = "DB_PORT"
+          value = "5432"
+        },
+        {
+          name  = "S3_BUCKET"
+          value = var.s3_bucket_name
+        },
+        {
+          name  = "AWS_REGION"
+          value = data.aws_region.current.name
+        },
       ]
 
       secrets = [
         {
-          name      = "DATABASE_SECRET"
-          valueFrom = var.db_secret_arn
+          name      = "DB_USERNAME"
+          valueFrom = "${var.db_secret_arn}:username::"
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.db_secret_arn}:password::"
+        },
+        {
+          name      = "JWT_SECRET"
+          valueFrom = var.jwt_secret_arn
         }
       ]
 
@@ -241,7 +276,7 @@ resource "aws_ecs_service" "backend" {
     container_port   = var.container_port
   }
 
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener.https]
 
   tags = {
     Name = "${local.name_prefix}-backend-service"

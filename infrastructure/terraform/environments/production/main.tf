@@ -50,11 +50,13 @@ module "application" {
   ecs_task_memory        = var.ecs_task_memory
   ecs_desired_count      = var.ecs_desired_count
   container_port         = var.container_port
+  image_tag              = var.image_tag
   db_endpoint            = module.database.db_endpoint
   db_name                = var.db_name
   kms_key_arn            = module.security.kms_key_arn
   db_secret_arn          = module.database.db_secret_arn
   jwt_secret_arn         = module.security.jwt_secret_arn
+  s3_bucket_name         = module.storage.medical_images_bucket_name
   s3_bucket_arn          = module.storage.medical_images_bucket_arn
   audit_logs_bucket_name = module.storage.audit_logs_bucket_name
   alb_security_group_id  = module.security.alb_security_group_id

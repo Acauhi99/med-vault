@@ -453,6 +453,10 @@ Runtime Stage (Distroless)
 - Same image deploys to all environments
 - Immutable after publication
 
+Terraform ECS task definitions point at an explicit image tag; `bootstrap` is the default tag so the initial infrastructure apply can succeed before the release pipeline publishes a real backend image.
+
+The ALB HTTPS listener resolves the issued ACM certificate for `medvault.example.com` by domain, so production does not need a manual certificate ARN input.
+
 ### Database Migrations
 
 Migrations run as a **separate step before application deployment**, not at application startup.
