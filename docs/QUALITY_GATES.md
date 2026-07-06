@@ -174,7 +174,7 @@ These validations should remain lightweight.
 | Format Check | `terraform fmt -check -recursive` | Ensure formatting is applied |
 | Validate | `terraform validate` | Configuration correctness |
 | Lint | `tflint` | Best-practice compliance |
-| Security | `checkov -d .` | Security and policy validation |
+| Security | `checkov -d .` | Security and policy validation (run via `task security:infrastructure` and CI) |
 
 Infrastructure should never be pushed before passing all validation gates.
 
@@ -246,6 +246,7 @@ Developers should not memorize technology-specific commands. Every operation is 
 |------|-------------|
 | `task format` | Format all code (Biome, gofumpt, terraform fmt) |
 | `task lint` | Lint all code (Biome, golangci-lint, tflint) |
+| `task check` | Run all non-mutating checks |
 | `task validate` | Validate all configurations (TypeScript, terraform validate) |
 | `task test` | Run all tests (Vitest, go test) |
 | `task build` | Build all artifacts |
@@ -257,6 +258,8 @@ This abstraction provides a consistent developer experience across frontend, bac
 ### Git Hooks Integration
 
 Git hooks should invoke Taskfile commands rather than embedding validation logic directly. This keeps hooks simple and validation logic centralized.
+
+Lefthook is the local hook runner for this workspace. Pre-push runs `task pre-push`, which fans out to the backend, frontend, and infrastructure checks.
 
 ---
 

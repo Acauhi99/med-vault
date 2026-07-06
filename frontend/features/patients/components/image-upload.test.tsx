@@ -5,8 +5,8 @@ import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { apiBase, renderWith, ts, uuid1 } from "../../../test/setup";
-import { ImageUpload } from "./image-upload";
 import { maxImageUploadSizeBytes } from "../schemas/cases";
+import { ImageUpload } from "./image-upload";
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));

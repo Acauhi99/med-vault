@@ -96,18 +96,23 @@ type mockClinicalTenantRepo struct{}
 func (m *mockClinicalTenantRepo) FindUserTenants(uuid.UUID) ([]authdomain.UserTenant, error) {
 	return nil, nil
 }
+
 func (m *mockClinicalTenantRepo) FindUserTenant(uuid.UUID, uuid.UUID) (*authdomain.UserTenant, error) {
 	return nil, errors.New("not found")
 }
+
 func (m *mockClinicalTenantRepo) AddMember(context.Context, uuid.UUID, uuid.UUID, string) error {
 	return nil
 }
+
 func (m *mockClinicalTenantRepo) RemoveMember(context.Context, uuid.UUID, uuid.UUID) error {
 	return nil
 }
+
 func (m *mockClinicalTenantRepo) ListMembers(context.Context, uuid.UUID) ([]authdomain.UserTenant, error) {
 	return nil, nil
 }
+
 func (m *mockClinicalTenantRepo) Reactivate(context.Context, uuid.UUID) (*authdomain.Tenant, error) {
 	return nil, nil
 }
@@ -184,5 +189,7 @@ func TestAPI_CreateCase(t *testing.T) {
 	}
 }
 
-var _ domain.Repository = (*mockClinicalRepo)(nil)
-var _ authdomain.TenantRepository = (*mockClinicalTenantRepo)(nil)
+var (
+	_ domain.Repository           = (*mockClinicalRepo)(nil)
+	_ authdomain.TenantRepository = (*mockClinicalTenantRepo)(nil)
+)

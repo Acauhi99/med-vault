@@ -68,6 +68,38 @@ tasks:
 
   # ── Validation ──────────────────────────────────────────────
 
+  check:
+    desc: Run all non-mutating checks
+    cmds:
+      - task: check:backend
+      - task: check:frontend
+      - task: check:infrastructure
+
+  check:backend:
+    desc: Run backend format, lint, validate, and tests without writing files
+    dir: '{{.BACKEND_DIR}}'
+    cmds:
+      - sh -c 'test -z "$(gofumpt -l .)"'
+      - task: lint:backend
+      - task: validate:backend
+      - task: test:backend
+
+  check:frontend:
+    desc: Run frontend format, lint, validate, and tests without writing files
+    dir: '{{.FRONTEND_DIR}}'
+    cmds:
+      - ./node_modules/.bin/biome check app features infrastructure shared
+      - task: validate:frontend
+      - task: test:frontend
+
+  check:infrastructure:
+    desc: Run infrastructure format, lint, and validate checks without writing files
+    dir: '{{.INFRA_DIR}}'
+    cmds:
+      - terraform fmt -check -recursive
+      - task: lint:infrastructure
+      - task: validate:infrastructure
+
   validate:
     desc: Validate all configurations
     cmds:
@@ -143,12 +175,9 @@ tasks:
   # ── Pre-Push ────────────────────────────────────────────────
 
   pre-push:
-    desc: Run all pre-push checks (format + lint + validate + test)
+    desc: Run all pre-push checks (non-mutating)
     cmds:
-      - task: format
-      - task: lint
-      - task: validate
-      - task: test
+      - task: check
 
   # ── Security ────────────────────────────────────────────────
 

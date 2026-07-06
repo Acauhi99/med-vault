@@ -1,11 +1,11 @@
 import createClient from "openapi-fetch";
 
 import type { paths } from "@/generated/api";
-import { config } from "@/infrastructure/config";
 import {
 	clearAuthSession,
 	getAuthSession,
 } from "@/infrastructure/auth/session-store";
+import { config } from "@/infrastructure/config";
 
 async function authFetch(
 	input: RequestInfo | URL,

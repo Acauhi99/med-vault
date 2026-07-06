@@ -113,9 +113,9 @@ export function CaseList() {
 									</tr>
 								))}
 							</tbody>
-					</table>
-				</div>
-			)}
+						</table>
+					</div>
+				)}
 
 				{detailQuery.isLoading && selectedCaseId && (
 					<div className="mt-6">

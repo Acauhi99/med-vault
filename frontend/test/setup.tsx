@@ -12,7 +12,7 @@ afterEach(() => {
 	cleanup();
 });
 
-export const apiBase = "http://localhost:8080";
+export const apiBase = "http://localhost:8080/api/v1";
 
 // ── Session helpers ───────────────────────────────────────────────────────────
 

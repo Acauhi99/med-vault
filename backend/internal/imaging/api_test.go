@@ -111,6 +111,7 @@ func (m *mockCaseRepo) Update(context.Context, *clinicaldomain.Case) error { ret
 func (m *mockCaseRepo) AddSymptom(context.Context, uuid.UUID, uuid.UUID, *clinicaldomain.Symptom) error {
 	return nil
 }
+
 func (m *mockCaseRepo) WriteDiagnosis(context.Context, uuid.UUID, uuid.UUID, *clinicaldomain.Diagnosis) error {
 	return nil
 }
@@ -189,5 +190,7 @@ func TestAPI_RequestUploadURL(t *testing.T) {
 	}
 }
 
-var _ imagingdomain.Repository = (*mockImageRepo)(nil)
-var _ clinicaldomain.Repository = (*mockCaseRepo)(nil)
+var (
+	_ imagingdomain.Repository  = (*mockImageRepo)(nil)
+	_ clinicaldomain.Repository = (*mockCaseRepo)(nil)
+)

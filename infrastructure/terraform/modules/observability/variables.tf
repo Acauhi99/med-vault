@@ -17,8 +17,3 @@ variable "audit_logs_bucket_name" {
   description = "S3 bucket name for CloudTrail logs"
   type        = string
 }
-
-variable "kms_key_arn" {
-  description = "KMS key ARN for observability encryption"
-  type        = string
-}

@@ -1,0 +1,4 @@
+pre-push:
+  commands:
+    validate:
+      run: task pre-push

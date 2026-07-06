@@ -23,7 +23,12 @@ type ErrorStateProps = {
 	action?: ReactNode;
 };
 
-export function ErrorState({ title, message, onRetry, action }: ErrorStateProps) {
+export function ErrorState({
+	title,
+	message,
+	onRetry,
+	action,
+}: ErrorStateProps) {
 	return (
 		<div className="flex flex-col items-center justify-center rounded-3xl border border-red-400/20 bg-red-400/5 px-6 py-12 text-center">
 			<h3 className="text-lg font-semibold text-white">{title}</h3>

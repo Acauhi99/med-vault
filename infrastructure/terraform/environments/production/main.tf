@@ -115,5 +115,4 @@ module "observability" {
   environment            = var.environment
   vpc_id                 = module.network.vpc_id
   audit_logs_bucket_name = module.storage.audit_logs_bucket_name
-  kms_key_arn            = module.security.kms_key_arn
 }

@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import type { UserProfile } from "@/features/authentication/schemas/auth";
-import type { TenantSummary } from "@/features/authentication/schemas/auth";
+import type {
+	TenantSummary,
+	UserProfile,
+} from "@/features/authentication/schemas/auth";
 import { selectTenant } from "@/features/authentication/services/auth";
 import { updateAuthSession } from "@/infrastructure/auth/session-store";
 

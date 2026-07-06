@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-
+import { refreshSession } from "@/features/authentication/services/auth";
 import {
 	clearAuthSession,
 	getAuthSession,
 	updateAuthSession,
 } from "@/infrastructure/auth/session-store";
-import { refreshSession } from "@/features/authentication/services/auth";
 
 const REFRESH_BUFFER_MS = 30_000;
 
