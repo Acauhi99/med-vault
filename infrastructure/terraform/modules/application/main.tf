@@ -24,6 +24,12 @@ data "aws_iam_policy_document" "task_execution_secrets" {
       var.jwt_secret_arn,
     ]
   }
+
+  statement {
+    actions = ["kms:Decrypt"]
+
+    resources = [var.kms_key_arn]
+  }
 }
 
 data "aws_iam_policy_document" "task_s3_access" {
