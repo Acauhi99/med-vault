@@ -86,20 +86,20 @@ jobs:
         working-directory: .
         env:
           IMAGE_URI: ${{ steps.tf.outputs.ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
           DOCKER_BUILDKIT: "1"
         run: docker build -f backend/Dockerfile -t "$IMAGE_URI:$IMAGE_TAG" backend
 
       - name: Push image
         env:
           IMAGE_URI: ${{ steps.tf.outputs.ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
         run: docker push "$IMAGE_URI:$IMAGE_TAG"
 
       - name: Run migrations and deploy
         env:
           IMAGE_URI: ${{ steps.tf.outputs.ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
           CLUSTER_NAME: ${{ steps.tf.outputs.ecs_cluster_name }}
           SERVICE_NAME: ${{ steps.tf.outputs.ecs_service_name }}
           API_BASE_URL: ${{ steps.tf.outputs.api_base_url }}

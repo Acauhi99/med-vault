@@ -92,7 +92,7 @@ jobs:
         working-directory: .
         env:
           IMAGE_URI: ${{ steps.tf.outputs.frontend_ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
           API_BASE_URL: ${{ steps.tf.outputs.api_base_url }}
         run: docker build -f frontend/Dockerfile --build-arg NEXT_PUBLIC_API_URL="$API_BASE_URL" -t "$IMAGE_URI:$IMAGE_TAG" frontend
 
@@ -106,13 +106,13 @@ jobs:
       - name: Push image
         env:
           IMAGE_URI: ${{ steps.tf.outputs.frontend_ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
         run: docker push "$IMAGE_URI:$IMAGE_TAG"
 
       - name: Deploy
         env:
           IMAGE_URI: ${{ steps.tf.outputs.frontend_ecr_repository_url }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_attempt }}
           CLUSTER_NAME: ${{ steps.tf.outputs.ecs_cluster_name }}
           SERVICE_NAME: ${{ steps.tf.outputs.frontend_ecs_service_name }}
         run: |
