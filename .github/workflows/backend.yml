@@ -35,6 +35,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           working-directory: backend
+          skip-cache: true
 
       - name: Test
         run: go test ./...
