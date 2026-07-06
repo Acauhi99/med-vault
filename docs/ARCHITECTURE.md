@@ -455,7 +455,7 @@ Runtime Stage (Distroless)
 
 Terraform ECS task definitions point at an explicit image tag; `bootstrap` is the default tag so the initial infrastructure apply can succeed before the release pipeline publishes a real backend image.
 
-The ALB HTTPS listener resolves the issued ACM certificate for `medvault.example.com` by domain, so production does not need a manual certificate ARN input.
+The ALB HTTPS listener resolves the issued ACM certificate for `med-vault.space` by domain, so production does not need a manual certificate ARN input.
 
 ### Database Migrations
 

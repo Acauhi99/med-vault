@@ -225,7 +225,7 @@ Owned by Terraform.
 | AWS Region | `us-east-1` |
 | Project Name | `medvault` |
 | Network Configuration | VPC CIDR, subnet ranges |
-| Domain Name | `medvault.example.com` |
+| Domain Name | `med-vault.space` |
 
 These are Terraform inputs. They define the platform.
 

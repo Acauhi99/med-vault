@@ -56,7 +56,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] `storage` module: S3 buckets with encryption, versioning, lifecycle rules
 - [x] `application` module: ECS Fargate cluster, ALB, task definition, security groups
 - [x] `security` module: IAM roles, policies, KMS, Secrets Manager
-- [x] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs
+- [x] `observability` module: CloudWatch, CloudTrail, VPC Flow Logs, AWS Config
 - [x] Production environment composes modules correctly
 - [x] Remote state in S3 with versioning and encryption
 - [x] Security groups configured (ALB → ECS → RDS)

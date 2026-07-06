@@ -152,6 +152,8 @@ Modules should represent complete capabilities with cohesive resources:
 - GuardDuty
 - Security Hub
 
+AWS Config is implemented as a continuous configuration recorder with an S3 delivery channel for compliance history.
+
 ---
 
 ## Module Design Guidelines
@@ -274,8 +276,9 @@ GitHub Actions authenticates via **GitHub OIDC** (no long-lived credentials).
 
 ### ALB Certificate
 
-- HTTPS listener resolves the issued ACM certificate for `medvault.example.com`
+- Terraform creates the Route 53 hosted zone for `med-vault.space` and issues the ACM certificate via DNS validation
 - No manual ACM ARN input is required in production tfvars
+- Domain delegation to the hosted zone is still required at the registrar
 
 ---
 

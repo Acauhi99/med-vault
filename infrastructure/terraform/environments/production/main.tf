@@ -1,3 +1,7 @@
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
+}
+
 module "network" {
   source = "../../modules/network"
 
@@ -43,6 +47,8 @@ module "application" {
 
   project_name           = var.project_name
   environment            = var.environment
+  domain_name            = var.domain_name
+  route53_zone_id        = aws_route53_zone.main.zone_id
   vpc_id                 = module.network.vpc_id
   public_subnet_ids      = module.network.public_subnet_ids
   private_subnet_ids     = module.network.private_subnet_ids
@@ -61,6 +67,26 @@ module "application" {
   audit_logs_bucket_name = module.storage.audit_logs_bucket_name
   alb_security_group_id  = module.security.alb_security_group_id
   ecs_security_group_id  = module.security.ecs_security_group_id
+}
+
+resource "aws_route53_record" "apex" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = module.application.alb_dns_name
+    zone_id                = module.application.alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "www" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "www"
+  type    = "CNAME"
+  ttl     = 300
+  records = [var.domain_name]
 }
 
 module "observability" {

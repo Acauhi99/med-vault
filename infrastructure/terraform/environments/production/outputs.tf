@@ -3,6 +3,11 @@ output "vpc_id" {
   value       = module.network.vpc_id
 }
 
+output "route53_zone_name_servers" {
+  description = "Name servers for the primary Route 53 hosted zone"
+  value       = aws_route53_zone.main.name_servers
+}
+
 output "alb_dns_name" {
   description = "Application Load Balancer DNS name"
   value       = module.application.alb_dns_name

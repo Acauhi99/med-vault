@@ -8,6 +8,16 @@ variable "environment" {
   type        = string
 }
 
+variable "domain_name" {
+  description = "Primary DNS name for the ALB certificate"
+  type        = string
+}
+
+variable "route53_zone_id" {
+  description = "Route 53 hosted zone ID for DNS validation"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "VPC ID"
   type        = string

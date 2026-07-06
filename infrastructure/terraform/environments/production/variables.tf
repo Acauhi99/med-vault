@@ -4,6 +4,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "domain_name" {
+  description = "Primary DNS name for the application"
+  type        = string
+  default     = "med-vault.space"
+}
+
 variable "project_name" {
   description = "Project name used for resource naming and tagging"
   type        = string

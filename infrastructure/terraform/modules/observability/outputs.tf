@@ -7,3 +7,8 @@ output "cloudtrail_arn" {
   description = "CloudTrail ARN"
   value       = aws_cloudtrail.main.arn
 }
+
+output "config_logs_bucket_name" {
+  description = "AWS Config delivery bucket name"
+  value       = aws_s3_bucket.config_logs.id
+}

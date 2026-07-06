@@ -11,3 +11,4 @@ ecs_task_cpu          = 256
 ecs_task_memory       = 512
 ecs_desired_count     = 0
 container_port        = 8080
+domain_name           = "med-vault.space"
