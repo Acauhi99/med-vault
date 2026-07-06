@@ -304,7 +304,7 @@ Every IAM role grants only the permissions required for its function. No wildcar
 |----------|--------|
 | RDS PostgreSQL | AES-256 (AWS KMS) |
 | S3 medical images | AWS KMS CMK |
-| S3 audit logs | AWS KMS CMK |
+| S3 audit logs | AES-256 (AWS managed) |
 | Secrets | AES-256 (Secrets Manager) |
 
 ### Encryption in Transit
@@ -358,7 +358,7 @@ The project intentionally balances production realism with cost awareness.
 - CloudWatch over Datadog (AWS-native, no additional cost)
 - Optional NAT gateway, disabled while ECS desired count is zero
 - VPC Flow Logs record rejected traffic instead of all accepted traffic
-- CloudTrail writes encrypted logs to S3; CloudWatch/SNS alerting is deferred until alert subscribers exist
+- CloudTrail writes encrypted logs to S3; CloudWatch log groups use AWS-managed encryption and CloudWatch/SNS alerting is deferred until alert subscribers exist
 - WAF protection is enabled, while full WAF request logging is deferred to reduce cost and unnecessary header capture
 
 ---

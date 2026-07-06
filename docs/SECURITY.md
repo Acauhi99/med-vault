@@ -382,7 +382,7 @@ All breaches must be documented regardless of size:
 |----------|--------|----------------|
 | RDS PostgreSQL | AES-256 | AWS KMS |
 | S3 medical images | AWS KMS CMK | Customer managed |
-| S3 audit logs | AWS KMS CMK | Customer managed |
+| S3 audit logs | AES-256 | AWS managed |
 | Secrets | AES-256 | AWS Secrets Manager |
 
 ### In Transit

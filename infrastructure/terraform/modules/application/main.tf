@@ -95,7 +95,6 @@ resource "aws_cloudwatch_log_group" "backend" {
   #checkov:skip=CKV_AWS_338:Project security doc sets CloudWatch application log retention to 90 days; audit records are retained in S3 for 6 years.
   name              = "/ecs/${local.name_prefix}-backend"
   retention_in_days = 90
-  kms_key_id        = var.kms_key_arn
 
   tags = {
     Name = "${local.name_prefix}-backend-logs"

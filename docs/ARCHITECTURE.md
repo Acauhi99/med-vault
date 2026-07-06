@@ -139,7 +139,7 @@ When adding Zod validators, prefer the current helpers from the official Zod doc
 
 **Testing:** Unit tests and integration tests only. See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for philosophy and stack details. Frontend-specific patterns in [ADR-015](adr/015-frontend-feature-based-architecture.md#testing-strategy).
 
-**Deployment:**
+**Target Deployment:**
 
 ```
 next build → S3 → CloudFront → Client

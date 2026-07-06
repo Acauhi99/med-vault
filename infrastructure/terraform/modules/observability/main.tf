@@ -32,7 +32,6 @@ resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   #checkov:skip=CKV_AWS_338:Project security doc sets CloudWatch log retention to 90 days; long-term audit records are retained in S3 for 6 years.
   name              = "/aws/vpc/${local.name_prefix}-flow-logs"
   retention_in_days = 90
-  kms_key_id        = var.kms_key_arn
 
   tags = {
     Name = "${local.name_prefix}-vpc-flow-logs"
@@ -64,9 +63,8 @@ resource "aws_flow_log" "vpc" {
 resource "aws_cloudtrail" "main" {
   #checkov:skip=CKV_AWS_252:CloudTrail SNS notifications are deferred until alert subscribers exist; encrypted S3 trail remains.
   #checkov:skip=CKV2_AWS_10:CloudTrail CloudWatch mirror is deferred until metric filters/alerts exist; encrypted S3 trail remains.
-  name                          = "${local.name_prefix}-trail"
+  name                          = "medvault-management-events"
   s3_bucket_name                = var.audit_logs_bucket_name
-  kms_key_id                    = var.kms_key_arn
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_log_file_validation    = true
@@ -160,7 +158,7 @@ resource "aws_iam_service_linked_role" "config" {
 }
 
 resource "aws_config_configuration_recorder" "main" {
-  name     = "${local.name_prefix}-config-recorder"
+  name     = "default"
   role_arn = aws_iam_service_linked_role.config.arn
 
   recording_group {
@@ -170,7 +168,7 @@ resource "aws_config_configuration_recorder" "main" {
 }
 
 resource "aws_config_delivery_channel" "main" {
-  name           = "${local.name_prefix}-config-delivery"
+  name           = "default"
   s3_bucket_name = aws_s3_bucket.config_logs.bucket
 
   depends_on = [aws_config_configuration_recorder.main]

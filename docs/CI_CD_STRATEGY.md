@@ -70,7 +70,7 @@ The Infrastructure pipeline owns the AWS platform.
 | Storage | S3 buckets, lifecycle rules, bucket policies |
 | Security | IAM roles, policies, KMS keys, Secrets Manager |
 | Observability | CloudWatch, CloudTrail, VPC Flow Logs, AWS Config, Security Hub, GuardDuty |
-| CDN | CloudFront distribution |
+| CDN | CloudFront distribution (target; not yet provisioned in Terraform) |
 
 ### Boundaries
 

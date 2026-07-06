@@ -5,6 +5,8 @@ locals {
 
 data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
 data "aws_iam_policy_document" "audit_logs" {
   statement {
     sid     = "AWSCloudTrailAclCheck"
@@ -37,6 +39,18 @@ data "aws_iam_policy_document" "audit_logs" {
   }
 
   statement {
+    sid     = "AWSLoadBalancerAclCheck"
+    actions = ["s3:GetBucketAcl"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logdelivery.elasticloadbalancing.amazonaws.com"]
+    }
+
+    resources = [aws_s3_bucket.audit_logs.arn]
+  }
+
+  statement {
     sid     = "AWSLoadBalancerWrite"
     actions = ["s3:PutObject"]
 
@@ -46,6 +60,24 @@ data "aws_iam_policy_document" "audit_logs" {
     }
 
     resources = ["${aws_s3_bucket.audit_logs.arn}/alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:elasticloadbalancing:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/*/*"]
+    }
   }
 
   statement {
@@ -154,8 +186,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "audit_logs" {
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = var.kms_key_arn
-      sse_algorithm     = "aws:kms"
+      sse_algorithm = "AES256"
     }
   }
 }
