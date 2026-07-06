@@ -87,3 +87,15 @@ variable "image_tag" {
   type        = string
   default     = "bootstrap"
 }
+
+variable "frontend_image_tag" {
+  description = "Frontend Docker image tag"
+  type        = string
+  default     = "bootstrap"
+}
+
+variable "frontend_desired_count" {
+  description = "Number of frontend ECS tasks"
+  type        = number
+  default     = 0
+}

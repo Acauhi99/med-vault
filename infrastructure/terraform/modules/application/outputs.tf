@@ -8,12 +8,32 @@ output "alb_zone_id" {
   value       = aws_lb.main.zone_id
 }
 
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = aws_ecs_cluster.main.name
+}
+
+output "ecs_service_name" {
+  description = "ECS service name"
+  value       = aws_ecs_service.backend.name
+}
+
 output "ecr_repository_url" {
   description = "ECR repository URL"
   value       = aws_ecr_repository.backend.repository_url
 }
 
+output "frontend_ecr_repository_url" {
+  description = "Frontend ECR repository URL"
+  value       = aws_ecr_repository.frontend.repository_url
+}
+
 output "ecs_security_group_id" {
   description = "ECS security group ID"
   value       = var.ecs_security_group_id
+}
+
+output "frontend_ecs_service_name" {
+  description = "Frontend ECS service name"
+  value       = aws_ecs_service.frontend.name
 }

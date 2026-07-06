@@ -13,9 +13,39 @@ output "alb_dns_name" {
   value       = module.application.alb_dns_name
 }
 
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = module.application.ecs_cluster_name
+}
+
+output "ecs_service_name" {
+  description = "ECS service name"
+  value       = module.application.ecs_service_name
+}
+
 output "ecr_repository_url" {
   description = "ECR repository URL for backend Docker images"
   value       = module.application.ecr_repository_url
+}
+
+output "frontend_ecr_repository_url" {
+  description = "ECR repository URL for frontend Docker images"
+  value       = module.application.frontend_ecr_repository_url
+}
+
+output "frontend_ecs_service_name" {
+  description = "Frontend ECS service name"
+  value       = module.application.frontend_ecs_service_name
+}
+
+output "api_base_url" {
+  description = "Public backend API base URL"
+  value       = "https://api.${var.domain_name}"
+}
+
+output "frontend_base_url" {
+  description = "Public frontend base URL"
+  value       = "https://${var.domain_name}"
 }
 
 output "db_endpoint" {

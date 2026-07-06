@@ -78,7 +78,7 @@ infrastructure/
 |-----------|---------|
 | `modules/` | Reusable infrastructure modules representing platform capabilities |
 | `modules/network/` | VPC, subnets, route tables, internet gateway |
-| `modules/application/` | ECS cluster, service, ALB, task definition |
+| `modules/application/` | ECS cluster, backend/frontend services, ALB, task definitions, listener rules |
 | `modules/database/` | RDS PostgreSQL, subnet groups, parameter groups |
 | `modules/storage/` | S3 buckets, lifecycle rules, policies |
 | `modules/security/` | IAM, KMS, Secrets Manager |
@@ -114,10 +114,11 @@ Modules should represent complete capabilities with cohesive resources:
 
 **application**
 - ECS Cluster
-- ECS Service
+- ECS Services
 - Task Definition
 - Application Load Balancer
 - Target Groups
+- Listener Rules
 - Security Groups
 - IAM Roles
 - CloudWatch Log Groups
@@ -311,8 +312,7 @@ Every IAM role grants only the permissions required for its function. No wildcar
 
 | Connection | Protocol |
 |------------|----------|
-| Client → CloudFront | TLS 1.2+ |
-| CloudFront → ALB | TLS 1.2+ |
+| Client → ALB | TLS 1.2+ |
 | ALB → ECS | HTTP (internal VPC) |
 | ECS → RDS | TLS 1.2+ |
 | ECS → S3 | HTTPS |
@@ -430,7 +430,7 @@ Major infrastructure decisions should be recorded as ADRs.
 
 - Why ECS instead of EKS
 - Why RDS instead of Aurora
-- Why CloudFront + S3
+- Why frontend on ECS behind ALB
 - Why Fargate instead of EC2
 - Why Shared PostgreSQL Multi-Tenancy
 - Why Managed AWS Services over self-hosted

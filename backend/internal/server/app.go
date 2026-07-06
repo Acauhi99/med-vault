@@ -104,7 +104,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
 	})(apiHandler))
 
-	handler := httpx.RequestIDMiddleware(cfg.RequestIDHeader)(mux)
+	handler := httpx.RequestIDMiddleware(cfg.RequestIDHeader)(httpx.CORSMiddleware(cfg.CORSAllowedOrigins)(mux))
 
 	httpServer := &http.Server{
 		Addr:         cfg.HTTPAddr,

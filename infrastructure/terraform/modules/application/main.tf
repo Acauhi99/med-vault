@@ -44,11 +44,43 @@ data "aws_iam_policy_document" "task_s3_access" {
 }
 
 resource "aws_acm_certificate" "https" {
-  domain_name       = var.domain_name
+  domain_name = var.domain_name
+  subject_alternative_names = [
+    "www.${var.domain_name}",
+    "api.${var.domain_name}",
+  ]
   validation_method = "DNS"
 
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "aws_ecr_repository" "frontend" {
+  name                 = "${var.project_name}/frontend"
+  image_tag_mutability = "IMMUTABLE"
+
+  encryption_configuration {
+    encryption_type = "KMS"
+    kms_key         = var.kms_key_arn
+  }
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-frontend-ecr"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "frontend" {
+  #checkov:skip=CKV_AWS_338:Project security doc sets CloudWatch application log retention to 90 days; audit records are retained in S3 for 6 years.
+  name              = "/ecs/${local.name_prefix}-frontend"
+  retention_in_days = 90
+
+  tags = {
+    Name = "${local.name_prefix}-frontend-logs"
   }
 }
 
@@ -187,6 +219,29 @@ resource "aws_lb_target_group" "backend" {
   }
 }
 
+resource "aws_lb_target_group" "frontend" {
+  name        = "${local.name_prefix}-frontend-tg"
+  port        = var.container_port
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = var.vpc_id
+
+  health_check {
+    enabled             = true
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+
+  tags = {
+    Name = "${local.name_prefix}-frontend-tg"
+  }
+}
+
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = 443
@@ -197,7 +252,23 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "backend" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
     target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    host_header {
+      values = ["api.${var.domain_name}"]
+    }
   }
 }
 
@@ -245,6 +316,10 @@ resource "aws_ecs_task_definition" "backend" {
           name  = "AWS_REGION"
           value = data.aws_region.current.name
         },
+        {
+          name  = "CORS_ALLOWED_ORIGINS"
+          value = var.cors_allowed_origins
+        },
       ]
 
       secrets = [
@@ -278,6 +353,44 @@ resource "aws_ecs_task_definition" "backend" {
   }
 }
 
+resource "aws_ecs_task_definition" "frontend" {
+  family                   = "${local.name_prefix}-frontend"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = tostring(var.ecs_task_cpu)
+  memory                   = tostring(var.ecs_task_memory)
+  execution_role_arn       = aws_iam_role.task_execution.arn
+
+  container_definitions = jsonencode([
+    {
+      name                   = "frontend"
+      image                  = "${aws_ecr_repository.frontend.repository_url}:${var.frontend_image_tag}"
+      essential              = true
+      readonlyRootFilesystem = false
+
+      portMappings = [
+        {
+          containerPort = var.container_port
+          protocol      = "tcp"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.frontend.name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "frontend"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name = "${local.name_prefix}-frontend-task"
+  }
+}
+
 data "aws_region" "current" {}
 
 resource "aws_ecs_service" "backend" {
@@ -303,6 +416,32 @@ resource "aws_ecs_service" "backend" {
 
   tags = {
     Name = "${local.name_prefix}-backend-service"
+  }
+}
+
+resource "aws_ecs_service" "frontend" {
+  name            = "${local.name_prefix}-frontend"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.frontend.arn
+  desired_count   = var.frontend_desired_count
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = var.private_subnet_ids
+    security_groups  = [var.ecs_security_group_id]
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.frontend.arn
+    container_name   = "frontend"
+    container_port   = var.container_port
+  }
+
+  depends_on = [aws_lb_listener.https]
+
+  tags = {
+    Name = "${local.name_prefix}-frontend-service"
   }
 }
 

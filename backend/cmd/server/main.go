@@ -22,6 +22,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		if err := runMigrations(context.Background(), cfg, logger, os.Args[2:]); err != nil {
+			slog.Error("migration failed", "error", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	app, err := server.New(context.Background(), cfg, logger)
 	if err != nil {
 		slog.Error("server init failed", "error", err)

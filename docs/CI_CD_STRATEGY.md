@@ -70,7 +70,6 @@ The Infrastructure pipeline owns the AWS platform.
 | Storage | S3 buckets, lifecycle rules, bucket policies |
 | Security | IAM roles, policies, KMS keys, Secrets Manager |
 | Observability | CloudWatch, CloudTrail, VPC Flow Logs, AWS Config, Security Hub, GuardDuty |
-| CDN | CloudFront distribution (target; not yet provisioned in Terraform) |
 
 ### Boundaries
 
@@ -127,7 +126,7 @@ The Backend pipeline must NOT:
 
 - Modify Terraform infrastructure
 - Deploy frontend assets
-- Manage CloudFront
+- Manage frontend infrastructure
 
 ---
 
@@ -140,7 +139,7 @@ Current GitHub Actions for this repo enforce the validation slice only: lint, ty
 ### Execution Flow
 
 ```
-Format → Lint → Type Check → Unit Tests → Integration Tests → Next.js Build → Static Export → Upload to S3 → CloudFront Invalidation
+Format → Lint → Type Check → Unit Tests → Integration Tests → Next.js Build → Static Export → Docker Build → Push to ECR → ECS Deploy → Health Check
 ```
 
 ### Responsibilities
@@ -154,12 +153,14 @@ Format → Lint → Type Check → Unit Tests → Integration Tests → Next.js 
 | Integration Tests | Vitest + MSW | API contract validation |
 | Build | `next build` | Application compilation |
 | Static Export | `next build` with `output: 'export'` | HTML/CSS/JS generation |
-| Upload | `aws s3 sync` → S3 | Asset publication |
-| Invalidation | `aws cloudfront create-invalidation` | Cache refresh |
+| Container Build | `docker build` | Package static export with nginx |
+| Push | `docker push` → Amazon ECR | Artifact publication |
+| Deploy | ECS Service Update | Runtime deployment |
+| Health Check | ALB target group | Availability validation |
 
 ### Artifact
 
-The Frontend pipeline produces static HTML, CSS, and JavaScript files stored in S3.
+The Frontend pipeline produces a Docker image stored in Amazon ECR.
 
 ### Boundaries
 
@@ -348,7 +349,7 @@ Each layer supports independent rollback.
 |-------|-----------------|
 | Infrastructure | `terraform apply` with previous state |
 | Backend | Redeploy previous container image (ECS task definition rollback) |
-| Frontend | Redeploy previous static build (S3 version restore) |
+| Frontend | Redeploy previous container image (ECS task definition rollback) |
 
 Rollback is explicit and traceable.
 
@@ -371,9 +372,8 @@ Deployment is not considered successful until validation completes.
 
 ### Frontend Validation
 
-- Static asset availability
-- CloudFront propagation
 - Application accessibility (HTTP 200)
+- ECS service stability
 
 ---
 

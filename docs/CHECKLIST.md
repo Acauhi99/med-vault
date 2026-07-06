@@ -237,7 +237,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] Backend pipeline deploys to ECS and validates health check
 - [ ] Frontend pipeline runs format, typecheck, unit tests, integration tests
 - [ ] Frontend pipeline builds and exports static assets
-- [ ] Frontend pipeline uploads to S3 and invalidates CloudFront
+- [ ] Frontend pipeline builds Docker image, pushes to ECR, and deploys to ECS
 - [x] GitHub OIDC configured for AWS authentication (no long-lived credentials)
 - [x] Path-based triggers configured (infrastructure/, backend/, frontend/)
 - [x] Concurrency groups prevent parallel deployments of same component

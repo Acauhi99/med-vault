@@ -57,11 +57,14 @@ module "application" {
   ecs_desired_count      = var.ecs_desired_count
   container_port         = var.container_port
   image_tag              = var.image_tag
+  frontend_image_tag     = var.frontend_image_tag
+  frontend_desired_count = var.frontend_desired_count
   db_endpoint            = module.database.db_endpoint
   db_name                = var.db_name
   kms_key_arn            = module.security.kms_key_arn
   db_secret_arn          = module.database.db_secret_arn
   jwt_secret_arn         = module.security.jwt_secret_arn
+  cors_allowed_origins   = "https://${var.domain_name},https://www.${var.domain_name}"
   s3_bucket_name         = module.storage.medical_images_bucket_name
   s3_bucket_arn          = module.storage.medical_images_bucket_arn
   audit_logs_bucket_name = module.storage.audit_logs_bucket_name
@@ -77,16 +80,32 @@ resource "aws_route53_record" "apex" {
   alias {
     name                   = module.application.alb_dns_name
     zone_id                = module.application.alb_zone_id
-    evaluate_target_health = true
+    evaluate_target_health = false
   }
 }
 
 resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www"
-  type    = "CNAME"
-  ttl     = 300
-  records = [var.domain_name]
+  type    = "A"
+
+  alias {
+    name                   = module.application.alb_dns_name
+    zone_id                = module.application.alb_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "api"
+  type    = "A"
+
+  alias {
+    name                   = module.application.alb_dns_name
+    zone_id                = module.application.alb_zone_id
+    evaluate_target_health = true
+  }
 }
 
 module "observability" {

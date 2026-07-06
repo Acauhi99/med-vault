@@ -26,8 +26,10 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 # --- Runtime stage ---
 FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /server /server
+COPY migrations /app/migrations
 EXPOSE 8080
 USER nonroot:nonroot
 ENTRYPOINT ["/server"]

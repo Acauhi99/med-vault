@@ -13,22 +13,14 @@ Internet
 Route 53 (DNS)
     │
     ▼
-CloudFront (CDN + SSL)
+ALB (TLS + WAF)
     │
     ▼
-S3 (Next.js Static Export)
-    │
-    ▼
-AWS WAF (Request filtering)
-    │
-    ▼
-ALB (Load balancing + TLS)
-    │
-    ▼
-ECS Fargate (Go Backend)
-    │
-    ├──▶ Amazon RDS PostgreSQL
-    └──▶ S3 (Medical Images)
+ECS Fargate
+    ├──▶ Next.js frontend (nginx)
+    └──▶ Go backend
+              ├──▶ Amazon RDS PostgreSQL
+              └──▶ S3 (Medical Images)
 ```
 
 ---
@@ -142,12 +134,12 @@ When adding Zod validators, prefer the current helpers from the official Zod doc
 **Target Deployment:**
 
 ```
-next build → S3 → CloudFront → Client
+next build → nginx container → ECS Fargate → ALB → Client
 ```
 
 - Static HTML/CSS/JS exported at build time via `output: 'export'` in `next.config.js`
-- S3 serves static assets
-- CloudFront provides CDN and TLS termination
+- nginx serves static assets from a container on ECS Fargate
+- ALB provides TLS termination and host-based routing
 - No Node.js runtime in production
 
 **Security:**
@@ -523,7 +515,7 @@ See [CI_CD_STRATEGY.md](CI_CD_STRATEGY.md) for full pipeline architecture, deplo
 | ECS Fargate | Use smallest task size that works for PoC |
 | RDS | db.t3.micro or db.t4g.micro for PoC |
 | S3 | Standard storage, lifecycle policies for old images |
-| CloudFront | Use free tier + minimal traffic for PoC |
+| Frontend ECS | Use smallest task size that works for PoC |
 | CloudWatch | Logs ingestion may cost; set retention policies |
 
 **Goal:** Demonstrate production architecture without production costs.

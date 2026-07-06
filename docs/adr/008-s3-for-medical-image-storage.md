@@ -19,7 +19,7 @@ Use Amazon S3 for medical image storage.
 - Pre-signed URLs for temporary access
 - Scalable and durable
 - Cost-effective with lifecycle policies
-- Integration with CloudFront for CDN
+- Accessed only through backend-issued pre-signed URLs
 
 ### Negative
 - Requires pre-signed URL generation

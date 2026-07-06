@@ -265,7 +265,7 @@ Any third party that creates, receives, maintains, or transmits PHI must sign a 
 
 | Vendor | Service | BAA Required |
 |--------|---------|--------------|
-| AWS | RDS, S3, ECS, CloudWatch, CloudFront | Yes |
+| AWS | RDS, S3, ECS, CloudWatch, ALB | Yes |
 | AWS | Route 53 (DNS only, no PHI) | No |
 
 **BAA Contents (45 CFR §164.504(e)):**
@@ -389,8 +389,7 @@ All breaches must be documented regardless of size:
 
 | Connection | Protocol | Certificate |
 |------------|----------|-------------|
-| Client → CloudFront | TLS 1.2+ | ACM managed |
-| CloudFront → ALB | TLS 1.2+ | ACM managed |
+| Client → ALB | TLS 1.2+ | ACM managed |
 | ALB → ECS | HTTP (internal VPC) | — |
 | ECS → RDS | TLS 1.2+ | RDS CA bundle |
 | ECS → S3 | HTTPS | AWS managed |
@@ -589,7 +588,7 @@ All breaches must be documented regardless of size:
 | 1 | Database (RDS PostgreSQL) | 1 hour | 15 minutes |
 | 2 | Backend API (ECS Fargate) | 2 hours | N/A |
 | 3 | Medical Image Storage (S3) | 4 hours | 1 hour |
-| 4 | Frontend (CloudFront + S3) | 4 hours | N/A |
+| 4 | Frontend (ECS Fargate + ALB) | 4 hours | N/A |
 
 ### Evaluation (§164.308(a)(8))
 

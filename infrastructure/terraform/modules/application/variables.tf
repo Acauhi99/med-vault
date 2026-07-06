@@ -59,6 +59,18 @@ variable "image_tag" {
   default     = "bootstrap"
 }
 
+variable "frontend_image_tag" {
+  description = "Frontend Docker image tag"
+  type        = string
+  default     = "bootstrap"
+}
+
+variable "frontend_desired_count" {
+  description = "Number of frontend ECS tasks"
+  type        = number
+  default     = 0
+}
+
 variable "db_endpoint" {
   description = "RDS endpoint hostname"
   type        = string
@@ -81,6 +93,11 @@ variable "db_secret_arn" {
 
 variable "jwt_secret_arn" {
   description = "JWT signing key secret ARN"
+  type        = string
+}
+
+variable "cors_allowed_origins" {
+  description = "Comma-separated list of allowed frontend origins"
   type        = string
 }
 

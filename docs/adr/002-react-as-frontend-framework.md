@@ -44,7 +44,7 @@ Use Next.js App Router with static export. Client Components only. No API Routes
 - Aligns with company's frontend stack
 - Modern routing and layout capabilities (nested layouts, route segments)
 - Excellent developer experience (file-based routing, TypeScript, Biome)
-- Simplified AWS deployment (static export → S3 → CloudFront)
+- Simplified AWS deployment (static export → nginx container → ECS)
 - Complete separation between presentation and business logic
 - No Node.js runtime required in production
 - All business logic remains in the Go backend
@@ -57,12 +57,12 @@ Use Next.js App Router with static export. Client Components only. No API Routes
 ## Deployment Model
 
 ```
-next build → S3 → CloudFront → Client
+next build → nginx container → ECS Fargate → ALB → Client
 ```
 
 - Static HTML/CSS/JS exported at build time via `output: 'export'` in `next.config.js`
-- S3 serves static assets
-- CloudFront provides CDN and TLS termination
+- nginx serves static assets from a container
+- ALB provides TLS termination and routing
 - No persistent Node.js server
 
 ## Frontend Principles
