@@ -143,6 +143,9 @@ func (c *AssignDoctorCommand) Execute(ctx context.Context, principal sharedauth.
 	if cs.Status != domain.CaseStatusOpen {
 		return nil, ErrCaseNotOpen
 	}
+	if len(cs.Symptoms) == 0 {
+		return nil, ErrNoSymptoms
+	}
 	if c.tenants != nil {
 		membership, err := c.tenants.FindUserTenant(doctorID, principal.TenantID)
 		if err != nil || membership == nil || membership.Role != "doctor" {

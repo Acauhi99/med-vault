@@ -5,7 +5,7 @@ output "alb_dns_name" {
 
 output "ecr_repository_url" {
   description = "ECR repository URL"
-  value       = data.aws_ecr_repository.backend.repository_url
+  value       = aws_ecr_repository.backend.repository_url
 }
 
 output "ecs_security_group_id" {

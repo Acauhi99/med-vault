@@ -12,7 +12,7 @@ const REFRESH_BUFFER_MS = 30_000;
 export function useTokenRefresh() {
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const schedule = useCallback((expiresInSeconds: number) => {
+	const schedule = useCallback(function schedule(expiresInSeconds: number) {
 		if (timerRef.current !== null) {
 			clearTimeout(timerRef.current);
 		}

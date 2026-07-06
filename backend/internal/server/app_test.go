@@ -56,6 +56,19 @@ func TestOpenAPIEndpointsAreMountedUnderAPIV1(t *testing.T) {
 	}
 }
 
+func TestAuthRoutesRemainPublic(t *testing.T) {
+	app := newTestApp(t)
+	defer app.Close()
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", nil)
+	app.Server.Handler.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, recorder.Code)
+	}
+}
+
 func newTestApp(t *testing.T) *App {
 	t.Helper()
 

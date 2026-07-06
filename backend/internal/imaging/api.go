@@ -194,6 +194,10 @@ func (a *API) GetDownloadURL(w http.ResponseWriter, r *http.Request, id uuid.UUI
 		"download_url": url,
 		"expires_in":   expiresIn,
 	})
+
+	if a.AuditLogger != nil {
+		a.AuditLogger.Log(r.Context(), r, "image.download_url_generated", "image", id, nil)
+	}
 }
 
 func (a *API) DeleteImage(w http.ResponseWriter, r *http.Request, id uuid.UUID) {

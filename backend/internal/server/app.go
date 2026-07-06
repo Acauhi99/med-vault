@@ -20,6 +20,7 @@ import (
 	imagingstorage "github.com/Acauhi99/med-vault/internal/imaging/infrastructure"
 	pgximaging "github.com/Acauhi99/med-vault/internal/imaging/infrastructure/pgx"
 	"github.com/Acauhi99/med-vault/internal/shared/auditlog"
+	sharedauth "github.com/Acauhi99/med-vault/internal/shared/auth"
 	"github.com/Acauhi99/med-vault/internal/shared/config"
 	"github.com/Acauhi99/med-vault/internal/shared/database"
 	"github.com/Acauhi99/med-vault/internal/shared/httpx"
@@ -97,13 +98,13 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 			},
 		},
 	)
-	mux.Handle("/api/v1/", apiHandler)
-
 	authRateLimiter := httpx.NewRateLimiter(10, time.Minute)
-	authedMux := http.NewServeMux()
-	authedMux.Handle("/api/v1/auth/", authRateLimiter.Middleware(mux))
-	authedMux.Handle("/", mux)
-	handler := httpx.RequestIDMiddleware(cfg.RequestIDHeader)(authedMux)
+	mux.Handle("/api/v1/auth/", authRateLimiter.Middleware(apiHandler))
+	mux.Handle("/api/v1/", sharedauth.TenantMiddleware(jwtGen, func(w http.ResponseWriter, r *http.Request) {
+		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
+	})(apiHandler))
+
+	handler := httpx.RequestIDMiddleware(cfg.RequestIDHeader)(mux)
 
 	httpServer := &http.Server{
 		Addr:         cfg.HTTPAddr,

@@ -39,9 +39,9 @@ func (r *CaseRepository) Create(ctx context.Context, c *domain.Case) error {
 
 	for _, s := range c.Symptoms {
 		_, err = tx.Exec(ctx,
-			`INSERT INTO symptoms (id, case_id, description, severity, reported_at)
-			 VALUES ($1, $2, $3, $4, $5)`,
-			s.ID, c.ID, s.Description, s.Severity, s.ReportedAt)
+			`INSERT INTO symptoms (id, tenant_id, case_id, description, severity, reported_at)
+			 VALUES ($1, $2, $3, $4, $5, $6)`,
+			s.ID, c.TenantID, c.ID, s.Description, s.Severity, s.ReportedAt)
 		if err != nil {
 			return err
 		}
@@ -67,8 +67,8 @@ func (r *CaseRepository) GetByID(ctx context.Context, tenantID, caseID uuid.UUID
 
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, description, severity, reported_at
-		 FROM symptoms WHERE case_id = $1`,
-		caseID)
+		 FROM symptoms WHERE case_id = $1 AND tenant_id = $2`,
+		caseID, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,8 @@ func (r *CaseRepository) GetByID(ctx context.Context, tenantID, caseID uuid.UUID
 	err = r.pool.QueryRow(
 		ctx,
 		`SELECT id, doctor_id, notes, written_at
-		 FROM diagnoses WHERE case_id = $1`,
-		caseID,
+		 FROM diagnoses WHERE case_id = $1 AND tenant_id = $2`,
+		caseID, tenantID,
 	).Scan(&diag.ID, &diag.DoctorID, &diag.Notes, &diag.WrittenAt)
 	if err == nil {
 		c.Diagnosis = &diag
@@ -174,17 +174,17 @@ func (r *CaseRepository) Update(ctx context.Context, c *domain.Case) error {
 
 func (r *CaseRepository) AddSymptom(ctx context.Context, tenantID, caseID uuid.UUID, s *domain.Symptom) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO symptoms (id, case_id, description, severity, reported_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		s.ID, caseID, s.Description, s.Severity, s.ReportedAt)
+		`INSERT INTO symptoms (id, tenant_id, case_id, description, severity, reported_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		s.ID, tenantID, caseID, s.Description, s.Severity, s.ReportedAt)
 	return err
 }
 
 func (r *CaseRepository) WriteDiagnosis(ctx context.Context, tenantID, caseID uuid.UUID, d *domain.Diagnosis) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO diagnoses (id, case_id, doctor_id, notes, written_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		d.ID, caseID, d.DoctorID, d.Notes, d.WrittenAt)
+		`INSERT INTO diagnoses (id, tenant_id, case_id, doctor_id, notes, written_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		d.ID, tenantID, caseID, d.DoctorID, d.Notes, d.WrittenAt)
 	return err
 }
 

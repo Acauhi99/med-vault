@@ -61,6 +61,30 @@ func TestTenantMiddlewareAddsPrincipalToContext(t *testing.T) {
 	}
 }
 
+func TestTenantMiddlewareRejectsTempToken(t *testing.T) {
+	gen := &stubJWTGen{
+		claims: application.JWTClaims{
+			UserID: uuid.New(),
+			Type:   "temp",
+		},
+	}
+
+	handler := TenantMiddleware(gen, func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+	})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("handler should not be called")
+	}))
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/cases", nil)
+	request.Header.Set("Authorization", "Bearer token")
+	handler.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusUnauthorized {
+		t.Fatalf("expected status %d, got %d", http.StatusUnauthorized, recorder.Code)
+	}
+}
+
 func TestTenantMiddlewareRejectsInvalidToken(t *testing.T) {
 	gen := &stubJWTGen{err: errors.New("invalid")}
 

@@ -40,14 +40,14 @@ resource "aws_kms_alias" "main" {
 resource "aws_security_group" "alb" {
   #checkov:skip=CKV2_AWS_5:Attached to ALB in application module; Checkov cannot infer cross-module attachment.
   name        = "${local.name_prefix}-alb-sg"
-  description = "Allow public HTTP access to ALB"
+  description = "Allow public HTTPS access to ALB"
   vpc_id      = var.vpc_id
 
-  #checkov:skip=CKV_AWS_260:Public HTTP is temporary until ACM/HTTPS is configured; WAF is attached to the ALB.
+  #checkov:skip=CKV_AWS_260:Public HTTPS access is required for the documented ALB ingress path.
   ingress {
-    description = "HTTP from internet"
-    from_port   = 80
-    to_port     = 80
+    description = "HTTPS from internet"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

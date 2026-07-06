@@ -21,10 +21,8 @@ func TenantMiddleware(gen application.JWTGenerator, unauthorized func(http.Respo
 				return
 			}
 
-			if claims.Type == "temp" {
-				next.ServeHTTP(w, r.WithContext(ContextWithPrincipal(r.Context(), Principal{
-					UserID: claims.UserID,
-				})))
+			if claims.Type != "access" {
+				unauthorized(w, r)
 				return
 			}
 

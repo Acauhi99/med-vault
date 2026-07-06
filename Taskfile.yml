@@ -31,7 +31,7 @@ tasks:
     desc: Format frontend code with Biome
     dir: '{{.FRONTEND_DIR}}'
     cmds:
-      - pnpm biome format --write .
+      - ./node_modules/.bin/biome format --write .
 
   format:infrastructure:
     desc: Format Terraform files
@@ -58,7 +58,7 @@ tasks:
     desc: Lint frontend code with Biome
     dir: '{{.FRONTEND_DIR}}'
     cmds:
-      - pnpm biome lint .
+      - ./node_modules/.bin/biome lint .
 
   lint:infrastructure:
     desc: Lint Terraform with tflint
@@ -85,7 +85,7 @@ tasks:
     desc: TypeScript type check
     dir: '{{.FRONTEND_DIR}}'
     cmds:
-      - pnpm tsc --noEmit
+      - ./node_modules/.bin/tsc --noEmit
 
   validate:infrastructure:
     desc: Validate Terraform configuration
@@ -111,7 +111,7 @@ tasks:
     desc: Run frontend tests with Vitest
     dir: '{{.FRONTEND_DIR}}'
     cmds:
-      - pnpm vitest run
+      - ./node_modules/.bin/vitest run
 
   test:coverage:
     desc: Run all tests with coverage reporting
@@ -130,7 +130,7 @@ tasks:
     desc: Run frontend tests with coverage
     dir: '{{.FRONTEND_DIR}}'
     cmds:
-      - pnpm vitest run --coverage
+      - ./node_modules/.bin/vitest run --coverage
 
   # ── Pre-Commit ──────────────────────────────────────────────
 
@@ -176,7 +176,7 @@ tasks:
     desc: Generate TypeScript types from OpenAPI
     dir: '{{.ROOT_DIR}}'
     cmds:
-      - pnpm openapi-typescript spec/openapi.yaml -o frontend/generated/api.d.ts
+      - ./frontend/node_modules/.bin/openapi-typescript spec/openapi.yaml -o frontend/generated/api.d.ts
 
   # ── Migrations ──────────────────────────────────────────────
 

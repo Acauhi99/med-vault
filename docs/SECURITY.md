@@ -94,6 +94,7 @@ When PHI must be de-identified (e.g., for analytics, reporting, or research):
 - **Token storage:** client session state (in-memory for the current browser session)
 - **Token transmission:** Authorization header for API calls
 - **Login flow:** Two-step (authenticate → select tenant)
+- **Protected API:** `/api/v1/*` requires an access JWT; `/api/v1/auth/*` stays public for register, login, refresh, logout, and tenant selection
 
 ### JWT Claims
 

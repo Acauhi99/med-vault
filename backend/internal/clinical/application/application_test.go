@@ -253,6 +253,7 @@ func TestAssignDoctorSuccess(t *testing.T) {
 	caseID := uuid.New()
 	doctorID := uuid.New()
 	openCase(repo, caseID, tenantID, patientID)
+	repo.cases[caseID].Symptoms = []domain.Symptom{{ID: uuid.New(), Description: "cough", Severity: domain.SeverityLow, ReportedAt: time.Now().UTC()}}
 	tenants.memberships[tenantID] = map[uuid.UUID]authdomain.UserTenant{
 		doctorID: {UserID: doctorID, TenantID: tenantID, Role: "doctor", Name: "Doc"},
 	}
@@ -269,6 +270,25 @@ func TestAssignDoctorSuccess(t *testing.T) {
 	}
 	if cs.Status != domain.CaseStatusAssigned {
 		t.Errorf("Status = %v, want assigned", cs.Status)
+	}
+}
+
+func TestAssignDoctorRequiresSymptoms(t *testing.T) {
+	repo := newMockRepo()
+	tenants := newMockTenantRepo()
+	patientID := uuid.New()
+	adminID := uuid.New()
+	tenantID := uuid.New()
+	caseID := uuid.New()
+	openCase(repo, caseID, tenantID, patientID)
+	tenants.memberships[tenantID] = map[uuid.UUID]authdomain.UserTenant{}
+
+	cmd := NewAssignDoctorCommand(repo, tenants)
+	p := newPrincipal(adminID, tenantID, sharedauth.RoleAdministrator)
+
+	_, err := cmd.Execute(context.Background(), p, caseID, uuid.New())
+	if err != ErrNoSymptoms {
+		t.Fatalf("expected ErrNoSymptoms, got %v", err)
 	}
 }
 

@@ -22,6 +22,33 @@ export function CaseList() {
 		);
 	}
 
+	if (selectedCaseId && detailQuery.isError) {
+		return (
+			<div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-4xl">
+					<ErrorState
+						title="Failed to load case details"
+						message={
+							detailQuery.error instanceof Error
+								? detailQuery.error.message
+								: "Unknown error"
+						}
+						onRetry={() => detailQuery.refetch()}
+						action={
+							<button
+								type="button"
+								onClick={() => setSelectedCaseId(null)}
+								className="inline-flex h-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-slate-300 transition hover:bg-white/10"
+							>
+								Back to cases
+							</button>
+						}
+					/>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-6xl">
@@ -86,9 +113,9 @@ export function CaseList() {
 									</tr>
 								))}
 							</tbody>
-						</table>
-					</div>
-				)}
+					</table>
+				</div>
+			)}
 
 				{detailQuery.isLoading && selectedCaseId && (
 					<div className="mt-6">
