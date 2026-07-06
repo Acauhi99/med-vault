@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Validation stage ---
-FROM golang:1.23-alpine AS validation
+FROM golang:1.26-alpine AS validation
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go test ./...
 
 # --- Build stage ---
-FROM golang:1.23-alpine AS builder
+FROM golang:1.26-alpine AS builder
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY go.mod go.sum ./
