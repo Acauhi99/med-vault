@@ -89,11 +89,12 @@ jobs:
           echo "frontend_base_url=$(terraform output -raw frontend_base_url)" >> "$GITHUB_OUTPUT"
 
       - name: Build image
+        working-directory: .
         env:
           IMAGE_URI: ${{ steps.tf.outputs.frontend_ecr_repository_url }}
           IMAGE_TAG: ${{ github.sha }}
           API_BASE_URL: ${{ steps.tf.outputs.api_base_url }}
-        run: docker build --build-arg NEXT_PUBLIC_API_URL="$API_BASE_URL" -t "$IMAGE_URI:$IMAGE_TAG" .
+        run: docker build -f frontend/Dockerfile --build-arg NEXT_PUBLIC_API_URL="$API_BASE_URL" -t "$IMAGE_URI:$IMAGE_TAG" frontend
 
       - name: Login to ECR
         env:
