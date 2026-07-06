@@ -62,6 +62,9 @@ jobs:
           role-to-assume: arn:aws:iam::836734448013:role/medvault-github-actions
           aws-region: us-east-1
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Read deployment outputs
         id: tf
         working-directory: infrastructure/terraform/environments/production
