@@ -1,12 +1,11 @@
 import createClient from "openapi-fetch";
 
 import type { paths } from "@/generated/api";
+import { config } from "@/infrastructure/config";
 import {
 	clearAuthSession,
 	getAuthSession,
 } from "@/infrastructure/auth/session-store";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 async function authFetch(
 	input: RequestInfo | URL,
@@ -38,6 +37,6 @@ async function authFetch(
 }
 
 export const apiClient = createClient<paths>({
-	baseUrl,
+	baseUrl: config.apiBaseUrl,
 	fetch: authFetch,
 });

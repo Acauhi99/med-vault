@@ -39,8 +39,8 @@ output "frontend_ecs_service_name" {
 }
 
 output "api_base_url" {
-  description = "Public backend API base URL"
-  value       = "https://api.${var.domain_name}"
+  description = "Public backend API base URL including /api/v1"
+  value       = "https://api.${var.domain_name}/api/v1"
 }
 
 output "frontend_base_url" {

@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { listAuditLogs } from "./audit";
 
-const apiBase = "http://localhost:8080";
+const apiBase = "http://localhost:8080/api/v1";
 const server = setupServer();
 
 beforeAll(() => server.listen());
