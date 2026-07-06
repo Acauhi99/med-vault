@@ -27,7 +27,7 @@ func runMigrations(ctx context.Context, cfg config.Config, logger *slog.Logger, 
 	}
 
 	db := stdlib.OpenDB(*connConfig)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if err := db.PingContext(ctx); err != nil {
 		return fmt.Errorf("ping database: %w", err)
