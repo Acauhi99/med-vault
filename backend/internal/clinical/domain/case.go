@@ -80,4 +80,5 @@ type Repository interface {
 	Update(ctx context.Context, c *Case) error
 	AddSymptom(ctx context.Context, tenantID, caseID uuid.UUID, s *Symptom) error
 	WriteDiagnosis(ctx context.Context, tenantID, caseID uuid.UUID, d *Diagnosis) error
+	WriteDiagnosisAndUpdate(ctx context.Context, tenantID, caseID uuid.UUID, d *Diagnosis, c *Case) error
 }

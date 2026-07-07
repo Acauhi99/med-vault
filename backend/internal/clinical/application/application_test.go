@@ -126,6 +126,12 @@ func (m *mockCaseRepo) WriteDiagnosis(_ context.Context, _, _ uuid.UUID, d *doma
 	return nil
 }
 
+func (m *mockCaseRepo) WriteDiagnosisAndUpdate(_ context.Context, _, _ uuid.UUID, d *domain.Diagnosis, c *domain.Case) error {
+	_ = d
+	m.cases[c.ID] = c
+	return nil
+}
+
 func newPrincipal(userID, tenantID uuid.UUID, role sharedauth.Role) sharedauth.Principal {
 	return sharedauth.Principal{UserID: userID, TenantID: tenantID, Role: role}
 }

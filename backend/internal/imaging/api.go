@@ -30,7 +30,7 @@ func NewAPI(repo imagingdomain.Repository, caseRepo clinicaldomain.Repository, s
 		confirmUpload:    application.NewConfirmUploadCommand(repo, caseRepo),
 		listImages:       application.NewListImagesQuery(repo, caseRepo),
 		getDownloadURL:   application.NewGetDownloadURLCommand(repo, caseRepo, storage),
-		deleteImage:      application.NewDeleteImageCommand(repo),
+		deleteImage:      application.NewDeleteImageCommand(repo, storage),
 	}
 }
 

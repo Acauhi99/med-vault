@@ -202,10 +202,6 @@ func (c *WriteDiagnosisCommand) Execute(ctx context.Context, principal sharedaut
 		WrittenAt: now,
 	}
 
-	if err := c.repo.WriteDiagnosis(ctx, principal.TenantID, caseID, d); err != nil {
-		return nil, err
-	}
-
 	if err := domain.ValidateTransition(cs.Status, domain.CaseStatusDiagnosed); err != nil {
 		return nil, err
 	}
@@ -213,7 +209,7 @@ func (c *WriteDiagnosisCommand) Execute(ctx context.Context, principal sharedaut
 	cs.Diagnosis = d
 	cs.UpdatedAt = now
 
-	if err := c.repo.Update(ctx, cs); err != nil {
+	if err := c.repo.WriteDiagnosisAndUpdate(ctx, principal.TenantID, caseID, d, cs); err != nil {
 		return nil, err
 	}
 

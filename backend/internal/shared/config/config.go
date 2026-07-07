@@ -26,7 +26,7 @@ type Config struct {
 	IdleTimeout        time.Duration `envconfig:"HTTP_IDLE_TIMEOUT" default:"60s"`
 	RequestIDHeader    string        `envconfig:"REQUEST_ID_HEADER" default:"X-Request-Id"`
 	CORSAllowedOrigins string        `envconfig:"CORS_ALLOWED_ORIGINS" default:"http://localhost:3000"`
-	JWTSecret          string        `envconfig:"JWT_SECRET" default:"dev-secret-change-in-production"`
+	JWTSecret          string        `envconfig:"JWT_SECRET"`
 	JWTAccessTTL       time.Duration `envconfig:"JWT_ACCESS_TTL" default:"15m"`
 	JWTRefreshTTL      time.Duration `envconfig:"JWT_REFRESH_TTL" default:"168h"`
 	JWTTempTTL         time.Duration `envconfig:"JWT_TEMP_TTL" default:"5m"`
@@ -51,6 +51,10 @@ func Load() (Config, error) {
 
 	if cfg.Env == "production" && cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("DATABASE_URL is required in production")
+	}
+
+	if cfg.Env == "production" && cfg.JWTSecret == "" {
+		return Config{}, fmt.Errorf("JWT_SECRET is required in production")
 	}
 
 	return cfg, nil

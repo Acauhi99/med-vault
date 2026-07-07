@@ -91,6 +91,11 @@ func (m *mockClinicalRepo) WriteDiagnosis(_ context.Context, _, _ uuid.UUID, _ *
 	return nil
 }
 
+func (m *mockClinicalRepo) WriteDiagnosisAndUpdate(_ context.Context, _, _ uuid.UUID, _ *domain.Diagnosis, c *domain.Case) error {
+	m.cases[c.ID] = c
+	return nil
+}
+
 type mockClinicalTenantRepo struct{}
 
 func (m *mockClinicalTenantRepo) FindUserTenants(uuid.UUID) ([]authdomain.UserTenant, error) {

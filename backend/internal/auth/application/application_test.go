@@ -14,7 +14,7 @@ type mockUserRepo struct {
 	users map[string]*domain.User
 }
 
-func (m *mockUserRepo) FindByEmail(email string) (*domain.User, error) {
+func (m *mockUserRepo) FindByEmail(_ context.Context, email string) (*domain.User, error) {
 	u, ok := m.users[email]
 	if !ok {
 		return nil, errors.New("not found")
@@ -22,7 +22,7 @@ func (m *mockUserRepo) FindByEmail(email string) (*domain.User, error) {
 	return u, nil
 }
 
-func (m *mockUserRepo) FindByID(id uuid.UUID) (*domain.User, error) {
+func (m *mockUserRepo) FindByID(_ context.Context, id uuid.UUID) (*domain.User, error) {
 	for _, u := range m.users {
 		if u.ID == id {
 			return u, nil
@@ -31,7 +31,7 @@ func (m *mockUserRepo) FindByID(id uuid.UUID) (*domain.User, error) {
 	return nil, errors.New("not found")
 }
 
-func (m *mockUserRepo) Create(user *domain.User) error {
+func (m *mockUserRepo) Create(_ context.Context, user *domain.User) error {
 	m.users[user.Email] = user
 	return nil
 }
@@ -134,7 +134,7 @@ func TestRegisterSuccess(t *testing.T) {
 	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
 	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
-	out, err := cmd.Execute(RegisterInput{Email: "test@example.com", Password: "Password12345!"})
+	out, err := cmd.Execute(context.Background(), RegisterInput{Email: "test@example.com", Password: "Password12345!"})
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestRegisterDuplicateEmail(t *testing.T) {
 	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
 	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
-	_, err := cmd.Execute(RegisterInput{Email: "existing@example.com", Password: "Password12345!"})
+	_, err := cmd.Execute(context.Background(), RegisterInput{Email: "existing@example.com", Password: "Password12345!"})
 	if err != ErrEmailAlreadyExists {
 		t.Errorf("expected ErrEmailAlreadyExists, got %v", err)
 	}
@@ -164,7 +164,7 @@ func TestRegisterWeakPasswordRejected(t *testing.T) {
 	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
 	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
-	_, err := cmd.Execute(RegisterInput{Email: "test@example.com", Password: "weakpass"})
+	_, err := cmd.Execute(context.Background(), RegisterInput{Email: "test@example.com", Password: "weakpass"})
 	if err != ErrWeakPassword {
 		t.Errorf("expected ErrWeakPassword, got %v", err)
 	}
@@ -181,7 +181,7 @@ func TestAuthenticateSuccess(t *testing.T) {
 	}}
 	cmd := NewAuthenticateCommand(users, tenants, &mockHasher{}, &mockJWTGen{}, 5*time.Minute)
 
-	out, err := cmd.Execute(AuthenticateInput{Email: "test@example.com", Password: "password12345"})
+	out, err := cmd.Execute(context.Background(), AuthenticateInput{Email: "test@example.com", Password: "password12345"})
 	if err != nil {
 		t.Fatalf("authenticate: %v", err)
 	}
@@ -200,7 +200,7 @@ func TestAuthenticateWrongPassword(t *testing.T) {
 	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
 	cmd := NewAuthenticateCommand(users, tenants, &mockHasher{}, &mockJWTGen{}, 5*time.Minute)
 
-	_, err := cmd.Execute(AuthenticateInput{Email: "test@example.com", Password: "wrong"})
+	_, err := cmd.Execute(context.Background(), AuthenticateInput{Email: "test@example.com", Password: "wrong"})
 	if err != ErrInvalidCredentials {
 		t.Errorf("expected ErrInvalidCredentials, got %v", err)
 	}
@@ -211,7 +211,7 @@ func TestAuthenticateUserNotFound(t *testing.T) {
 	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
 	cmd := NewAuthenticateCommand(users, tenants, &mockHasher{}, &mockJWTGen{}, 5*time.Minute)
 
-	_, err := cmd.Execute(AuthenticateInput{Email: "nobody@example.com", Password: "password12345"})
+	_, err := cmd.Execute(context.Background(), AuthenticateInput{Email: "nobody@example.com", Password: "password12345"})
 	if err != ErrInvalidCredentials {
 		t.Errorf("expected ErrInvalidCredentials, got %v", err)
 	}

@@ -116,6 +116,11 @@ func (m *mockCaseRepo) WriteDiagnosis(context.Context, uuid.UUID, uuid.UUID, *cl
 	return nil
 }
 
+func (m *mockCaseRepo) WriteDiagnosisAndUpdate(_ context.Context, _, _ uuid.UUID, _ *clinicaldomain.Diagnosis, c *clinicaldomain.Case) error {
+	m.cases[c.ID] = c
+	return nil
+}
+
 type mockStorage struct{}
 
 func (m *mockStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time.Duration) (string, error) {
@@ -124,6 +129,10 @@ func (m *mockStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time
 
 func (m *mockStorage) GenerateDownloadURL(_ context.Context, key string, _ time.Duration) (string, error) {
 	return "https://s3.example.com/download/" + key, nil
+}
+
+func (m *mockStorage) DeleteObject(_ context.Context, _ string) error {
+	return nil
 }
 
 func TestAPI_RequestUploadURL(t *testing.T) {

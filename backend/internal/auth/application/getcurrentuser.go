@@ -1,6 +1,8 @@
 package application
 
 import (
+	"context"
+
 	"github.com/Acauhi99/med-vault/internal/auth/domain"
 	"github.com/google/uuid"
 )
@@ -14,8 +16,8 @@ func NewGetCurrentUserQuery(users domain.UserRepository, tenants domain.TenantRe
 	return &GetCurrentUserQuery{users: users, tenants: tenants}
 }
 
-func (q *GetCurrentUserQuery) Execute(userID, tenantID uuid.UUID) (domain.User, string, error) {
-	user, err := q.users.FindByID(userID)
+func (q *GetCurrentUserQuery) Execute(ctx context.Context, userID, tenantID uuid.UUID) (domain.User, string, error) {
+	user, err := q.users.FindByID(ctx, userID)
 	if err != nil {
 		return domain.User{}, "", err
 	}

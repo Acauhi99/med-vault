@@ -32,9 +32,9 @@ type UserTenant struct {
 }
 
 type UserRepository interface {
-	FindByEmail(email string) (*User, error)
-	FindByID(id uuid.UUID) (*User, error)
-	Create(user *User) error
+	FindByEmail(ctx context.Context, email string) (*User, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
+	Create(ctx context.Context, user *User) error
 }
 
 type TenantRepository interface {

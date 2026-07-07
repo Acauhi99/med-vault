@@ -11,7 +11,8 @@ import (
 )
 
 type S3Storage struct {
-	bucket  string
+	bucket string
+	client *s3.Client
 	presign *s3.PresignClient
 }
 
@@ -27,6 +28,7 @@ func NewS3Storage(ctx context.Context, bucket, region string) (*S3Storage, error
 func newS3Storage(bucket string, client *s3.Client) *S3Storage {
 	return &S3Storage{
 		bucket:  bucket,
+		client:  client,
 		presign: s3.NewPresignClient(client),
 	}
 }
@@ -58,4 +60,12 @@ func (s *S3Storage) GenerateDownloadURL(ctx context.Context, key string, ttl tim
 	}
 
 	return out.URL, nil
+}
+
+func (s *S3Storage) DeleteObject(ctx context.Context, key string) error {
+	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	return err
 }

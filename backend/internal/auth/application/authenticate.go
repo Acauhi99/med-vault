@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -48,8 +49,8 @@ func NewAuthenticateCommand(
 	}
 }
 
-func (c *AuthenticateCommand) Execute(input AuthenticateInput) (AuthenticateOutput, error) {
-	user, err := c.users.FindByEmail(input.Email)
+func (c *AuthenticateCommand) Execute(ctx context.Context, input AuthenticateInput) (AuthenticateOutput, error) {
+	user, err := c.users.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return AuthenticateOutput{}, ErrInvalidCredentials
 	}

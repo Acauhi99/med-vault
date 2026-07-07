@@ -104,6 +104,11 @@ func (m *mockCaseRepo) WriteDiagnosis(_ context.Context, _, _ uuid.UUID, _ *clin
 	return nil
 }
 
+func (m *mockCaseRepo) WriteDiagnosisAndUpdate(_ context.Context, _, _ uuid.UUID, _ *clinicaldomain.Diagnosis, c *clinicaldomain.Case) error {
+	m.cases[c.ID] = c
+	return nil
+}
+
 type mockStorage struct {
 	uploadURLs   map[string]string
 	downloadURLs map[string]string
@@ -126,6 +131,10 @@ func (m *mockStorage) GenerateDownloadURL(_ context.Context, key string, _ time.
 	url := "https://s3.example.com/download/" + key
 	m.downloadURLs[key] = url
 	return url, nil
+}
+
+func (m *mockStorage) DeleteObject(_ context.Context, _ string) error {
+	return nil
 }
 
 func newPrincipal(userID, tenantID uuid.UUID, role sharedauth.Role) sharedauth.Principal {

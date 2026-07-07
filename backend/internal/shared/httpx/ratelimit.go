@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const maxBuckets = 10000
+
 type RateLimiter struct {
 	mu      sync.Mutex
 	buckets map[string]*bucket
@@ -40,6 +42,11 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 		rl.mu.Lock()
 		b, ok := rl.buckets[ip]
 		if !ok || now.Sub(b.lastReset) >= rl.window {
+			if !ok && len(rl.buckets) >= maxBuckets {
+				rl.mu.Unlock()
+				http.Error(w, `{"error":{"code":"RATE_LIMIT_EXCEEDED","message":"Too many requests"}}`, http.StatusTooManyRequests)
+				return
+			}
 			rl.buckets[ip] = &bucket{tokens: rl.rate - 1, lastReset: now}
 			rl.mu.Unlock()
 			next.ServeHTTP(w, r)

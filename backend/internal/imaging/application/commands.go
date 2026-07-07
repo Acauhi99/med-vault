@@ -206,16 +206,27 @@ func isAllowedContentType(contentType string) bool {
 }
 
 type DeleteImageCommand struct {
-	repo imagingdomain.Repository
+	repo    imagingdomain.Repository
+	storage Storage
 }
 
-func NewDeleteImageCommand(repo imagingdomain.Repository) *DeleteImageCommand {
-	return &DeleteImageCommand{repo: repo}
+func NewDeleteImageCommand(repo imagingdomain.Repository, storage Storage) *DeleteImageCommand {
+	return &DeleteImageCommand{repo: repo, storage: storage}
 }
 
 func (c *DeleteImageCommand) Execute(ctx context.Context, principal sharedauth.Principal, imageID uuid.UUID) error {
 	if principal.Role != sharedauth.RoleAdministrator {
 		return ErrInvalidRole
 	}
+
+	img, err := c.repo.GetByID(ctx, principal.TenantID, imageID)
+	if err != nil {
+		return ErrImageNotFound
+	}
+
+	if err := c.storage.DeleteObject(ctx, img.S3Key); err != nil {
+		return err
+	}
+
 	return c.repo.Delete(ctx, principal.TenantID, imageID)
 }

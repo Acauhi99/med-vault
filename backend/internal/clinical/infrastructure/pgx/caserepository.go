@@ -187,6 +187,36 @@ func (r *CaseRepository) WriteDiagnosis(ctx context.Context, tenantID, caseID uu
 	return err
 }
 
+func (r *CaseRepository) WriteDiagnosisAndUpdate(ctx context.Context, tenantID, caseID uuid.UUID, d *domain.Diagnosis, c *domain.Case) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	_, err = tx.Exec(ctx,
+		`INSERT INTO diagnoses (id, tenant_id, case_id, doctor_id, notes, written_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		d.ID, tenantID, caseID, d.DoctorID, d.Notes, d.WrittenAt)
+	if err != nil {
+		return err
+	}
+
+	tag, err := tx.Exec(ctx,
+		`UPDATE cases
+		 SET doctor_id = $1, status = $2, closed_at = $3, updated_at = $4
+		 WHERE id = $5 AND tenant_id = $6`,
+		c.DoctorID, c.Status, c.ClosedAt, c.UpdatedAt, c.ID, c.TenantID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	return tx.Commit(ctx)
+}
+
 func scanCases(rows pgx.Rows) ([]domain.Case, error) {
 	var cases []domain.Case
 	for rows.Next() {

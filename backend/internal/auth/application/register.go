@@ -34,12 +34,12 @@ func NewRegisterCommand(users domain.UserRepository, tenants domain.TenantReposi
 	return &RegisterCommand{users: users, tenants: tenants, hasher: hasher}
 }
 
-func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
+func (c *RegisterCommand) Execute(ctx context.Context, input RegisterInput) (RegisterOutput, error) {
 	if !isStrongPassword(input.Password) {
 		return RegisterOutput{}, ErrWeakPassword
 	}
 
-	existing, err := c.users.FindByEmail(input.Email)
+	existing, err := c.users.FindByEmail(ctx, input.Email)
 	if err == nil && existing != nil {
 		return RegisterOutput{}, ErrEmailAlreadyExists
 	}
@@ -59,14 +59,14 @@ func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
 		UpdatedAt:    now,
 	}
 
-	if err := c.users.Create(user); err != nil {
+	if err := c.users.Create(ctx, user); err != nil {
 		return RegisterOutput{}, err
 	}
 
 	// Auto-provision default tenant for new users — find-or-create
 	tenant, err := c.tenants.FindByName("MedVault Demo")
 	if err != nil {
-		tenant, err = c.tenants.Create(context.Background(), "MedVault Demo")
+		tenant, err = c.tenants.Create(ctx, "MedVault Demo")
 		if err != nil {
 			return RegisterOutput{
 				ID:        user.ID,
@@ -77,7 +77,7 @@ func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
 		}
 	}
 
-	if err := c.tenants.AddMember(context.Background(), tenant.ID, user.ID, "administrator"); err != nil {
+	if err := c.tenants.AddMember(ctx, tenant.ID, user.ID, "administrator"); err != nil {
 		slog.Warn("failed to add member during registration", "user_id", user.ID, "error", err)
 	}
 

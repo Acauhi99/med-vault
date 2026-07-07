@@ -81,7 +81,7 @@ func (a *API) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := a.authenticate.Execute(application.AuthenticateInput{
+	output, err := a.authenticate.Execute(r.Context(), application.AuthenticateInput{
 		Email:    string(input.Email),
 		Password: input.Password,
 	})
@@ -168,7 +168,7 @@ func (a *API) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := a.register.Execute(application.RegisterInput{
+	output, err := a.register.Execute(r.Context(), application.RegisterInput{
 		Email:    string(input.Email),
 		Password: input.Password,
 	})
@@ -285,7 +285,7 @@ func (a *API) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, role, err := a.getCurrentUser.Execute(principal.UserID, principal.TenantID)
+	user, role, err := a.getCurrentUser.Execute(r.Context(), principal.UserID, principal.TenantID)
 	if err != nil {
 		httpx.WriteError(w, r, http.StatusNotFound, "USER_NOT_FOUND", "user not found")
 		return
