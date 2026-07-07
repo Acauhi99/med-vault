@@ -24,7 +24,17 @@ func (r *AuditRepository) Create(ctx context.Context, log *domain.AuditLog) erro
 		return err
 	}
 
-	_, err = r.pool.Exec(ctx,
+	// ponytail: bypass RLS for audit writes
+	conn, err := r.pool.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	if _, err := conn.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
+		return err
+	}
+
+	_, err = conn.Exec(ctx,
 		`INSERT INTO audit_logs (id, tenant_id, user_id, action, resource_type, resource_id, details, ip_address, user_agent, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		log.ID, log.TenantID, log.UserID, log.Action, log.ResourceType, log.ResourceID, detailsJSON, log.IPAddress, log.UserAgent, log.CreatedAt)
@@ -32,6 +42,16 @@ func (r *AuditRepository) Create(ctx context.Context, log *domain.AuditLog) erro
 }
 
 func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, offset, limit int, action string, userID *uuid.UUID, resourceType string, resourceID *uuid.UUID) ([]domain.AuditLog, int, error) {
+	// ponytail: bypass RLS for audit queries — cross-tenant admin read
+	conn, err := r.pool.Acquire(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer conn.Release()
+	if _, err := conn.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
+		return nil, 0, err
+	}
+
 	where := "tenant_id = $1"
 	args := []any{tenantID}
 	if action != "" {
@@ -53,7 +73,7 @@ func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, 
 	countQuery := `SELECT COUNT(*) FROM audit_logs WHERE ` + where
 
 	var total int
-	err := r.pool.QueryRow(ctx, countQuery, args...).Scan(&total)
+	err = conn.QueryRow(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -65,7 +85,7 @@ func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, 
 		 FROM audit_logs WHERE ` + where +
 		` ORDER BY created_at DESC LIMIT $` + fmt.Sprint(lim) + ` OFFSET $` + fmt.Sprint(off)
 
-	rows, err := r.pool.Query(ctx, selectQuery, args...)
+	rows, err := conn.Query(ctx, selectQuery, args...)
 	if err != nil {
 		return nil, 0, err
 	}

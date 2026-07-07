@@ -25,10 +25,10 @@ type Tenant struct {
 }
 
 type UserTenant struct {
-	UserID   uuid.UUID
-	TenantID uuid.UUID
-	Role     string
-	Name     string // tenant name
+	UserID   uuid.UUID `json:"user_id"`
+	TenantID uuid.UUID `json:"tenant_id"`
+	Role     string    `json:"role"`
+	Name     string    `json:"name"`
 }
 
 type UserRepository interface {
