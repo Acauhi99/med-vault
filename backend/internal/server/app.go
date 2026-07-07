@@ -103,8 +103,11 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
 	})
 
-	// select-tenant needs both rate limiter AND auth (it's under /api/v1/auth/ but requires a valid token)
-	selectTenantHandler := authRateLimiter.Middleware(authMiddleware(apiHandler))
+	// select-tenant needs both rate limiter AND temp token auth (exchanges temp → access+refresh)
+	tempAuthMiddleware := sharedauth.TempTokenMiddleware(jwtGen, func(w http.ResponseWriter, r *http.Request) {
+		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
+	})
+	selectTenantHandler := authRateLimiter.Middleware(tempAuthMiddleware(apiHandler))
 	mux.Handle("POST /api/v1/auth/select-tenant", selectTenantHandler)
 
 	// other auth routes: rate limiter only (login, register, refresh-token)
