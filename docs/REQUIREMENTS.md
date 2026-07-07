@@ -219,6 +219,19 @@ This document defines the functional and non-functional requirements for MedVaul
 
 ---
 
+## Frontend Routes
+
+| Route | Purpose | Auth |
+|-------|---------|------|
+| `/` | Landing page (marketing, HIPAA overview, architecture) | No |
+| `/login` | Authentication (login, register, tenant selection) | No |
+| `/cases/` | Case list (filtered by role) | Yes |
+| `/cases/new/` | Create new case | Yes (Patient) |
+| `/members/` | Tenant member management | Yes (Admin) |
+| `/audit/` | Audit log viewer | Yes (Admin) |
+
+---
+
 ## Out of Scope (PoC)
 
 The following are explicitly out of scope for the initial PoC:

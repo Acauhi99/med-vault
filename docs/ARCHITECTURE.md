@@ -80,12 +80,22 @@ The frontend does NOT follow MVC, MVP, or MVVM. Every business capability is imp
 frontend/
 ├── app/                        # Pages (routing and composition only)
 ├── features/                   # Business capabilities (one dir per feature)
-│   ├── authentication/         # Example feature
+│   ├── authentication/         # Login, register, tenant selection, session
 │   │   ├── components/         # Presentation components
 │   │   ├── hooks/              # TanStack Query hooks, UI orchestration
 │   │   ├── services/           # openapi-fetch API calls
 │   │   ├── schemas/            # Zod v4 validation schemas
 │   │   ├── types/              # TypeScript types
+│   │   └── index.ts            # Public exports
+│   ├── landing/                # Public landing page (unauthenticated)
+│   │   ├── navbar.tsx          # Fixed nav with anchor links + CTA
+│   │   ├── hero.tsx            # Hero section with CTAs
+│   │   ├── features.tsx        # Platform capability cards
+│   │   ├── hipaa.tsx           # HIPAA compliance explanation cards
+│   │   ├── trusted-by.tsx      # Animated company logo carousel
+│   │   ├── architecture.tsx    # Architecture overview cards
+│   │   ├── footer.tsx          # Site footer
+│   │   ├── landing-page.tsx    # Page compositor
 │   │   └── index.ts            # Public exports
 │   ├── patients/
 │   ├── doctors/

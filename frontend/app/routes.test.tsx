@@ -200,10 +200,11 @@ beforeEach(() => {
 });
 
 describe("app routes", () => {
-	it("renders the home auth workspace", () => {
+	it("renders the home landing page", () => {
 		render(<Home />);
 
-		expect(screen.getByTestId("auth-workspace")).toBeInTheDocument();
+		expect(screen.getAllByText("MedVault").length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText("HIPAA-Compliant Platform")).toBeInTheDocument();
 	});
 
 	it("renders the audit page shell", () => {
