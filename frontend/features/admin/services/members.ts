@@ -1,4 +1,5 @@
 import { apiClient } from "@/infrastructure/api/client";
+import { requireData } from "@/shared/utils/require-data";
 
 import {
 	addMemberSchema,
@@ -19,14 +20,6 @@ type AddMemberRaw = {
 	role?: string;
 	name?: string;
 };
-
-function requireData<T>(value: T | null | undefined, message: string): T {
-	if (value == null) {
-		throw new Error(message);
-	}
-
-	return value;
-}
 
 export async function listMembers(tenantId: string) {
 	const response = await apiClient.GET(

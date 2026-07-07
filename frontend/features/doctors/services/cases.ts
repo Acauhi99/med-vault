@@ -1,5 +1,6 @@
 import type { components } from "@/generated/api";
 import { apiClient } from "@/infrastructure/api/client";
+import { requireData } from "@/shared/utils/require-data";
 
 import {
 	type CaseDetail,
@@ -21,13 +22,6 @@ type CaseResponseData = NonNullable<
 >;
 type DiagnosisResponse = components["schemas"]["DiagnosisResponse"];
 type ImageResponse = components["schemas"]["ImageResponse"];
-
-function requireData<T>(value: T | null | undefined, message: string): T {
-	if (value == null) {
-		throw new Error(message);
-	}
-	return value;
-}
 
 function normalizeCaseSummary(raw: CaseSummaryRaw): CaseSummary {
 	return caseSummarySchema.parse({

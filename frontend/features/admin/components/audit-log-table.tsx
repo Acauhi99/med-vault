@@ -87,6 +87,7 @@ export function AuditLogTable() {
 					value={action}
 					onChange={(e) => setAction(e.target.value)}
 					placeholder="Filter by action"
+					aria-label="Filter by action"
 					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 				/>
 				<input
@@ -94,6 +95,7 @@ export function AuditLogTable() {
 					value={userId}
 					onChange={(e) => setUserId(e.target.value)}
 					placeholder="Filter by user ID"
+					aria-label="Filter by user ID"
 					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 				/>
 				<input
@@ -101,6 +103,7 @@ export function AuditLogTable() {
 					value={resourceType}
 					onChange={(e) => setResourceType(e.target.value)}
 					placeholder="Filter by resource type"
+					aria-label="Filter by resource type"
 					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 				/>
 				<input
@@ -108,6 +111,7 @@ export function AuditLogTable() {
 					value={resourceId}
 					onChange={(e) => setResourceId(e.target.value)}
 					placeholder="Filter by resource ID"
+					aria-label="Filter by resource ID"
 					className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 				/>
 				<div className="lg:col-span-4">

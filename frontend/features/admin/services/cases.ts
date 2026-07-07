@@ -1,6 +1,7 @@
 import type { components } from "@/generated/api";
 
 import { apiClient } from "@/infrastructure/api/client";
+import { requireData } from "@/shared/utils/require-data";
 
 import {
 	assignDoctorSchema,
@@ -12,14 +13,6 @@ type CaseSummaryRaw = components["schemas"]["CaseSummary"];
 type CaseResponseRaw = NonNullable<
 	components["schemas"]["CaseResponse"]["data"]
 >;
-
-function requireData<T>(value: T | null | undefined, message: string): T {
-	if (value == null) {
-		throw new Error(message);
-	}
-
-	return value;
-}
 
 function normalizeCaseSummary(raw: CaseSummaryRaw) {
 	return caseSummarySchema.parse({

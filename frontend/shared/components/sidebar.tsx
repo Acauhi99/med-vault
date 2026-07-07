@@ -72,6 +72,7 @@ export function Sidebar({
 						value={activeTenant?.tenantId ?? ""}
 						onChange={(e) => handleSwitch(e.target.value)}
 						disabled={switching}
+						aria-label="Switch tenant"
 						className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-60"
 					>
 						{tenants.map((t) => (

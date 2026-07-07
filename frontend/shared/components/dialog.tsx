@@ -26,6 +26,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
 					<button
 						type="button"
 						onClick={onClose}
+						aria-label="Close dialog"
 						className="rounded-xl p-1 text-slate-400 transition hover:bg-white/5 hover:text-white"
 					>
 						<svg

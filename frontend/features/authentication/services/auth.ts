@@ -1,6 +1,7 @@
 import type { components } from "@/generated/api";
 
 import { apiClient } from "@/infrastructure/api/client";
+import { requireData } from "@/shared/utils/require-data";
 
 import {
 	type LoginInput,
@@ -25,14 +26,6 @@ type LoginTenant = NonNullable<LoginResponseData["tenants"]>[number];
 type UserResponseData = NonNullable<
 	components["schemas"]["UserResponse"]["data"]
 >;
-
-function requireData<T>(value: T | null | undefined, message: string): T {
-	if (value == null) {
-		throw new Error(message);
-	}
-
-	return value;
-}
 
 function authHeaders(accessToken: string) {
 	return {

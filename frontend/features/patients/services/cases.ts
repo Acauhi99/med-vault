@@ -1,6 +1,7 @@
 import type { components } from "@/generated/api";
 
 import { apiClient } from "@/infrastructure/api/client";
+import { requireData } from "@/shared/utils/require-data";
 
 import {
 	type AddSymptomInput,
@@ -20,14 +21,6 @@ import {
 	uploadURLRequestSchema,
 	uploadURLResponseSchema,
 } from "../schemas/cases";
-
-function requireData<T>(value: T | null | undefined, message: string): T {
-	if (value == null) {
-		throw new Error(message);
-	}
-
-	return value;
-}
 
 type CaseSummaryData = components["schemas"]["CaseSummary"];
 type SymptomResponseData = components["schemas"]["SymptomResponse"];
