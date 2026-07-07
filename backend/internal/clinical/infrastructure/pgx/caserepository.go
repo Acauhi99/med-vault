@@ -3,7 +3,6 @@ package pgx
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 
 	"github.com/Acauhi99/med-vault/internal/clinical/domain"
@@ -200,6 +199,4 @@ func scanCases(rows pgx.Rows) ([]domain.Case, error) {
 	return cases, rows.Err()
 }
 
-func init() {
-	_ = fmt.Sprintf
-}
+

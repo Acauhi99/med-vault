@@ -415,7 +415,7 @@ func (a *API) ReactivateTenant(w http.ResponseWriter, r *http.Request, tenantId 
 			httpx.WriteError(w, r, http.StatusForbidden, "NOT_ADMIN", "principal is not an administrator of this tenant")
 			return
 		}
-		httpx.WriteError(w, r, http.StatusNotFound, "NOT_FOUND", err.Error())
+		httpx.WriteError(w, r, http.StatusNotFound, "NOT_FOUND", "tenant not found or not suspended")
 		return
 	}
 
@@ -462,7 +462,7 @@ func (a *API) CreateTenant(w http.ResponseWriter, r *http.Request) {
 			httpx.WriteError(w, r, http.StatusForbidden, "NOT_ADMIN", "principal is not an administrator")
 			return
 		}
-		httpx.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", err.Error())
+		httpx.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to create tenant")
 		return
 	}
 

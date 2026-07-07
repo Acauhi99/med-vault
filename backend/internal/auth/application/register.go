@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 	"time"
 	"unicode"
@@ -76,7 +77,9 @@ func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
 		}
 	}
 
-	_ = c.tenants.AddMember(context.Background(), tenant.ID, user.ID, "administrator")
+	if err := c.tenants.AddMember(context.Background(), tenant.ID, user.ID, "administrator"); err != nil {
+		slog.Warn("failed to add member during registration", "user_id", user.ID, "error", err)
+	}
 
 	return RegisterOutput{
 		ID:        user.ID,
