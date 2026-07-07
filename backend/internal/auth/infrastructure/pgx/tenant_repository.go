@@ -19,16 +19,16 @@ func NewTenantRepository(pool *pgxpool.Pool) *TenantRepository {
 }
 
 func (r *TenantRepository) FindUserTenants(userID uuid.UUID) ([]domain.UserTenant, error) {
-	// ponytail: auth queries bypass RLS — cross-tenant lookup needs all rows
-	conn, err := r.pool.Acquire(context.Background())
+	// ponytail: auth queries bypass RLS — needs transaction for SET LOCAL
+	tx, err := r.pool.Begin(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Release()
-	if _, err := conn.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
+	defer func() { _ = tx.Rollback(context.Background()) }()
+	if _, err := tx.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
 		return nil, err
 	}
-	rows, err := conn.Query(context.Background(),
+	rows, err := tx.Query(context.Background(),
 		`SELECT ut.user_id, ut.tenant_id, ut.role, t.name
 		 FROM user_tenants ut
 		 JOIN tenants t ON t.id = ut.tenant_id
@@ -46,20 +46,23 @@ func (r *TenantRepository) FindUserTenants(userID uuid.UUID) ([]domain.UserTenan
 		}
 		tenants = append(tenants, ut)
 	}
-	return tenants, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return tenants, tx.Commit(context.Background())
 }
 
 func (r *TenantRepository) FindUserTenant(userID, tenantID uuid.UUID) (*domain.UserTenant, error) {
-	// ponytail: auth queries bypass RLS — cross-tenant lookup needs all rows
-	conn, err := r.pool.Acquire(context.Background())
+	// ponytail: auth queries bypass RLS — needs transaction for SET LOCAL
+	tx, err := r.pool.Begin(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Release()
-	if _, err := conn.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
+	defer func() { _ = tx.Rollback(context.Background()) }()
+	if _, err := tx.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
 		return nil, err
 	}
-	row := conn.QueryRow(context.Background(),
+	row := tx.QueryRow(context.Background(),
 		`SELECT ut.user_id, ut.tenant_id, ut.role, t.name
 		 FROM user_tenants ut
 		 JOIN tenants t ON t.id = ut.tenant_id
@@ -69,23 +72,26 @@ func (r *TenantRepository) FindUserTenant(userID, tenantID uuid.UUID) (*domain.U
 	if err := row.Scan(&ut.UserID, &ut.TenantID, &ut.Role, &ut.Name); err != nil {
 		return nil, err
 	}
-	return &ut, nil
+	return &ut, tx.Commit(context.Background())
 }
 
 func (r *TenantRepository) AddMember(ctx context.Context, tenantID, userID uuid.UUID, role string) error {
-	// ponytail: bypass RLS for auth operations — registration needs cross-tenant insert
-	conn, err := r.pool.Acquire(ctx)
+	// ponytail: bypass RLS for auth operations — needs transaction for SET LOCAL
+	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Release()
-	if _, err := conn.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
 		return err
 	}
-	_, err = conn.Exec(ctx,
+	_, err = tx.Exec(ctx,
 		`INSERT INTO user_tenants (user_id, tenant_id, role)
 		 VALUES ($1, $2, $3)`, userID, tenantID, role)
-	return err
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 func (r *TenantRepository) RemoveMember(ctx context.Context, tenantID, userID uuid.UUID) error {
@@ -135,17 +141,17 @@ func (r *TenantRepository) Reactivate(ctx context.Context, tenantID uuid.UUID) (
 }
 
 func (r *TenantRepository) FindByName(name string) (*domain.Tenant, error) {
-	// ponytail: bypass RLS for auth operations
-	conn, err := r.pool.Acquire(context.Background())
+	// ponytail: bypass RLS for auth operations — needs transaction for SET LOCAL
+	tx, err := r.pool.Begin(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Release()
-	if _, err := conn.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
+	defer func() { _ = tx.Rollback(context.Background()) }()
+	if _, err := tx.Exec(context.Background(), "SET LOCAL row_security = off"); err != nil {
 		return nil, err
 	}
 	var t domain.Tenant
-	err = conn.QueryRow(
+	err = tx.QueryRow(
 		context.Background(),
 		`SELECT id, name, status, created_at, updated_at
 		 FROM tenants WHERE name = $1`, name,
@@ -153,21 +159,21 @@ func (r *TenantRepository) FindByName(name string) (*domain.Tenant, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &t, nil
+	return &t, tx.Commit(context.Background())
 }
 
 func (r *TenantRepository) Create(ctx context.Context, name string) (*domain.Tenant, error) {
-	// ponytail: bypass RLS for auth operations — registration needs cross-tenant insert
-	conn, err := r.pool.Acquire(ctx)
+	// ponytail: bypass RLS for auth operations — needs transaction for SET LOCAL
+	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Release()
-	if _, err := conn.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
+	defer func() { _ = tx.Rollback(ctx) }()
+	if _, err := tx.Exec(ctx, "SET LOCAL row_security = off"); err != nil {
 		return nil, err
 	}
 	var t domain.Tenant
-	err = conn.QueryRow(
+	err = tx.QueryRow(
 		ctx,
 		`INSERT INTO tenants (name, status)
 		 VALUES ($1, 'active')
@@ -176,7 +182,7 @@ func (r *TenantRepository) Create(ctx context.Context, name string) (*domain.Ten
 	if err != nil {
 		return nil, err
 	}
-	return &t, nil
+	return &t, tx.Commit(ctx)
 }
 
 func (r *TenantRepository) Suspend(ctx context.Context, tenantID uuid.UUID) (*domain.Tenant, error) {
