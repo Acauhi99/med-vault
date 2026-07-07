@@ -40,6 +40,7 @@ type UserRepository interface {
 type TenantRepository interface {
 	FindUserTenants(userID uuid.UUID) ([]UserTenant, error)
 	FindUserTenant(userID, tenantID uuid.UUID) (*UserTenant, error)
+	FindByName(name string) (*Tenant, error)
 	AddMember(ctx context.Context, tenantID, userID uuid.UUID, role string) error
 	RemoveMember(ctx context.Context, tenantID, userID uuid.UUID) error
 	ListMembers(ctx context.Context, tenantID uuid.UUID) ([]UserTenant, error)

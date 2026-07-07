@@ -42,6 +42,10 @@ func (m *mockTenantRepo) FindUserTenant(userID, tenantID uuid.UUID) (*authdomain
 	return nil, ErrCaseNotFound
 }
 
+func (m *mockTenantRepo) FindByName(name string) (*authdomain.Tenant, error) {
+	return &authdomain.Tenant{Name: name, Status: "active"}, nil
+}
+
 func (m *mockTenantRepo) AddMember(context.Context, uuid.UUID, uuid.UUID, string) error { return nil }
 
 func (m *mockTenantRepo) RemoveMember(context.Context, uuid.UUID, uuid.UUID) error { return nil }

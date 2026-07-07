@@ -62,15 +62,18 @@ func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
 		return RegisterOutput{}, err
 	}
 
-	// Auto-provision default tenant for new users
-	tenant, err := c.tenants.Create(context.Background(), "MedVault Demo")
+	// Auto-provision default tenant for new users — find-or-create
+	tenant, err := c.tenants.FindByName("MedVault Demo")
 	if err != nil {
-		return RegisterOutput{
-			ID:        user.ID,
-			Email:     user.Email,
-			Status:    user.Status,
-			CreatedAt: user.CreatedAt,
-		}, nil
+		tenant, err = c.tenants.Create(context.Background(), "MedVault Demo")
+		if err != nil {
+			return RegisterOutput{
+				ID:        user.ID,
+				Email:     user.Email,
+				Status:    user.Status,
+				CreatedAt: user.CreatedAt,
+			}, nil
+		}
 	}
 
 	_ = c.tenants.AddMember(context.Background(), tenant.ID, user.ID, "administrator")

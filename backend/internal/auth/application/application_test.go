@@ -53,6 +53,10 @@ func (m *mockTenantRepo) FindUserTenant(userID, tenantID uuid.UUID) (*domain.Use
 	return nil, errors.New("not found")
 }
 
+func (m *mockTenantRepo) FindByName(name string) (*domain.Tenant, error) {
+	return &domain.Tenant{Name: name, Status: "active"}, nil
+}
+
 func (m *mockTenantRepo) AddMember(ctx context.Context, tenantID, userID uuid.UUID, role string) error {
 	m.memberships[userID] = append(m.memberships[userID], domain.UserTenant{
 		UserID: userID, TenantID: tenantID, Role: role, Name: "Test",

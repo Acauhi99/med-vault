@@ -48,6 +48,10 @@ func (m *selectTenantMockRepo) FindUserTenant(userID, tenantID uuid.UUID) (*doma
 	return m.membership, nil
 }
 
+func (m *selectTenantMockRepo) FindByName(name string) (*domain.Tenant, error) {
+	return nil, ErrUserNotMember
+}
+
 func (m *selectTenantMockRepo) AddMember(ctx context.Context, tenantID, userID uuid.UUID, role string) error {
 	return nil
 }

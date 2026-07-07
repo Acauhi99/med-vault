@@ -101,6 +101,10 @@ func (m *mockClinicalTenantRepo) FindUserTenant(uuid.UUID, uuid.UUID) (*authdoma
 	return nil, errors.New("not found")
 }
 
+func (m *mockClinicalTenantRepo) FindByName(name string) (*authdomain.Tenant, error) {
+	return nil, errors.New("not found")
+}
+
 func (m *mockClinicalTenantRepo) AddMember(context.Context, uuid.UUID, uuid.UUID, string) error {
 	return nil
 }

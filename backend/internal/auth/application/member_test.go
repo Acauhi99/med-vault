@@ -40,6 +40,10 @@ func (m *mockTenantMemberRepo) FindUserTenant(userID, tenantID uuid.UUID) (*doma
 	return &ut, nil
 }
 
+func (m *mockTenantMemberRepo) FindByName(name string) (*domain.Tenant, error) {
+	return &domain.Tenant{Name: name, Status: "active"}, nil
+}
+
 func (m *mockTenantMemberRepo) AddMember(ctx context.Context, tenantID, userID uuid.UUID, role string) error {
 	key := tenantID.String() + ":" + userID.String()
 	m.memberships[key] = domain.UserTenant{

@@ -99,10 +99,19 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 		},
 	)
 	authRateLimiter := httpx.NewRateLimiter(10, time.Minute)
-	mux.Handle("/api/v1/auth/", authRateLimiter.Middleware(apiHandler))
-	mux.Handle("/api/v1/", sharedauth.TenantMiddleware(jwtGen, func(w http.ResponseWriter, r *http.Request) {
+	authMiddleware := sharedauth.TenantMiddleware(jwtGen, func(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, r, http.StatusUnauthorized, "UNAUTHORIZED", "authentication required")
-	})(apiHandler))
+	})
+
+	// select-tenant needs both rate limiter AND auth (it's under /api/v1/auth/ but requires a valid token)
+	selectTenantHandler := authRateLimiter.Middleware(authMiddleware(apiHandler))
+	mux.Handle("POST /api/v1/auth/select-tenant", selectTenantHandler)
+
+	// other auth routes: rate limiter only (login, register, refresh-token)
+	mux.Handle("/api/v1/auth/", authRateLimiter.Middleware(apiHandler))
+
+	// all other /api/v1/ routes: auth middleware
+	mux.Handle("/api/v1/", authMiddleware(apiHandler))
 
 	handler := httpx.RequestIDMiddleware(cfg.RequestIDHeader)(httpx.CORSMiddleware(cfg.CORSAllowedOrigins)(mux))
 
