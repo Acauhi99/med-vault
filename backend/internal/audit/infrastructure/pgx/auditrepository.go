@@ -35,7 +35,7 @@ func (r *AuditRepository) Create(ctx context.Context, log *domain.AuditLog) erro
 	}
 
 	_, err = tx.Exec(ctx,
-		`INSERT INTO audit_logs (id, tenant_id, user_id, action, resource_type, resource_id, details, ip_address, user_agent, created_at)
+		`INSERT INTO audit_logs (id, tenant_id, user_id, action, resource_type, resource_id, metadata, ip_address, user_agent, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		log.ID, log.TenantID, log.UserID, log.Action, log.ResourceType, log.ResourceID, detailsJSON, log.IPAddress, log.UserAgent, log.CreatedAt)
 	if err != nil {
@@ -84,7 +84,7 @@ func (r *AuditRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, 
 	args = append(args, limit, offset)
 	lim := len(args) - 1
 	off := len(args)
-	selectQuery := `SELECT id, tenant_id, user_id, action, resource_type, resource_id, details, ip_address, user_agent, created_at
+	selectQuery := `SELECT id, tenant_id, user_id, action, resource_type, resource_id, metadata, ip_address, user_agent, created_at
 		 FROM audit_logs WHERE ` + where +
 		` ORDER BY created_at DESC LIMIT $` + fmt.Sprint(lim) + ` OFFSET $` + fmt.Sprint(off)
 
