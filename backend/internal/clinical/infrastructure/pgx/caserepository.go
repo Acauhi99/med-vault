@@ -228,5 +228,3 @@ func scanCases(rows pgx.Rows) ([]domain.Case, error) {
 	}
 	return cases, rows.Err()
 }
-
-

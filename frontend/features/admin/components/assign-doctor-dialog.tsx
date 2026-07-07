@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/shared/components/button";
 import { Dialog } from "@/shared/components/dialog";
-
 import { useAssignDoctor } from "../hooks/use-all-cases";
+import { assignDoctorSchema } from "../schemas/cases";
 
 type AssignDoctorDialogProps = {
 	open: boolean;
@@ -19,19 +19,23 @@ export function AssignDoctorDialog({
 	caseId,
 }: AssignDoctorDialogProps) {
 	const [doctorId, setDoctorId] = useState("");
+	const [fieldError, setFieldError] = useState<string | null>(null);
 	const assignMutation = useAssignDoctor(caseId);
 
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		assignMutation.mutate(
-			{ doctorId },
-			{
-				onSuccess: () => {
-					setDoctorId("");
-					onClose();
-				},
+		const result = assignDoctorSchema.safeParse({ doctorId });
+		if (!result.success) {
+			setFieldError(result.error.issues[0]?.message ?? "Invalid input");
+			return;
+		}
+		setFieldError(null);
+		assignMutation.mutate(result.data, {
+			onSuccess: () => {
+				setDoctorId("");
+				onClose();
 			},
-		);
+		});
 	}
 
 	return (
@@ -49,6 +53,9 @@ export function AssignDoctorDialog({
 						placeholder="Enter doctor UUID"
 						className="mt-1 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 					/>
+					{fieldError && (
+						<p className="mt-1 text-sm text-red-400">{fieldError}</p>
+					)}
 				</div>
 				{assignMutation.error && (
 					<p className="text-sm text-red-400">{assignMutation.error.message}</p>

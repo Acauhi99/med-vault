@@ -33,6 +33,7 @@ import { MemberList } from "./member-list";
 beforeEach(() => {
 	mockUseMemberList.mockReset();
 	mockUseRemoveMember.mockReset();
+	window.confirm = vi.fn(() => true);
 });
 
 describe("MemberList", () => {

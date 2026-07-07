@@ -5,6 +5,14 @@ import { StatusBadge } from "@/shared/components/badge";
 import { PageHeader } from "@/shared/components/page-header";
 import { TableSkeleton } from "@/shared/components/skeleton";
 import { EmptyState, ErrorState } from "@/shared/components/states";
+import {
+	Table,
+	TableBody,
+	TableHead,
+	TableRow,
+	Td,
+	Th,
+} from "@/shared/components/table";
 import { useAssignedCases, useCaseDetail } from "../hooks/use-assigned-cases";
 import { CaseDetail } from "./case-detail";
 
@@ -75,46 +83,42 @@ export function CaseList() {
 				)}
 
 				{data && data.cases.length > 0 && (
-					<div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-						<table className="w-full text-sm">
-							<thead>
-								<tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-slate-400">
-									<th className="px-4 py-3">Case ID</th>
-									<th className="px-4 py-3">Patient</th>
-									<th className="px-4 py-3">Status</th>
-									<th className="px-4 py-3">Created</th>
-									<th className="px-4 py-3" />
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-white/5">
-								{data.cases.map((c) => (
-									<tr key={c.id} className="transition hover:bg-white/5">
-										<td className="px-4 py-3 font-mono text-xs text-slate-300">
-											{c.id.slice(0, 8)}
-										</td>
-										<td className="px-4 py-3 font-mono text-xs text-slate-300">
-											{c.patientId.slice(0, 8)}
-										</td>
-										<td className="px-4 py-3">
-											<StatusBadge status={c.status} />
-										</td>
-										<td className="px-4 py-3 text-xs text-slate-400">
-											{new Date(c.createdAt).toLocaleDateString()}
-										</td>
-										<td className="px-4 py-3 text-right">
-											<button
-												type="button"
-												onClick={() => setSelectedCaseId(c.id)}
-												className="rounded-xl bg-sky-400/10 px-3 py-1.5 text-xs font-medium text-sky-300 transition hover:bg-sky-400/20"
-											>
-												View
-											</button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<Table className="mt-6">
+						<TableHead>
+							<Th>Case ID</Th>
+							<Th>Patient</Th>
+							<Th>Status</Th>
+							<Th>Created</Th>
+							<Th>&nbsp;</Th>
+						</TableHead>
+						<TableBody>
+							{data.cases.map((c) => (
+								<TableRow key={c.id}>
+									<Td className="font-mono text-xs text-slate-300">
+										{c.id.slice(0, 8)}
+									</Td>
+									<Td className="font-mono text-xs text-slate-300">
+										{c.patientId.slice(0, 8)}
+									</Td>
+									<Td>
+										<StatusBadge status={c.status} />
+									</Td>
+									<Td className="text-xs text-slate-400">
+										{new Date(c.createdAt).toLocaleDateString()}
+									</Td>
+									<Td className="text-right">
+										<button
+											type="button"
+											onClick={() => setSelectedCaseId(c.id)}
+											className="rounded-xl bg-sky-400/10 px-3 py-1.5 text-xs font-medium text-sky-300 transition hover:bg-sky-400/20"
+										>
+											View
+										</button>
+									</Td>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				)}
 
 				{detailQuery.isLoading && selectedCaseId && (

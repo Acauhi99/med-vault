@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
 import type { ContentType } from "../schemas/cases";
-import { maxImageUploadSizeBytes } from "../schemas/cases";
+import { contentTypeSchema, maxImageUploadSizeBytes } from "../schemas/cases";
 import {
 	confirmUpload,
 	getDownloadURL,
@@ -56,8 +56,15 @@ export function useImageUpload(caseId: string) {
 				return;
 			}
 
+			const parsedType = contentTypeSchema.safeParse(file.type);
+			if (!parsedType.success) {
+				setStatus("error");
+				setError("Unsupported file type. Allowed: JPEG, PNG, DICOM.");
+				return;
+			}
+
 			try {
-				const contentType = file.type as ContentType;
+				const contentType = parsedType.data;
 				const { uploadUrl, s3Key } = await requestUploadURL(
 					caseId,
 					file.name,

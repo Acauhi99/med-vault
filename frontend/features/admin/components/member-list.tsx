@@ -66,12 +66,10 @@ export function MemberList() {
 				) : (
 					<Table>
 						<TableHead>
-							<TableRow>
-								<Th>Name</Th>
-								<Th>User ID</Th>
-								<Th>Role</Th>
-								<Th>&nbsp;</Th>
-							</TableRow>
+							<Th>Name</Th>
+							<Th>User ID</Th>
+							<Th>Role</Th>
+							<Th>&nbsp;</Th>
 						</TableHead>
 						<TableBody>
 							{list.map((m: { userId: string; name: string; role: string }) => (
@@ -86,7 +84,13 @@ export function MemberList() {
 											variant="danger"
 											size="sm"
 											disabled={removeMutation.isPending}
-											onClick={() => removeMutation.mutate(m.userId)}
+											onClick={() => {
+												if (
+													window.confirm("Remove this member from the tenant?")
+												) {
+													removeMutation.mutate(m.userId);
+												}
+											}}
 										>
 											Remove
 										</Button>

@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/shared/components/button";
 import { Dialog } from "@/shared/components/dialog";
-
 import { useAddMember } from "../hooks/use-members";
+import { addMemberSchema } from "../schemas/members";
 
 const ROLES = ["patient", "doctor", "administrator"] as const;
 
@@ -15,20 +15,29 @@ export function AddMemberForm() {
 	const [role, setRole] = useState<"patient" | "doctor" | "administrator">(
 		"patient",
 	);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const addMutation = useAddMember();
 
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		addMutation.mutate(
-			{ userId, role },
-			{
-				onSuccess: () => {
-					setUserId("");
-					setRole("patient");
-					setOpen(false);
-				},
+		const result = addMemberSchema.safeParse({ userId, role });
+		if (!result.success) {
+			const errors: Record<string, string> = {};
+			for (const issue of result.error.issues) {
+				const field = issue.path[0];
+				if (typeof field === "string") errors[field] = issue.message;
+			}
+			setFieldErrors(errors);
+			return;
+		}
+		setFieldErrors({});
+		addMutation.mutate(result.data, {
+			onSuccess: () => {
+				setUserId("");
+				setRole("patient");
+				setOpen(false);
 			},
-		);
+		});
 	}
 
 	return (
@@ -55,6 +64,9 @@ export function AddMemberForm() {
 							placeholder="Enter user UUID"
 							className="mt-1 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder-slate-500 outline-none transition focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/50"
 						/>
+						{fieldErrors.userId && (
+							<p className="mt-1 text-sm text-red-400">{fieldErrors.userId}</p>
+						)}
 					</div>
 					<div>
 						<label
@@ -75,6 +87,9 @@ export function AddMemberForm() {
 								</option>
 							))}
 						</select>
+						{fieldErrors.role && (
+							<p className="mt-1 text-sm text-red-400">{fieldErrors.role}</p>
+						)}
 					</div>
 					{addMutation.error && (
 						<p className="text-sm text-red-400">{addMutation.error.message}</p>

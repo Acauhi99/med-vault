@@ -6,6 +6,7 @@ import { MemberList } from "@/features/admin/components/member-list";
 import { ReactivateTenantForm } from "@/features/admin/components/reactivate-tenant-form";
 import { clearAuthSession } from "@/infrastructure/auth/session-store";
 import { useAuthSession } from "@/infrastructure/auth/use-auth-session";
+import { RouteLoading } from "@/shared/components/route-loading";
 import { Sidebar } from "@/shared/components/sidebar";
 
 export default function MembersPage() {
@@ -20,11 +21,7 @@ export default function MembersPage() {
 	}
 
 	if (!session.user || !session.activeTenant) {
-		return (
-			<div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
-				<p className="text-slate-400">Loading...</p>
-			</div>
-		);
+		return <RouteLoading title="Members" />;
 	}
 
 	if (session.user.role !== "administrator") {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 type DialogProps = {
 	open: boolean;
@@ -9,18 +10,51 @@ type DialogProps = {
 	children: ReactNode;
 };
 
+const FOCUSABLE =
+	'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
 export function Dialog({ open, onClose, title, children }: DialogProps) {
+	const contentRef = useRef<HTMLDivElement>(null);
+
+	const trapFocus = useCallback((e: KeyboardEvent) => {
+		if (e.key !== "Tab" || !contentRef.current) return;
+		const focusable =
+			contentRef.current.querySelectorAll<HTMLElement>(FOCUSABLE);
+		if (focusable.length === 0) return;
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}, []);
+
+	useEffect(() => {
+		if (!open) return;
+		contentRef.current?.focus();
+		document.addEventListener("keydown", trapFocus);
+		return () => document.removeEventListener("keydown", trapFocus);
+	}, [open, trapFocus]);
+
 	if (!open) return null;
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
-			<button
-				type="button"
+			<div
 				className="fixed inset-0 bg-black/60"
 				onClick={onClose}
-				aria-label="Close dialog"
+				aria-hidden="true"
 			/>
-			<div className="relative mx-4 w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl">
+			<div
+				ref={contentRef}
+				role="dialog"
+				aria-modal="true"
+				tabIndex={-1}
+				className="relative mx-4 w-full max-w-lg rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl outline-none"
+			>
 				<div className="mb-4 flex items-center justify-between">
 					<h2 className="text-lg font-semibold text-white">{title}</h2>
 					<button

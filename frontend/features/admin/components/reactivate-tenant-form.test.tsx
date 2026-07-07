@@ -21,6 +21,7 @@ beforeEach(() => {
 describe("ReactivateTenantForm", () => {
 	it("opens, submits, and closes the dialog", async () => {
 		const user = userEvent.setup();
+		const tenantUuid = "550e8400-e29b-41d4-a716-446655440000";
 		const mutate = vi.fn(
 			(_tenantId: string, options?: { onSuccess?: () => void }) => {
 				options?.onSuccess?.();
@@ -47,14 +48,14 @@ describe("ReactivateTenantForm", () => {
 
 		await user.type(
 			screen.getByPlaceholderText(/enter tenant uuid/i),
-			"tenant-1",
+			tenantUuid,
 		);
 		expect(screen.getByRole("button", { name: /^reactivate$/i })).toBeEnabled();
 
 		await user.click(screen.getByRole("button", { name: /^reactivate$/i }));
 
 		expect(mutate).toHaveBeenCalledWith(
-			"tenant-1",
+			tenantUuid,
 			expect.objectContaining({ onSuccess: expect.any(Function) }),
 		);
 

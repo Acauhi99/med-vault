@@ -15,7 +15,11 @@ export function CloseCaseButton({ caseId }: CloseCaseButtonProps) {
 		<Button
 			variant="danger"
 			busy={closeMutation.isPending}
-			onClick={() => closeMutation.mutate()}
+			onClick={() => {
+				if (window.confirm("Are you sure you want to close this case?")) {
+					closeMutation.mutate();
+				}
+			}}
 		>
 			Close Case
 		</Button>

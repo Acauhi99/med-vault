@@ -11,8 +11,8 @@ import (
 )
 
 type S3Storage struct {
-	bucket string
-	client *s3.Client
+	bucket  string
+	client  *s3.Client
 	presign *s3.PresignClient
 }
 
