@@ -170,10 +170,34 @@ export function AuthWorkspace() {
 			if (epoch !== authEpoch.current) {
 				return;
 			}
-			setNotice(`Account created for ${result.email}. Sign in to continue.`);
+			// Auto-login after registration
 			setMode("login");
+			setLoginForm({ email: result.email, password: registerForm.password });
 			setRegisterForm(emptyRegisterForm);
-			setLoginForm((current) => ({ ...current, email: result.email }));
+			setNotice(`Account created. Signing in...`);
+			// Trigger auto-login
+			const loginResult = await loginMutation.mutateAsync({
+				email: result.email,
+				password: registerForm.password,
+			});
+			if (epoch !== authEpoch.current) {
+				return;
+			}
+			updateAuthSession({
+				accessToken: loginResult.accessToken,
+				refreshToken: null,
+				tenants: loginResult.tenants,
+				activeTenant: null,
+				user: null,
+			});
+			setTenantId(loginResult.tenants[0]?.tenantId ?? "");
+			if (loginResult.tenants.length === 1) {
+				await pickTenant(
+					loginResult.tenants[0].tenantId,
+					loginResult.accessToken,
+					loginResult.tenants,
+				);
+			}
 		} catch (error) {
 			setNotice(error instanceof Error ? error.message : "Unable to register.");
 		}

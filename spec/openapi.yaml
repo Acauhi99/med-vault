@@ -38,7 +38,7 @@ paths:
     post:
       tags: [Auth]
       operationId: registerUser
-      summary: Register a new user (no tenant assignment)
+      summary: Register a new user with auto-provisioned default tenant
       security: []
       requestBody:
         required: true

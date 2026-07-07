@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"time"
@@ -23,12 +24,13 @@ type RegisterOutput struct {
 }
 
 type RegisterCommand struct {
-	users  domain.UserRepository
-	hasher PasswordHasher
+	users   domain.UserRepository
+	tenants domain.TenantRepository
+	hasher  PasswordHasher
 }
 
-func NewRegisterCommand(users domain.UserRepository, hasher PasswordHasher) *RegisterCommand {
-	return &RegisterCommand{users: users, hasher: hasher}
+func NewRegisterCommand(users domain.UserRepository, tenants domain.TenantRepository, hasher PasswordHasher) *RegisterCommand {
+	return &RegisterCommand{users: users, tenants: tenants, hasher: hasher}
 }
 
 func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
@@ -59,6 +61,19 @@ func (c *RegisterCommand) Execute(input RegisterInput) (RegisterOutput, error) {
 	if err := c.users.Create(user); err != nil {
 		return RegisterOutput{}, err
 	}
+
+	// Auto-provision default tenant for new users
+	tenant, err := c.tenants.Create(context.Background(), "MedVault Demo")
+	if err != nil {
+		return RegisterOutput{
+			ID:        user.ID,
+			Email:     user.Email,
+			Status:    user.Status,
+			CreatedAt: user.CreatedAt,
+		}, nil
+	}
+
+	_ = c.tenants.AddMember(context.Background(), tenant.ID, user.ID, "administrator")
 
 	return RegisterOutput{
 		ID:        user.ID,

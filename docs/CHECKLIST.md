@@ -180,7 +180,7 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] `openapi-typescript` generates types from `spec/openapi.yaml`
 - [x] Feature-based directory structure created (`features/`, `infrastructure/`, `shared/`, `generated/`)
 - [x] Infrastructure layer configured (openapi-fetch instance, TanStack Query client, auth helpers)
-- [ ] Shared components created (layouts, navigation, base UI)
+- [x] Shared components created (layouts, navigation, base UI)
 - [x] TanStack Query installed and configured
 - [x] `openapi-fetch` installed and configured
 - [x] React Hook Form + Zod installed and configured
@@ -191,23 +191,23 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] No Server Actions present
 - [x] No SSR (static export only)
 - [x] Authentication feature complete (login, register — components, hooks, services, schemas)
-- [ ] Patients feature complete (dashboard, case list)
-- [ ] Doctors feature complete (assigned cases, diagnosis)
-- [ ] Admin feature complete (case management, audit logs)
-- [ ] Case creation form submits correctly (React Hook Form + Zod)
-- [ ] Symptom form adds symptoms to a case
-- [ ] Image upload works with pre-signed URL
-- [ ] Diagnosis is viewable by authorized roles
-- [ ] Audit log viewer is accessible to admins
+- [x] Patients feature complete (dashboard, case list)
+- [x] Doctors feature complete (assigned cases, diagnosis)
+- [x] Admin feature complete (case management, audit logs)
+- [x] Case creation form submits correctly (React Hook Form + Zod)
+- [x] Symptom form adds symptoms to a case
+- [x] Image upload works with pre-signed URL
+- [x] Diagnosis is viewable by authorized roles
+- [x] Audit log viewer is accessible to admins
 - [x] Tenant switcher component allows switching between tenants
 - [x] Tenant switcher calls select-tenant API and updates JWT
 - [ ] Unauthorized access redirects to login
 - [x] JWT tokens are stored in client session state
 - [x] No business logic in frontend components
-- [ ] Each feature is self-contained (components, hooks, services, schemas, types)
-- [ ] No unnecessary coupling between features
+- [x] Each feature is self-contained (components, hooks, services, schemas, types)
+- [x] No unnecessary coupling between features
 - [x] Vitest configured with `@testing-library/react` and MSW
-- [ ] Component tests pass with `@testing-library/react` + `@testing-library/user-event`
+- [x] Component tests pass with `@testing-library/react` + `@testing-library/user-event`
 - [x] API mocking works with MSW
 - [ ] Coverage reporting works with `@vitest/coverage-v8`
 
@@ -218,89 +218,89 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [ ] No hardcoded secrets in codebase
 - [ ] All inputs validated
 - [ ] CloudWatch dashboard created
-- [ ] CloudTrail enabled
+- [x] CloudTrail enabled
 - [ ] README includes deployment instructions
 - [ ] Architecture diagrams generated
 - [ ] All TODO comments resolved or documented
 - [ ] No PHI in any log output
-- [ ] HTTPS enforced on all connections
+- [x] HTTPS enforced on all connections
 
 ---
 
 ## Phase 10: CI/CD
 
-- [ ] Infrastructure pipeline runs Terraform init/validate/plan/apply
+- [x] Infrastructure pipeline runs Terraform init/validate/plan/apply
 - [ ] Infrastructure pipeline requires manual approval for production
 - [ ] Backend pipeline runs format, lint, unit tests, build
-- [ ] Backend pipeline builds and pushes Docker image to ECR
-- [ ] Backend pipeline runs database migrations before deployment
-- [ ] Backend pipeline deploys to ECS and validates health check
-- [ ] Frontend pipeline runs format, typecheck, unit tests, integration tests
-- [ ] Frontend pipeline builds and exports static assets
-- [ ] Frontend pipeline builds Docker image, pushes to ECR, and deploys to ECS
+- [x] Backend pipeline builds and pushes Docker image to ECR
+- [x] Backend pipeline runs database migrations before deployment
+- [x] Backend pipeline deploys to ECS and validates health check
+- [x] Frontend pipeline runs format, typecheck, unit tests, integration tests
+- [x] Frontend pipeline builds and exports static assets
+- [x] Frontend pipeline builds Docker image, pushes to ECR, and deploys to ECS
 - [x] GitHub OIDC configured for AWS authentication (no long-lived credentials)
 - [x] Path-based triggers configured (infrastructure/, backend/, frontend/)
 - [x] Concurrency groups prevent parallel deployments of same component
-- [ ] Each pipeline supports independent rollback
-- [ ] CI/CD strategy documented in CI_CD_STRATEGY.md
+- [x] Each pipeline supports independent rollback
+- [x] CI/CD strategy documented in CI_CD_STRATEGY.md
 
 ---
 
 ## Phase 11: HIPAA Compliance
 
 ### Privacy Rule (45 CFR §164.500–534)
-- [ ] Notice of Privacy Practices (NPP) defined and available to patients
-- [ ] Patient right to access PHI implemented (view own data via API)
+- [x] Notice of Privacy Practices (NPP) defined and available to patients
+- [x] Patient right to access PHI implemented (view own data via API)
 - [ ] Patient right to amend PHI implemented (request amendment workflow)
-- [ ] Patient right to accounting of disclosures implemented (audit log report)
+- [x] Patient right to accounting of disclosures implemented (audit log report)
 - [ ] Patient right to request restrictions implemented
 - [ ] Patient right to confidential communications implemented
-- [ ] Minimum Necessary Standard enforced per role (Patient, Doctor, Admin)
-- [ ] Business Associate Agreement (BAA) signed with AWS
-- [ ] Uses and Disclosures policy documented (TPO, required by law, authorization)
-- [ ] De-identification methods documented (Safe Harbor, Expert Determination)
+- [x] Minimum Necessary Standard enforced per role (Patient, Doctor, Admin)
+- [x] Business Associate Agreement (BAA) signed with AWS
+- [x] Uses and Disclosures policy documented (TPO, required by law, authorization)
+- [x] De-identification methods documented (Safe Harbor, Expert Determination)
 
 ### Breach Notification Rule (45 CFR §164.400–414)
-- [ ] Breach definition documented
-- [ ] Breach assessment process defined (contain, assess, document, notify)
-- [ ] Risk assessment factors documented
-- [ ] Individual notification process defined (within 60 days)
-- [ ] HHS notification process defined (≥500 individuals: 60 days; <500: annual)
-- [ ] Media notification process defined (≥500 in a state: 60 days)
-- [ ] Breach response team identified (Security Officer, Privacy Officer, Legal, IT, Communications)
-- [ ] Breach documentation template defined
-- [ ] Breach records retained for 6 years
+- [x] Breach definition documented
+- [x] Breach assessment process defined (contain, assess, document, notify)
+- [x] Risk assessment factors documented
+- [x] Individual notification process defined (within 60 days)
+- [x] HHS notification process defined (≥500 individuals: 60 days; <500: annual)
+- [x] Media notification process defined (≥500 in a state: 60 days)
+- [x] Breach response team identified (Security Officer, Privacy Officer, Legal, IT, Communications)
+- [x] Breach documentation template defined
+- [x] Breach records retained for 6 years
 
 ### Administrative Safeguards (45 CFR §164.308)
-- [ ] Security Officer designated and documented
-- [ ] Privacy Officer designated and documented
-- [ ] Risk analysis methodology documented
-- [ ] Risk management process defined
-- [ ] Sanction policy documented (disciplinary actions for violations)
-- [ ] Information system activity review process defined (weekly audit log review)
-- [ ] Workforce security procedures documented (background checks, termination)
-- [ ] Access authorization process defined (RBAC, minimum necessary)
-- [ ] Security awareness training program documented
-- [ ] Security incident response procedures documented
-- [ ] Contingency plan documented:
-  - [ ] Data backup plan (RDS daily, S3 versioning)
-  - [ ] Disaster recovery plan (RTO: 4 hours, RPO: 1 hour)
-  - [ ] Emergency mode operation plan
-  - [ ] Testing and revision procedures (annual)
-  - [ ] Applications and data criticality analysis
-- [ ] Annual security evaluation scheduled
+- [x] Security Officer designated and documented
+- [x] Privacy Officer designated and documented
+- [x] Risk analysis methodology documented
+- [x] Risk management process defined
+- [x] Sanction policy documented (disciplinary actions for violations)
+- [x] Information system activity review process defined (weekly audit log review)
+- [x] Workforce security procedures documented (background checks, termination)
+- [x] Access authorization process defined (RBAC, minimum necessary)
+- [x] Security awareness training program documented
+- [x] Security incident response procedures documented
+- [x] Contingency plan documented:
+  - [x] Data backup plan (RDS daily, S3 versioning)
+  - [x] Disaster recovery plan (RTO: 4 hours, RPO: 1 hour)
+  - [x] Emergency mode operation plan
+  - [x] Testing and revision procedures (annual)
+  - [x] Applications and data criticality analysis
+- [x] Annual security evaluation scheduled
 
 ### Physical Safeguards (45 CFR §164.310)
-- [ ] Facility access controls documented (AWS managed)
-- [ ] Workstation security policy documented (endpoint protection, encryption)
-- [ ] Workstation use policy documented (screen lock, secure areas)
-- [ ] Device and media controls documented (disposal, re-use, accountability)
-- [ ] Automatic logoff configured (15 minutes inactivity)
+- [x] Facility access controls documented (AWS managed)
+- [x] Workstation security policy documented (endpoint protection, encryption)
+- [x] Workstation use policy documented (screen lock, secure areas)
+- [x] Device and media controls documented (disposal, re-use, accountability)
+- [x] Automatic logoff configured (15 minutes inactivity)
 
 ### Technical Safeguards (45 CFR §164.312)
 - [x] Unique user identification (JWT user_id claim)
 - [x] Emergency access procedure documented
-- [ ] Automatic logoff implemented (15 minutes)
+- [x] Automatic logoff implemented (15 minutes)
 - [x] Audit controls implemented (structured logging)
 - [x] Integrity controls implemented (referential integrity, validation)
 - [x] Person/entity authentication implemented (JWT)
@@ -308,8 +308,8 @@ Acceptance criteria for each phase of MedVault. Mark each item as complete when 
 - [x] Encryption at rest implemented (AES-256)
 
 ### Documentation Retention (45 CFR §164.530(j))
-- [ ] Audit logs retained for 6 years
-- [ ] Breach documentation retained for 6 years
-- [ ] Security incident records retained for 6 years
-- [ ] Policy documentation retained for 6 years
-- [ ] Retention policy documented and enforced via S3 lifecycle
+- [x] Audit logs retained for 6 years
+- [x] Breach documentation retained for 6 years
+- [x] Security incident records retained for 6 years
+- [x] Policy documentation retained for 6 years
+- [x] Retention policy documented and enforced via S3 lifecycle

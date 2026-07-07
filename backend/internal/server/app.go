@@ -47,7 +47,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*App, err
 	userRepo := pgxauth.NewUserRepository(db)
 	tenantRepo := pgxauth.NewTenantRepository(db)
 
-	registerCmd := application.NewRegisterCommand(userRepo, hasher)
+	registerCmd := application.NewRegisterCommand(userRepo, tenantRepo, hasher)
 	authenticateCmd := application.NewAuthenticateCommand(userRepo, tenantRepo, hasher, jwtGen, cfg.JWTTempTTL)
 	selectTenantCmd := application.NewSelectTenantCommand(tenantRepo, jwtGen, cfg.JWTAccessTTL, cfg.JWTRefreshTTL)
 	tokenStore := application.NewTokenStore(cfg.JWTRefreshTTL)

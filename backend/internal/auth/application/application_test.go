@@ -127,7 +127,8 @@ func (m *mockJWTGen) Verify(rawToken string) (JWTClaims, error) {
 
 func TestRegisterSuccess(t *testing.T) {
 	users := &mockUserRepo{users: make(map[string]*domain.User)}
-	cmd := NewRegisterCommand(users, &mockHasher{})
+	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
+	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
 	out, err := cmd.Execute(RegisterInput{Email: "test@example.com", Password: "Password12345!"})
 	if err != nil {
@@ -145,7 +146,8 @@ func TestRegisterDuplicateEmail(t *testing.T) {
 	users := &mockUserRepo{users: map[string]*domain.User{
 		"existing@example.com": {ID: uuid.New(), Email: "existing@example.com"},
 	}}
-	cmd := NewRegisterCommand(users, &mockHasher{})
+	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
+	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
 	_, err := cmd.Execute(RegisterInput{Email: "existing@example.com", Password: "Password12345!"})
 	if err != ErrEmailAlreadyExists {
@@ -155,7 +157,8 @@ func TestRegisterDuplicateEmail(t *testing.T) {
 
 func TestRegisterWeakPasswordRejected(t *testing.T) {
 	users := &mockUserRepo{users: make(map[string]*domain.User)}
-	cmd := NewRegisterCommand(users, &mockHasher{})
+	tenants := &mockTenantRepo{memberships: make(map[uuid.UUID][]domain.UserTenant)}
+	cmd := NewRegisterCommand(users, tenants, &mockHasher{})
 
 	_, err := cmd.Execute(RegisterInput{Email: "test@example.com", Password: "weakpass"})
 	if err != ErrWeakPassword {
